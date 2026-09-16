@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plateforme projet — Pôle INFRA</title>
+<meta name="description" content="Démonstration publique du tableau de bord de pilotage de portefeuille du Pôle INFRA, sans données.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Mêmes jetons de couleur que le tableau de bord, pour que l'entrée et
+     l'application forment un ensemble. */
+  :root{
+    --ground:#eaeff5; --panel:#ffffff; --panel-2:#eef3f7;
+    --ink:#11202e; --ink-2:#33485a; --muted:#5e7485; --faint:#8499a7;
+    --line:#e0e7ee; --line-2:#ccd7e0;
+    --accent:#115e75; --accent-soft:#e1edf1; --accent-ink:#0b4658;
+    --copper:#b0651f; --copper-soft:#f5e9dd;
+    --warn-soft:#f7edd7; --warn:#bd8413;
+    --shadow:0 1px 2px rgba(16,42,67,.05), 0 6px 18px rgba(16,42,67,.07);
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --ground:#0c1620; --panel:#12202c; --panel-2:#0f1b25;
+    --ink:#e8eef2; --ink-2:#bccdd7; --muted:#8ba1ad; --faint:#637885;
+    --line:#24363f; --line-2:#31454f;
+    --accent:#4fb3cf; --accent-soft:#11323d; --accent-ink:#9ad7e6;
+    --copper:#d99a5b; --copper-soft:#3a2a19;
+    --warn-soft:#33280f; --warn:#e0b45a;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 2px 12px rgba(0,0,0,.25);
+  }}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--ground);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.55}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  h1,h2{font-family:"Archivo",system-ui,sans-serif;letter-spacing:-.01em}
+  .wrap{max-width:780px;margin:0 auto;padding:40px 16px 64px}
+
+  .hero{position:relative;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:radial-gradient(130% 150% at 0% 0%,var(--accent-soft) 0%,transparent 52%),
+               linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    box-shadow:var(--shadow);padding:26px 26px 24px;margin-bottom:22px}
+  .hero::before{content:"";position:absolute;left:0;top:0;right:0;height:4px;
+    background:linear-gradient(90deg,var(--accent) 0%,var(--accent) 55%,var(--copper) 100%)}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent);display:flex;align-items:center;gap:9px}
+  .eyebrow::before{content:"";width:22px;height:2px;background:var(--accent);border-radius:2px}
+  h1{font-size:27px;font-weight:800;margin:10px 0 6px;line-height:1.08}
+  .sub{font-size:13.5px;color:var(--muted);margin:0}
+
+  h2{font-size:16px;font-weight:700;margin:26px 0 10px;display:flex;align-items:center;gap:9px}
+
+  .card{display:flex;align-items:center;gap:15px;text-decoration:none;color:inherit;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;
+    box-shadow:var(--shadow);transition:transform .09s,border-color .14s,box-shadow .14s}
+  .card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 6px 20px rgba(16,42,67,.14)}
+  .card .mk{width:42px;height:42px;flex:0 0 auto;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent-ink));color:#fff;font-size:20px;
+    box-shadow:0 3px 10px rgba(17,94,117,.35)}
+  .card .t{font-family:Archivo;font-weight:800;font-size:15.5px;color:var(--ink)}
+  .card .d{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .card .go{margin-left:auto;font-size:19px;color:var(--accent);flex:0 0 auto}
+  @media(max-width:520px){ .card .go{display:none} }
+
+  .url{margin-top:9px;font-size:11.5px;color:var(--faint);word-break:break-all}
+
+  .note{border-left:3px solid var(--line-2);background:var(--panel-2);border-radius:0 9px 9px 0;
+    padding:12px 15px;font-size:13px;color:var(--ink-2);margin:14px 0}
+  .note.warn{border-left-color:var(--warn);background:var(--warn-soft);color:var(--ink)}
+  .note b{color:var(--ink)}
+  .note code,.url code{font-family:"IBM Plex Mono",monospace;font-size:12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+  .note p{margin:0 0 7px} .note p:last-child{margin:0}
+
+  footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--faint);display:flex;gap:14px;flex-wrap:wrap}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Plateforme projet</div>
+    <h1>RT Ingénierie — Pôle INFRA</h1>
+    <p class="sub">Applications de pilotage de portefeuille · CPV</p>
+  </div>
+
+  <h2>🌐 Accès en ligne (version courante)</h2>
+
+  <a class="card" href="PPM_RT_POLE_INFRA.html">
+    <span class="mk">🏭</span>
+    <span>
+      <span class="t">Ouvrir le tableau de bord PPM RT</span>
+      <span class="d">Portefeuille, capacité, phasing budgétaire, GEDT · démonstration sans données</span>
+    </span>
+    <span class="go" aria-hidden="true">→</span>
+  </a>
+  <div class="url mono">PPM_RT_POLE_INFRA.html</div>
+
+  <div class="note warn">
+    <p><b>Version de démonstration, sans données.</b> La BDD Membres est volontairement vide :
+    cette page est publique, elle ne porte donc aucun nom ni aucune donnée de portefeuille.</p>
+    <p><b>Mode autonome.</b> Pas de compte, pas d'état partagé : ce qui est saisi ici reste dans
+    le navigateur du poste, et disparaît si les données du site sont effacées.</p>
+    <p>Pour l'équipe, les comptes et le fichier de données partagé entre postes, utilisez le kit
+    local (<code>Lancer_PPM.bat</code> + <code>_ppm_save_server.py</code>) décrit dans le README.</p>
+  </div>
+
+  <h2>🖥️ Version de travail</h2>
+  <div class="note">
+    <p>La version utilisée par l'équipe — avec la BDD Membres renseignée — n'est pas publiée.
+    Elle se trouve dans le dossier <code>outputs/</code> du dépôt.</p>
+    <p>Déposez ses cinq fichiers dans un même répertoire, puis double-cliquez sur
+    <code>Lancer_PPM.bat</code>. Le serveur local donne à l'application un compte protégé et un
+    fichier <code>_ppm_state.json</code> partagé entre postes.</p>
+  </div>
+
+  <footer>
+    <a href="https://github.com/sergaey/ppm-rt-pole-infra">Dépôt GitHub</a>
+    <span>Pôle INFRA · RT Ingénierie</span>
+  </footer>
+
+</div>
+</body>
+</html>
