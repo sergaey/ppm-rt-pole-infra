@@ -309,6 +309,13 @@
   .filewarn .fw-x{flex:0 0 auto;border:1px solid var(--line-2);background:transparent;border-radius:8px;
     padding:6px 10px;font-size:12px;color:var(--ink-2)}
   .filewarn .fw-x:hover{background:var(--panel)}
+  /* Capacité : la vue est une colonne flex dont les enfants ne grandissent pas
+     (.view>*{flex:0 0 auto}). Un tableau court laissait donc un vide entre le bas
+     du bloc et la barre de pied de page. Ces blocs occupent la hauteur restante,
+     et c'est leur tableau qui défile. */
+  #bddMembres,#planPresence{flex:1 1 auto;display:flex;flex-direction:column;min-height:0}
+  #bddMembres>.panel-b,#planPresence>.panel-b{flex:1;display:flex;flex-direction:column;min-height:0}
+  #bddMembres .tblwrap,#planPresence .tblwrap{flex:1 1 auto;max-height:none;min-height:140px}
   .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:9px}
   .pleg span{display:inline-flex;align-items:center;gap:6px}
   .pdot{width:12px;height:12px;border-radius:3px;display:inline-block}
