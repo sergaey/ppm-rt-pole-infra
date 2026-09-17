@@ -324,6 +324,17 @@
   .ptbl td.pcell{text-align:center;min-width:30px;padding:4px 2px;border:1px solid var(--line);font-size:10.5px;cursor:pointer}
   .ptbl td.rname{position:sticky;left:0;background:var(--panel);white-space:nowrap;font-size:11.5px;padding:4px 10px 4px 4px;border-bottom:1px solid var(--line);z-index:1}
   .ptbl th.rname{left:0;z-index:2;text-align:left;padding-left:4px}
+  /* En-tete a deux etages : la semaine coiffe ses jours. Le second etage se
+     fige sous le premier, d'ou le decalage vertical. */
+  .ptbl th.psem{top:0;border-left:2px solid var(--line-2);color:var(--ink-2);font-weight:600;padding:3px 2px}
+  .ptbl th.pjour{top:21px;min-width:22px;padding:2px 1px;line-height:1.1;font-weight:500;color:var(--ink-2)}
+  .ptbl th.pjour .pnum{display:block;font-size:9px;font-weight:400;color:var(--faint)}
+  .ptbl th.pwe{background:var(--panel-3);color:var(--faint)}
+  .ptbl th.pfer{background:var(--warn-soft);color:var(--warn)}
+  .ptbl td.poff{background:var(--panel-3);cursor:default}
+  .ptbl td.poff.pfer{background:var(--warn-soft)}
+  .ptbl .pw1{border-left:2px solid var(--line-2)}
+  .pdot-off{background:var(--panel-3);border:1px solid var(--line-2)}
   /* ===== GEDT : visionneuse de document ===== */
   .gmodal{position:fixed;inset:0;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:22px}
   .gmbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 22px 64px rgba(0,0,0,.34);width:min(1150px,96vw);height:min(88vh,920px);display:flex;flex-direction:column;overflow:hidden}
@@ -630,6 +641,54 @@ function buildFromSeed(){
     presence:{}
   };
 }
+/* ================= Calendrier de l'exercice ================= */
+const PRES_ANNEE=2026;                 // exercice couvert par le planning de présence
+
+/* Jours fériés français : quatre dates fixes plus celles calées sur Pâques.
+   Algorithme de Meeus/Butcher, purement arithmétique, aucun tableau à tenir à jour. */
+function paquesFR(a){
+  const g=a%19, c=Math.floor(a/100);
+  const h=(c-Math.floor(c/4)-Math.floor((8*c+13)/25)+19*g+15)%30;
+  const i=h-Math.floor(h/28)*(1-Math.floor(29/(h+1))*Math.floor((21-g)/11));
+  const j=(a+Math.floor(a/4)+i+2-c+Math.floor(c/4))%7;
+  const pp=i-j, mois=3+Math.floor((pp+40)/44), jour=pp+28-31*Math.floor(mois/4);
+  return new Date(a,mois-1,jour);
+}
+function feriesFR(a){
+  const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const P=paquesFR(a), dec=(n)=>{const d=new Date(P); d.setDate(d.getDate()+n); return d;};
+  const f={};
+  f[iso(new Date(a,0,1))]="Jour de l'an";      f[iso(dec(1))]="Lundi de Pâques";
+  f[iso(new Date(a,4,1))]="Fête du Travail";   f[iso(new Date(a,4,8))]="Victoire 1945";
+  f[iso(dec(39))]="Ascension";                 f[iso(dec(50))]="Lundi de Pentecôte";
+  f[iso(new Date(a,6,14))]="Fête nationale";   f[iso(new Date(a,7,15))]="Assomption";
+  f[iso(new Date(a,10,1))]="Toussaint";        f[iso(new Date(a,10,11))]="Armistice";
+  f[iso(new Date(a,11,25))]="Noël";
+  return f;
+}
+/* Les jours de l'année, groupés en semaines commençant le lundi. La première
+   semaine est tronquée au 1er janvier : en 2026 elle ne porte que du jeudi 1
+   au dimanche 4, ce qui fait deux jours ouvrés. */
+const MOIS_CT=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const JOURS_LB=['D','L','M','M','J','V','S'];   // getDay() : 0 = dimanche
+const JOURS_NOM=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+function calendrierAnnee(a){
+  const fer=feriesFR(a), out=[]; let sem=1;
+  const d=new Date(a,0,1);
+  while(d.getFullYear()===a){
+    // nouveau lundi (hors tout premier jour) : on passe à la semaine suivante
+    if(d.getDay()===1 && out.length) sem++;
+    const k=`${a}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const we=(d.getDay()===0||d.getDay()===6);
+    out.push({iso:k, jour:d.getDay(), num:d.getDate(), mois:d.getMonth(),
+              sem, we, ferie:fer[k]||null, ouvre:!we && !fer[k]});
+    d.setDate(d.getDate()+1);
+  }
+  return out;
+}
+const CAL=calendrierAnnee(PRES_ANNEE);
+const weeks=Array.from({length:CAL[CAL.length-1].sem},(_,i)=>i+1);
+
 S = (function(){
   // Verrou local actif : ne rien charger en clair au démarrage (données chiffrées en IndexedDB,
   // déverrouillées après saisie du mot de passe via idbHydrate/showUnlock).
@@ -679,6 +738,21 @@ function migrate(saved){
     r.seedRoster = SEED_ROSTER_VERSION;
   }
   r.presence = r.presence || {};
+  /* Le planning de presence est passe de la semaine au jour. Une saisie
+     hebdomadaire ancienne est reportee sur les jours ouvres de sa semaine,
+     une fois pour toutes ; les samedis, dimanches et feries sont ecartes. */
+  if(!r.presDaily){
+    const ouvres={}; CAL.forEach(j=>{ if(j.ouvre) (ouvres[j.sem]=ouvres[j.sem]||[]).push(j.iso); });
+    Object.keys(r.presence).forEach(nom=>{
+      const src=r.presence[nom]||{}, out={};
+      Object.keys(src).forEach(k=>{
+        if(/^\d{4}-\d{2}-\d{2}$/.test(k)){ out[k]=src[k]; return; }   // deja au jour
+        if(/^\d{1,2}$/.test(k)) (ouvres[+k]||[]).forEach(iso=>{ out[iso]=src[k]; });
+      });
+      r.presence[nom]=out;
+    });
+    r.presDaily=1;
+  }
   (function(){ const key=s=>norm(s).replace(/[^a-z0-9]/g,'');
     const ok=n=>/^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]+(?:\s+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]+)+$/.test(n) && !/(.)\1\1/i.test(n);
     const have=new Set(r.members.map(m=>key(m.nom))), gone=new Set(r.membersRemoved.map(key));
@@ -1542,7 +1616,6 @@ function renderRes(){
   const months=S.months, roles=Object.keys(S.chargeByRole);
   S.members=S.members||SEED_MEMBERS.map(m=>({...m})); S.presence=S.presence||{};
   const mem=S.members, nInt=mem.filter(m=>m.type==='Interne').length, nPre=mem.filter(m=>m.type==='Prestataire').length;
-  const weeks=Array.from({length:52},(_,i)=>i+1);
   const chargeTot=months.map((_,i)=>roles.reduce((a,r)=>a+(S.chargeByRole[r][i]||0),0));
   const demand=S.demandRT, cap=S.capacityRT;
   const occ=months.map((_,i)=>cap[i]?demand[i]/cap[i]*100:0);
@@ -1551,7 +1624,7 @@ function renderRes(){
   const peakRole=roles.map(r=>({r,t:S.chargeByRole[r].reduce((a,b)=>a+b,0)})).sort((a,b)=>b.t-a.t)[0];
 
   const navSec = ({p4a:'membres',p4b:'cdp',p4c:'pm',p4d:'presence',p4e:'charge'})[S.navKey] || 'membres';
-  const SEC={membres:['BDD Membres',"base de l'équipe projet · cellules éditables"],cdp:['CDP — Coordinateurs','membres dont le rôle contient « Coordinateur / CDP »'],pm:['PM | CA — Chefs de projet et chargés d\'affaires','PM d\'au moins un projet, ou rôle contenant « PM » / « chef de projet » / « CA » / « chargé d\'affaires »'],presence:['Planning présence ingénierie — hebdomadaire','clic sur une case = statut suivant'],charge:['Plan de charge','Charge par rôle & Plan de ressources · ETP · cible 80–95%']};
+  const SEC={membres:['BDD Membres',"base de l'équipe projet · cellules éditables"],cdp:['CDP — Coordinateurs','membres dont le rôle contient « Coordinateur / CDP »'],pm:['PM | CA — Chefs de projet et chargés d\'affaires','PM d\'au moins un projet, ou rôle contenant « PM » / « chef de projet » / « CA » / « chargé d\'affaires »'],presence:['Planning présence ingénierie — au jour','clic sur une case ouvrée = statut suivant · week-ends et fériés grisés'],charge:['Plan de charge','Charge par rôle & Plan de ressources · ETP · cible 80–95%']};
   const mkey=s=>norm(s).replace(/[^a-z0-9]/g,'');
   const membersTableHTML=rows=>`<div class="selbar" id="memSelBar" hidden>
     <span><b id="memSelN">0</b> membre(s) sélectionné(s)</span>
@@ -1594,12 +1667,29 @@ function renderRes(){
         ${rows.length?membersTableHTML(rows):`<div class="hint" style="padding:12px 2px">Aucun membre${navSec==='cdp'?" avec le rôle « Coordinateur / CDP » — renseignez-le dans BDD Membres.":navSec==='pm'?" reconnu comme PM | Owner d'un projet.":'.'}</div>`}
       </div></div>`;
   } else if(navSec==='presence'){
-    body = `<div class="panel" id="planPresence" style="margin-bottom:14px"><div class="panel-h"><h3>Planning présence ingénierie — hebdomadaire</h3><span class="meta">${mem.length} membres × 52 semaines · clic sur une case = statut suivant</span></div>
+    const nOuvre=CAL.filter(j=>j.ouvre).length, nFer=CAL.filter(j=>j.ferie).length;
+    // Un en-tête à deux étages : la semaine coiffe ses jours, chaque jour porte
+    // sa lettre et son quantième. La première et la dernière semaine sont
+    // tronquées par le changement d'année, d'où le colspan calculé.
+    const parSem={}; CAL.forEach(j=>{ (parSem[j.sem]=parSem[j.sem]||[]).push(j); });
+    // Le premier jour de chaque semaine porte le trait de separation.
+    const debSem=new Set(Object.values(parSem).map(l=>l[0].iso));
+    const enteteSem=weeks.map(w=>`<th class="psem" colspan="${parSem[w].length}">S${w}</th>`).join('');
+    const enteteJour=CAL.map(j=>`<th class="pjour${debSem.has(j.iso)?' pw1':''}${j.we?' pwe':''}${j.ferie?' pfer':''}" title="${JOURS_NOM[j.jour]} ${j.num} ${MOIS_CT[j.mois]}${j.ferie?' — '+esc(j.ferie):''}">${JOURS_LB[j.jour]}<span class="pnum">${j.num}</span></th>`).join('');
+    body = `<div class="panel" id="planPresence" style="margin-bottom:14px"><div class="panel-h"><h3>Planning présence ingénierie — ${PRES_ANNEE}</h3><span class="meta">${mem.length} membres × ${CAL.length} jours · ${nOuvre} ouvrés · ${nFer} fériés</span></div>
       <div class="panel-b">
-        <div class="pleg">${Object.entries(PRESMAP).map(([k,v])=>`<span><span class="pdot" style="background:${v.c}"></span>${v.lb} <b>(${k})</b></span>`).join('')}<span><span class="pdot" style="background:var(--panel-3)"></span>Non renseigné</span></div>
+        <div class="pleg">${Object.entries(PRESMAP).map(([k,v])=>`<span><span class="pdot" style="background:${v.c}"></span>${v.lb} <b>(${k})</b></span>`).join('')}<span><span class="pdot" style="background:var(--panel-3)"></span>Non renseigné</span><span><span class="pdot pdot-off"></span>Week-end ou férié — non saisissable</span></div>
         <div class="tblwrap" style="max-height:600px;overflow:auto"><table class="ptbl">
-          <thead><tr><th class="rname">Membre</th>${weeks.map(w=>`<th>S${w}</th>`).join('')}</tr></thead>
-          <tbody>${mem.map(m=>{const pr=S.presence[m.nom]||{};return `<tr><td class="rname">${esc(m.nom)}${m.ini?` <span style="color:var(--faint)">[${esc(m.ini)}]</span>`:''}</td>${weeks.map(w=>{const code=pr[w]||'';const info=PRESMAP[code];return `<td class="pcell" data-pc="${esc(m.nom)}|${w}" style="background:${info?info.c:'transparent'};${info?'color:#fff':''}" title="${info?info.lb:'Non renseigné'}">${code}</td>`;}).join('')}</tr>`;}).join('')}</tbody>
+          <thead>
+            <tr><th class="rname" rowspan="2">Membre</th>${enteteSem}</tr>
+            <tr>${enteteJour}</tr>
+          </thead>
+          <tbody>${mem.map(m=>{const pr=S.presence[m.nom]||{};return `<tr><td class="rname">${esc(m.nom)}${m.ini?` <span style="color:var(--faint)">[${esc(m.ini)}]</span>`:''}</td>${CAL.map(j=>{
+            if(!j.ouvre) return `<td class="pcell poff${debSem.has(j.iso)?' pw1':''}${j.ferie?' pfer':''}" title="${JOURS_NOM[j.jour]} ${j.num} ${MOIS_CT[j.mois]}${j.ferie?' — '+esc(j.ferie):''}"></td>`;
+            const code=pr[j.iso]||''; const info=PRESMAP[code];
+            const lj=`${JOURS_NOM[j.jour]} ${j.num} ${MOIS_CT[j.mois]}`;
+            return `<td class="pcell${debSem.has(j.iso)?' pw1':''}" data-pc="${esc(m.nom)}|${j.iso}" data-pj="${lj}" style="background:${info?info.c:'transparent'};${info?'color:#fff':''}" title="${lj} — ${info?info.lb:'Non renseigné'}">${code}</td>`;
+          }).join('')}</tr>`;}).join('')}</tbody>
         </table></div>
       </div></div>`;
   } else {
@@ -1625,7 +1715,7 @@ function renderRes(){
       <tbody>${roles.map(r=>{const tot=S.chargeByRole[r].reduce((a,b)=>a+b,0);return `<tr><td class="rname">${esc(r)}</td>${S.chargeByRole[r].map((v,i)=>`<td class="hc" contenteditable data-ch="${esc(r)}|${i}" style="background:${chargeColor(v)}">${v?fmt(v,2):''}</td>`).join('')}<td class="hc" style="font-weight:700">${fmt(tot,1)}</td></tr>`;}).join('')}</tbody></table></div></div>
     </div>`;
   }
-  view.innerHTML = `<div class="sec-title"><h2>${SEC[navSec][0]}</h2><span class="hint">${SEC[navSec][1]}</span></div>${body}${footHTML('res',`Capacité · membres repris de « Planning Présence Ingénierie » &amp; PM/PL du portefeuille · présence hebdo · plan de charge (Bilan RT + charge par rôle).`)}`;
+  view.innerHTML = `<div class="sec-title"><h2>${SEC[navSec][0]}</h2><span class="hint">${SEC[navSec][1]}</span></div>${body}${footHTML('res',`Capacité · membres repris de « Planning Présence Ingénierie » &amp; PM/PL du portefeuille · présence au jour, week-ends et fériés exclus · plan de charge (Bilan RT + charge par rôle).`)}`;
   $$('[data-ch]').forEach(el=>el.addEventListener('blur',()=>{const[r,i]=el.dataset.ch.split('|');const v=parseFloat(el.textContent.replace(',','.'));S.chargeByRole[r][+i]=isNaN(v)?0:v;renderRes();scheduleSave();}));
   // --- BDD membres : édition ---
   $$('[data-mf]').forEach(el=>el.addEventListener('blur',()=>{const[f,i]=el.dataset.mf.split('|');if(S.members[+i]){S.members[+i][f]=el.textContent.trim();
@@ -1674,7 +1764,7 @@ function renderRes(){
   memSelSync();
   const addB=$('#addMember'); if(addB) addB.addEventListener('click',()=>{S.members.push({nom:'Nouveau membre',ini:'',role:'',pole:'INFRA',type:'Interne',societe:'',tel:'',dispo:100,depart:''});renderRes();scheduleSave();});
   // --- Planning présence : cycle de statut au clic ---
-  $$('[data-pc]').forEach(el=>el.addEventListener('click',()=>{const idx=el.dataset.pc.lastIndexOf('|');const nom=el.dataset.pc.slice(0,idx),w=el.dataset.pc.slice(idx+1);S.presence[nom]=S.presence[nom]||{};const cur=S.presence[nom][w]||'';const next=PRES_ORDER[(PRES_ORDER.indexOf(cur)+1)%PRES_ORDER.length];if(next)S.presence[nom][w]=next;else delete S.presence[nom][w];const info=PRESMAP[next];el.textContent=next;el.style.background=info?info.c:'transparent';el.style.color=info?'#fff':'';el.title=info?info.lb:'Non renseigné';scheduleSave();}));
+  $$('[data-pc]').forEach(el=>el.addEventListener('click',()=>{const idx=el.dataset.pc.lastIndexOf('|');const nom=el.dataset.pc.slice(0,idx),w=el.dataset.pc.slice(idx+1);/* w : date ISO du jour */S.presence[nom]=S.presence[nom]||{};const cur=S.presence[nom][w]||'';const next=PRES_ORDER[(PRES_ORDER.indexOf(cur)+1)%PRES_ORDER.length];if(next)S.presence[nom][w]=next;else delete S.presence[nom][w];const info=PRESMAP[next];el.textContent=next;el.style.background=info?info.c:'transparent';el.style.color=info?'#fff':'';el.title=(el.dataset.pj?el.dataset.pj+' — ':'')+(info?info.lb:'Non renseigné');scheduleSave();}));
 }
 function occColor(v){ if(!v)return 'var(--panel-3)'; if(v>100)return 'var(--bad)'; if(v>=80&&v<=95)return 'var(--good)'; return 'var(--warn-soft)'; }
 function chargeColor(v){ if(!v)return 'transparent'; const a=Math.min(.85,.12+v*0.5); return `color-mix(in srgb, var(--accent) ${Math.round(a*100)}%, transparent)`; }
