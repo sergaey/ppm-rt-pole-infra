@@ -297,6 +297,18 @@
   .selbar .sp{margin-left:auto}
   .iconbtn.danger{border-color:var(--bad);color:var(--bad)}
   .iconbtn.danger:hover{background:var(--bad-soft);color:var(--bad)}
+  .filewarn{display:flex;align-items:center;gap:13px;flex-wrap:wrap;padding:11px 16px;
+    background:var(--warn-soft);border-bottom:2px solid var(--warn);color:var(--ink);font-size:12.5px;line-height:1.45}
+  .filewarn .fw-ic{font-size:19px;color:var(--copper);flex:0 0 auto}
+  .filewarn .fw-txt{flex:1 1 320px;min-width:0}
+  .filewarn .fw-txt b{display:block;font-family:Archivo;font-size:13.5px;margin-bottom:2px}
+  .filewarn .fw-go{flex:0 0 auto;text-decoration:none;font-family:Archivo;font-weight:800;font-size:12.5px;
+    color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-ink));border-radius:9px;padding:9px 15px;
+    box-shadow:0 2px 8px rgba(17,94,117,.35)}
+  .filewarn .fw-go:hover{filter:brightness(1.08)}
+  .filewarn .fw-x{flex:0 0 auto;border:1px solid var(--line-2);background:transparent;border-radius:8px;
+    padding:6px 10px;font-size:12px;color:var(--ink-2)}
+  .filewarn .fw-x:hover{background:var(--panel)}
   .pleg{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:9px}
   .pleg span{display:inline-flex;align-items:center;gap:6px}
   .pdot{width:12px;height:12px;border-radius:3px;display:inline-block}
@@ -438,7 +450,7 @@
       <div class="sb-subwrap" data-grpwrap="p4">
         <button class="sb-sub" data-tab="res" data-key="p4a">BDD Membres</button>
         <button class="sb-sub" data-tab="res" data-key="p4b">CDP</button>
-        <button class="sb-sub" data-tab="res" data-key="p4c">PM</button>
+        <button class="sb-sub" data-tab="res" data-key="p4c">PM | CA</button>
         <button class="sb-sub" data-tab="res" data-key="p4d">Présence</button>
         <button class="sb-sub" data-tab="res" data-key="p4e">Plan de charge</button>
       </div>
@@ -565,6 +577,9 @@ function poleGroup(p){
   return 'Autres';
 }
 
+// A incrementer chaque fois que SEED_MEMBERS gagne une personne : c'est ce
+// qui declenche le rattrapage sur les fiches deja enregistrees.
+const SEED_ROSTER_VERSION=2;
 const SEED_MEMBERS=[{"nom":"Solange Dubreuil","ini":"SD","role":"Chef de projet","pole":"INFRA","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Antoine Vaugirard","ini":"AV","role":"Coordinateur travaux","pole":"INFRA","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Salomé Perrin-Roux","ini":"SR","role":"Ingénieur procédé","pole":"INFRA","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Basile Ferrandier","ini":"BF","role":"CA Électricité","pole":"EE","type":"Prestataire","societe":"Orval Ingénierie","tel":"","dispo":100,"depart":""},{"nom":"Léonie Marchesseau","ini":"LM","role":"Chef de projet","pole":"EE","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Théo Vasseur-Lambin","ini":"TL","role":"CA Instrumentation","pole":"EE","type":"Prestataire","societe":"Orval Ingénierie","tel":"","dispo":100,"depart":""},{"nom":"Iris Delacourt","ini":"ID","role":"Chef de projet","pole":"BLP","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Malo Trévidic","ini":"MT","role":"Superviseur travaux","pole":"BLP","type":"Prestataire","societe":"Cavaillon Technique","tel":"","dispo":100,"depart":""},{"nom":"Anaïs Bourgelat","ini":"AB","role":"PMO","pole":"Transverse","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Gaspard Melun","ini":"GM","role":"Automaticien","pole":"Digital","type":"Prestataire","societe":"Ligne Bleue Automation","tel":"","dispo":100,"depart":""},{"nom":"Noémie Chastelard","ini":"NC","role":"Chef de projet","pole":"Digital","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Élias Roquebrune","ini":"ÉR","role":"Coordinateur CDP","pole":"SC/QC/FU","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Clémence Vaillant","ini":"CV","role":"Ingénieur HSE","pole":"Transverse","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Hugo Sainte-Maure","ini":"HM","role":"Projeteur DAO","pole":"INFRA","type":"Prestataire","societe":"Cavaillon Technique","tel":"","dispo":100,"depart":""},{"nom":"Margaux Fontenoy","ini":"MF","role":"AQ Projet","pole":"SC/QC/FU","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""},{"nom":"Raphaël Belmondier","ini":"RB","role":"Chef de projet","pole":"Plan Transfo","type":"Interne","societe":"Site Bellefontaine","tel":"","dispo":100,"depart":""}];
 function buildFromSeed(){
   const projects = SEED.projects.map(p=>{
@@ -643,6 +658,19 @@ function migrate(saved){
   r.membersRemoved = Array.isArray(r.membersRemoved) ? r.membersRemoved : [];
   r.members = (r.members && r.members.length) ? r.members
             : (r.membersRemoved.length ? [] : SEED_MEMBERS.map(m=>({...m})));
+  // L'amorce ne sert qu'a une liste vide : une fiche deja remplie ne verrait
+  // jamais les personnes ajoutees ensuite a SEED_MEMBERS. Ce rattrapage les
+  // ajoute UNE FOIS par version d'amorce, en respectant les suppressions
+  // explicites. Une seule fois : sinon renommer un membre ferait reapparaitre
+  // son ancien nom au chargement suivant.
+  if((r.seedRoster||0) < SEED_ROSTER_VERSION){
+    const kk=s=>norm(s).replace(/[^a-z0-9]/g,'');
+    const gone=new Set((r.membersRemoved||[]).map(kk));
+    const have=new Set((r.members||[]).map(m=>kk(m.nom)));
+    SEED_MEMBERS.forEach(m=>{ const k=kk(m.nom);
+      if(k && !have.has(k) && !gone.has(k)){ have.add(k); r.members.push({...m}); } });
+    r.seedRoster = SEED_ROSTER_VERSION;
+  }
   r.presence = r.presence || {};
   (function(){ const key=s=>norm(s).replace(/[^a-z0-9]/g,'');
     const ok=n=>/^[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]+(?:\s+[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ'’.-]+)+$/.test(n) && !/(.)\1\1/i.test(n);
@@ -1498,7 +1526,9 @@ function bindFinEdit(){
 /* ======================= TAB 4 — Ressources ======================= */
 const PRESMAP={P:{lb:'Présent sur site',c:'var(--good)'},T:{lb:'Télétravail',c:'var(--accent)'},C:{lb:'Congé',c:'var(--warn)'},F:{lb:'Férié / site fermé',c:'var(--faint)'}};
 const PRES_ORDER=['','P','T','C','F'];
-const MPOLES=['INFRA','EE','BLP','Plan Transfo','SC/QC/FU','Digital','Transverse','Autres'];
+// '' en tête : sans elle, un membre au pôle non renseigne affichait « INFRA »,
+// la premiere option etant selectionnee par defaut faute de correspondance.
+const MPOLES=['','INFRA','EE','BLP','Plan Transfo','SC/QC/FU','INSTRUM.','AMS','Digital','Transverse','Autres'];
 const MTYPES=['','Interne','Prestataire'];
 function mSelect(kind,val,i){const opts=(kind==='pole'?MPOLES:MTYPES);return `<select data-msel="${kind}|${i}">${opts.map(o=>`<option value="${esc(o)}" ${o===(val||'')?'selected':''}>${o?esc(o):'—'}</option>`).join('')}</select>`;}
 function renderRes(){
@@ -1514,7 +1544,7 @@ function renderRes(){
   const peakRole=roles.map(r=>({r,t:S.chargeByRole[r].reduce((a,b)=>a+b,0)})).sort((a,b)=>b.t-a.t)[0];
 
   const navSec = ({p4a:'membres',p4b:'cdp',p4c:'pm',p4d:'presence',p4e:'charge'})[S.navKey] || 'membres';
-  const SEC={membres:['BDD Membres',"base de l'équipe projet · cellules éditables"],cdp:['CDP — Coordinateurs','membres dont le rôle contient « Coordinateur / CDP »'],pm:['PM — Chefs de projet','membres PM | Owner d\'au moins un projet'],presence:['Planning présence ingénierie — hebdomadaire','clic sur une case = statut suivant'],charge:['Plan de charge','Charge par rôle & Plan de ressources · ETP · cible 80–95%']};
+  const SEC={membres:['BDD Membres',"base de l'équipe projet · cellules éditables"],cdp:['CDP — Coordinateurs','membres dont le rôle contient « Coordinateur / CDP »'],pm:['PM | CA — Chefs de projet et chargés d\'affaires','PM d\'au moins un projet, ou rôle contenant « PM » / « chef de projet » / « CA » / « chargé d\'affaires »'],presence:['Planning présence ingénierie — hebdomadaire','clic sur une case = statut suivant'],charge:['Plan de charge','Charge par rôle & Plan de ressources · ETP · cible 80–95%']};
   const mkey=s=>norm(s).replace(/[^a-z0-9]/g,'');
   const membersTableHTML=rows=>`<div class="selbar" id="memSelBar" hidden>
     <span><b id="memSelN">0</b> membre(s) sélectionné(s)</span>
@@ -1540,7 +1570,16 @@ function renderRes(){
   if(navSec==='membres'||navSec==='cdp'||navSec==='pm'){
     let rows=mem.map((m,i)=>({m,gi:i}));
     if(navSec==='cdp') rows=rows.filter(o=>/coord|cdp|sdp/i.test(o.m.role||''));
-    else if(navSec==='pm'){ const pmset=new Set(); (S.projects||[]).forEach(p=>{ if(p.pm) String(p.pm).split('/').forEach(n=>{const k=mkey(n); if(k) pmset.add(k);}); }); rows=rows.filter(o=>pmset.has(mkey(o.m.nom))); }
+    else if(navSec==='pm'){
+      // Deux façons d'être PM : porter un projet, ou avoir le rôle. La seconde
+      // manquait, si bien qu'un chef de projet sans projet affecté n'apparaissait
+      // nulle part. « CA » s'entend au rôle uniquement.
+      const pmset=new Set();
+      (S.projects||[]).forEach(p=>{ if(p.pm) String(p.pm).split('/').forEach(n=>{const k=mkey(n); if(k) pmset.add(k);}); });
+      const rolePM=r=>/\bpm\b/i.test(r)||/chef\s+de\s+projet/i.test(r)||/project\s+manager/i.test(r);
+      const roleCA=r=>/\bca\b/i.test(r)||/charg[ée]\s*d[e']?\s*affaire/i.test(r);
+      rows=rows.filter(o=>{ const r=o.m.role||''; return pmset.has(mkey(o.m.nom))||rolePM(r)||roleCA(r); });
+    }
     const meta = navSec==='membres' ? `${mem.length} membres · ${nInt} internes · ${nPre} prestataires` : `${rows.length} membre(s)`;
     body = `<div class="panel" id="bddMembres" style="margin-bottom:14px"><div class="panel-h"><h3>${SEC[navSec][0]}</h3><span class="meta">${meta}</span></div>
       <div class="panel-b">
@@ -3101,6 +3140,27 @@ function decorateNav(){
 decorateNav();
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
+/* ---------- Ouverture directe du fichier : prévenir, faute de pouvoir relier ----------
+   Ouvert en file://, le navigateur isole le stockage : cette fenêtre ne voit ni le compte
+   ni _ppm_state.json, et rien de ce qui y est saisi ne remonte au dossier partagé. Deux
+   origines distinctes, deux jeux de données — aucune passerelle n'est possible depuis la
+   page elle-même. Reste à le dire, au lieu de laisser saisir dans le vide. */
+function fileModeWarning(){
+  if(location.protocol!=='file:') return;                    // servi par le serveur : rien à signaler
+  const url='http://127.0.0.1:8765/';                        // port de Lancer_PPM.bat
+  const bar=document.createElement('div'); bar.className='filewarn';
+  bar.innerHTML=`<span class="fw-ic">⚠</span>
+    <div class="fw-txt"><b>Fichier ouvert directement — cette fenêtre est isolée.</b>
+      Les données enregistrées via <span class="mono">Lancer_PPM.bat</span> ne s'affichent pas ici,
+      et ce que vous saisissez dans cette fenêtre ne sera pas écrit dans
+      <span class="mono">_ppm_state.json</span>. Le navigateur cloisonne le stockage d'un fichier local :
+      les deux ne peuvent pas être synchronisés. Passez par le serveur pour retrouver votre travail.</div>
+    <a class="fw-go" href="${url}">Ouvrir la version partagée →</a>
+    <button class="fw-x" title="Masquer cet avertissement">Masquer</button>`;
+  document.body.insertBefore(bar, document.body.firstChild);
+  bar.querySelector('.fw-x').onclick=()=>bar.remove();
+}
+fileModeWarning();
 initAuth();
 idbHydrate();   // mode coquille : recharge les données importées lors d'une session précédente
 window.addEventListener('focus',()=>{ if(!dirty && !document.getElementById('loginWrap')) syncFromServer(); });
