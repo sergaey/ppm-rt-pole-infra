@@ -603,6 +603,21 @@ const SAVED = window.__PPM_SAVED__ || null;
 const $ = (s,r=document)=>r.querySelector(s);
 const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
 const esc = s => (s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* Redessiner la vue remplace tout son contenu, y compris le champ en cours de
+   frappe : le curseur s'y perdait a chaque caractere, et un filtre de recherche
+   n'acceptait qu'une lettre. On retient quel champ avait le curseur et a quelle
+   position, pour le rendre a l'identique apres le rendu. */
+function renderGardeFocus(fn){
+  const a=document.activeElement, id=a&&a.id;
+  let deb=null, fin=null;
+  try{ deb=a.selectionStart; fin=a.selectionEnd; }catch(_){}
+  fn();
+  if(!id) return;
+  const n=document.getElementById(id);
+  if(!n || n===document.activeElement) return;
+  try{ n.focus({preventScroll:true}); }catch(_){ n.focus(); }
+  try{ if(deb!=null && n.setSelectionRange) n.setSelectionRange(deb,fin); }catch(_){}
+}
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
 const APP_BUILD='2026-09-25';
@@ -2319,7 +2334,7 @@ function renderScenario(){
   </div>
   ${footHTML('scenario',`Scénarios · simulateur d'arbitrage portefeuille (ajout / report / annulation / réduction budget / réduction capacité).`)}`;
 
-  const upd=()=>renderScenario();
+  const upd=()=>renderGardeFocus(renderScenario);   // sinon le champ en cours de saisie perd le curseur
   $('#scnBud').addEventListener('input',e=>{sc.budgetCut=+e.target.value;upd();scheduleSave();});
   $('#scnCap').addEventListener('input',e=>{sc.capCut=+e.target.value;upd();scheduleSave();});
   $('#scnReset').addEventListener('click',()=>{S.scenario={budgetCut:0,capCut:0,excluded:{},added:[],q:''};upd();scheduleSave();});
@@ -2499,7 +2514,7 @@ function renderUO(){
   ${footHTML('uo',`Référentiel UO · catalogue CPV_ING (${cat.length} UO) · référentiel versionné &amp; auditable.`)}`;
 
   $('#uoScope').addEventListener('change',e=>{f.scope=e.target.value;renderUO();});
-  $('#uoQ').addEventListener('input',e=>{f.q=e.target.value;renderUO();});
+  $('#uoQ').addEventListener('input',e=>{f.q=e.target.value;renderGardeFocus(renderUO);});
   $('#uoClear').addEventListener('click',()=>{S.uoEst=[];renderUO();scheduleSave();});
   $$('[data-uoadd]').forEach(b=>b.addEventListener('click',()=>{const[i,c]=b.dataset.uoadd.split('|');const ex=S.uoEst.find(e=>e.i==+i&&e.cx===c);if(ex)ex.qty++;else S.uoEst.push({i:+i,cx:c,qty:1});renderUO();scheduleSave();}));
   $$('[data-uoqty]').forEach(el=>el.addEventListener('blur',()=>{const q=Math.max(0,parseNum(el.textContent));S.uoEst[+el.dataset.uoqty].qty=q;renderUO();scheduleSave();}));
@@ -2850,7 +2865,7 @@ function renderGED(){
   $('#gfSet').onchange=e=>{f.sousens=e.target.value;renderGED();};
   $('#gfPh').onchange=e=>{f.phase=e.target.value;renderGED();};
   $('#gfSt').onchange=e=>{f.statut=e.target.value;renderGED();};
-  $('#gfQ').oninput=e=>{f.q=e.target.value;renderGED();};
+  $('#gfQ').oninput=e=>{f.q=e.target.value;renderGardeFocus(renderGED);};
   $('#gfFav').onchange=e=>{f.fav=e.target.checked;renderGED();};
   $('#gfArch').onchange=e=>{f.arch=e.target.checked;renderGED();};
   $('#gfTrash').onchange=e=>{f.trash=e.target.checked;if(f.trash){f.arch=false;f.fav=false;}renderGED();};
