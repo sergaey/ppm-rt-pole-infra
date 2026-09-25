@@ -92,21 +92,32 @@
     <span class="mk">🏭</span>
     <span>
       <span class="t">Ouvrir le tableau de bord PPM RT</span>
-      <span class="d">Portefeuille, capacité, phasing budgétaire, GEDT · démonstration sans données</span>
+      <span class="d">Portefeuille, capacité, phasing budgétaire, GEDT · même version que le poste de travail</span>
     </span>
     <span class="go" aria-hidden="true">→</span>
   </a>
   <div class="url mono">PPM_RT_POLE_INFRA.html</div>
 
+  <div class="note">
+    <p><b>Même application, exactement.</b> Cette page porte la même version que celle du poste de
+    travail — même code, même numéro de version en pied de page, mêmes évolutions. Seules les
+    données diffèrent, et la fabrication le vérifie à chaque publication en comparant l'empreinte
+    du code des deux fichiers.</p>
+  </div>
+
   <div class="note warn">
-    <p><b>Version de démonstration — jeu de données entièrement fictif.</b> Les projets, les
-    membres, les budgets, les sociétés et le site « Bellefontaine » sont inventés. Cette page
-    étant publique, elle ne porte aucune donnée réelle, et chaque onglet le rappelle en pied
-    de page.</p>
-    <p><b>Mode autonome.</b> Pas de compte, pas d'état partagé : ce qui est saisi ici reste dans
-    le navigateur du poste, et disparaît si les données du site sont effacées.</p>
-    <p>Pour l'équipe, les comptes et le fichier de données partagé entre postes, utilisez le kit
-    local (<code>Lancer_PPM.bat</code> + <code>_ppm_save_server.py</code>) décrit dans le README.</p>
+    <p><b>Les données affichées ici sont fictives.</b> Projets, membres, budgets, sociétés et le
+    site « Bellefontaine » sont inventés. Cette page est publique : elle ne porte, et ne portera,
+    aucune donnée réelle — chaque onglet le rappelle en pied de page.</p>
+    <p><b>Pour travailler sur vos propres données :</b> <code>⇄ Données → Importer JSON</code>, et
+    choisissez votre <code>_ppm_state.json</code>. Le fichier est lu <b>par votre navigateur</b> et
+    n'est envoyé nulle part — rien n'est téléversé, rien n'est publié. Vos données restent sur ce
+    poste, dans ce navigateur, et se rechargent à la visite suivante.</p>
+    <p>Si le fichier est chiffré, exportez-le d'abord en clair depuis son dossier :
+    <code>py -3 _ppm_save_server.py --export-state</code>. Sur un poste partagé, posez le verrou
+    (<code>⇄ Données → 🔒 Sécurité</code>) ou effacez les données du site en partant.</p>
+    <p><b>Pas de compte, pas d'état partagé ici.</b> Pour l'équipe et le fichier de données commun,
+    c'est le kit local : <code>Lancer_PPM.bat</code> + <code>_ppm_save_server.py</code>.</p>
   </div>
 
   <h2>🖥️ Version de travail</h2>

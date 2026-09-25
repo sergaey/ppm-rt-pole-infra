@@ -11,9 +11,18 @@ Une application web autonome, en un seul fichier HTML. Portefeuille projets,
 cockpit d'indicateurs, passeports projet, capacité et plan de charge, phasing
 budgétaire, GEDT.
 
-**Aucune donnée.** La base des membres et le portefeuille sont vides : cette
-version sert à montrer l'application, pas à travailler. Ce qui est saisi ici
-reste dans le navigateur du visiteur — il n'y a ni compte ni serveur.
+**Même application que celle du poste de travail** : même code, même numéro de
+version, mêmes évolutions. La fabrication compare l'empreinte du code des deux
+fichiers à chaque publication et refuse de publier si elle diffère.
+
+**Les données publiées sont fictives**, et le resteront : projets, membres,
+budgets et sociétés sont inventés. Aucune donnée réelle n'est publiée ici.
+
+**Pour travailler sur ses propres données** : `⇄ Données → Importer JSON`, puis
+son `_ppm_state.json`. Le fichier est lu par le navigateur et n'est envoyé
+nulle part ; les données restent sur le poste du visiteur, et rien n'est
+téléversé. Il n'y a ni compte ni serveur : pour l'équipe et le fichier de
+données commun, c'est le kit local `Lancer_PPM.bat`.
 
 ## Publication
 

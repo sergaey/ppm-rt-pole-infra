@@ -310,6 +310,10 @@
   .filewarn .fw-x{flex:0 0 auto;border:1px solid var(--line-2);background:transparent;border-radius:8px;
     padding:6px 10px;font-size:12px;color:var(--ink-2)}
   .filewarn .fw-x:hover{background:var(--panel)}
+  /* Meme bandeau, autre propos : informer plutot qu'avertir. */
+  .shellwarn{background:var(--accent-soft);border-bottom-color:var(--accent)}
+  .shellwarn .fw-ic{color:var(--accent)}
+  .shellwarn .fw-go{border:0;cursor:pointer;font-family:Archivo}
   /* Capacité : la vue est une colonne flex dont les enfants ne grandissent pas
      (.view>*{flex:0 0 auto}). Un tableau court laissait donc un vide entre le bas
      du bloc et la barre de pied de page. Ces blocs occupent la hauteur restante,
@@ -3072,6 +3076,10 @@ function wireExportPane(ov){
 // Applique un état importé : remplace S puis persiste. Remplacement volontaire =>
 // on fait autorité (pas de conflit 409). Aucun confirm() natif (bloqué en artefact).
 async function applyStateObject(obj, meta, msgEl){
+  // Un import est un remplacement voulu : sa liste de membres fait foi. Sans
+  // cela, la mise a niveau du referentiel y reverserait l'amorce du fichier —
+  // les membres de demonstration se melangeraient aux vrais.
+  if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
@@ -3090,6 +3098,16 @@ function askReplace(obj, fname, msgEl, confBox){
   confBox.querySelector('[data-cno]').onclick=()=>{ confBox.hidden=true; confBox.innerHTML=''; setDMsg(msgEl,'info','Import annulé.'); };
   confBox.querySelector('[data-cyes]').onclick=()=>{ confBox.hidden=true; confBox.innerHTML=''; applyStateObject(obj,meta,msgEl); };
 }
+/* Deux formats circulent : l'export de l'application (l'etat nu) et le
+   fichier du serveur local, _ppm_state.json, qui enveloppe ce meme etat dans
+   {version, enc, savedAt, state}. Refuser le second n'avait aucun sens : c'est
+   precisement le fichier que l'utilisateur a sous la main. */
+function etatDuFichier(obj){
+  if(!obj || typeof obj!=='object') return null;
+  if(Array.isArray(obj.projects)) return obj;
+  if(obj.state && Array.isArray(obj.state.projects)) return obj.state;
+  return null;
+}
 function importJSONFile(file, msgEl, confBox){
   if(!file){ return; }
   if(!/\.json$/i.test(file.name)){ setDMsg(msgEl,'err','Sélectionnez un fichier .json.'); return; }
@@ -3097,8 +3115,13 @@ function importJSONFile(file, msgEl, confBox){
   const rd=new FileReader();
   rd.onload=()=>{
     let obj=null; try{ obj=JSON.parse(rd.result); }catch(e){ setDMsg(msgEl,'err','JSON invalide : fichier illisible.'); return; }
-    if(!obj || typeof obj!=='object' || !Array.isArray(obj.projects)){ setDMsg(msgEl,'err','Ce fichier n’est pas un état PPM valide (clé « projects » absente).'); return; }
-    askReplace(obj, file.name, msgEl, confBox);
+    if(obj && obj.enc===1){
+      setDMsg(msgEl,'err','Ce fichier est chiffré : il ne peut être lu que par le dossier qui l’a produit. Depuis ce dossier, exportez-le en clair — py -3 _ppm_save_server.py --export-state — ou, dans l’application ouverte par Lancer_PPM.bat, « ⇄ Données → Exporter ».');
+      return;
+    }
+    const etat=etatDuFichier(obj);
+    if(!etat){ setDMsg(msgEl,'err','Ce fichier n’est pas un état PPM valide (clé « projects » absente).'); return; }
+    askReplace(etat, file.name, msgEl, confBox);
   };
   rd.onerror=()=>setDMsg(msgEl,'err','Lecture du fichier impossible.');
   rd.readAsText(file);
@@ -3243,7 +3266,7 @@ function openDataHub(tab){
     </div>
     <div class="dbody">
       <div class="dpane" data-dp="json">
-        <p class="lead">Charge un fichier d’état complet <b>.json</b> (exporté depuis l’onglet « Exporter »). Remplace l’intégralité des données actuelles.</p>
+        <p class="lead">Charge un fichier d’état complet <b>.json</b> : l’export de l’onglet « Exporter », ou directement le <b>_ppm_state.json</b> de votre dossier. Remplace l’intégralité des données affichées.<br><b>Le fichier est lu par votre navigateur et n’est envoyé nulle part</b> — aucune donnée ne quitte ce poste.</p>
         <div class="drop" data-drop="json"><span class="ic">📥</span><b>Choisir un fichier .json</b>ou glissez-le ici</div>
         <input type="file" accept=".json,application/json" data-file="json" hidden>
         <div class="dconf" data-confirm hidden></div>
@@ -3393,6 +3416,27 @@ render();
    ni _ppm_state.json, et rien de ce qui y est saisi ne remonte au dossier partagé. Deux
    origines distinctes, deux jeux de données — aucune passerelle n'est possible depuis la
    page elle-même. Reste à le dire, au lieu de laisser saisir dans le vide. */
+/* Page en ligne, sans serveur de sauvegarde : dire d'ou viennent les donnees
+   affichees et comment charger les siennes. Sans cela, la page donne a croire
+   que le portefeuille presente est le vrai. */
+function shellWelcome(){
+  if(SRV) return;                                   // servi par le serveur local : rien a dire
+  if(location.protocol==='file:') return;           // cas traite par fileModeWarning()
+  try{ if(localStorage.getItem('ppm_welcome')==='0') return; }catch(_){}
+  const bar=document.createElement('div'); bar.className='filewarn shellwarn';
+  bar.innerHTML=`<span class="fw-ic">⇄</span>
+    <div class="fw-txt"><b>Version en ligne — vos données ne sont pas ici.</b>
+      Cette page est l'application seule ; ce qu'elle affiche est un jeu de démonstration.
+      Pour travailler sur vos propres données, chargez votre
+      <span class="mono">_ppm_state.json</span> : <b>⇄ Données → Importer JSON</b>.
+      Le fichier est lu par votre navigateur et <b>n'est envoyé nulle part</b> ; il reste
+      sur ce poste, dans ce navigateur, et se recharge à la visite suivante.</div>
+    <button class="fw-go" data-sw-open>⇄ Charger mes données</button>
+    <button class="fw-x" title="Ne plus afficher">Masquer</button>`;
+  document.body.insertBefore(bar, document.body.firstChild);
+  bar.querySelector('[data-sw-open]').onclick=()=>{ openDataHub('json'); };
+  bar.querySelector('.fw-x').onclick=()=>{ try{localStorage.setItem('ppm_welcome','0');}catch(_){} bar.remove(); };
+}
 function fileModeWarning(){
   if(location.protocol!=='file:') return;                    // servi par le serveur : rien à signaler
   const url='http://127.0.0.1:8765/';                        // port de Lancer_PPM.bat
@@ -3409,6 +3453,7 @@ function fileModeWarning(){
   bar.querySelector('.fw-x').onclick=()=>bar.remove();
 }
 fileModeWarning();
+shellWelcome();
 initAuth();
 idbHydrate();   // mode coquille : recharge les données importées lors d'une session précédente
 window.addEventListener('focus',()=>{ if(!dirty && !document.getElementById('loginWrap')) syncFromServer(); });
