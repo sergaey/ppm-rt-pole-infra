@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-09-25 -->
+<!-- PPM_BUILD:2026-09-25.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -620,8 +620,9 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-09-25';
-const APP_BUILD_FR=APP_BUILD.split('-').reverse().join('/');
+const APP_BUILD='2026-09-25.2';
+const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
+  return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const fmt = (n,d=0)=> n==null||n===''||isNaN(n) ? "—" : Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const uid = ()=> 'x'+Math.random().toString(36).slice(2,9);
@@ -756,8 +757,11 @@ function migrate(saved){
   r.cers=r.cers||{}; r.gates=r.gates||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
-  (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';});
-  r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
+  (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
+    // « D.O.E Fournisseur & Autres » se separe en deux : ce qui y etait range
+    // relevait du D.O.E, « Autres » n'etant qu'un fourre-tout implicite.
+    if(dd.rubrique==='D.O.E Fournisseur & Autres')dd.rubrique='D.O.E Fournisseur';});
+  r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.rubrique==='D.O.E Fournisseur & Autres')r.gedFilter.rubrique='D.O.E Fournisseur'; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
     const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p); if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; });
@@ -2528,7 +2532,7 @@ const GED_PHASES=['FAISA','APS','APD','ACT','REAL'];
 /* Rubrique : ou se range le document DANS le projet, une fois celui-ci
    identifie. Le sous-ensemble dit de quel processus il releve, la rubrique
    dit a quelle etape du projet il appartient. Les deux se cumulent. */
-const GED_RUBS=['Gestion de Projet','Études | Réalisation','Construction','D.O.E Fournisseur & Autres'];
+const GED_RUBS=['Gestion de Projet','Études | Réalisation','Construction','D.O.E Fournisseur','Autres'];
 const GED_ST=['Draft','In Review','Approved','Obsolete'];
 const GED_TEMPLATES={
   'Vierge':`<h1>Titre du document</h1>\n<p>…</p>`,
@@ -2854,7 +2858,7 @@ function renderGED(){
         </td></tr>`;}).join(''):`<tr><td colspan="15" class="empty">${f.trash?'Corbeille vide.':(f.nolink?'Aucun document sans projet : tout est rattaché.':'Aucun document. « Téléverser » un ou plusieurs fichiers natifs, ou « Créer » un document HTML.')}</td></tr>`}</tbody></table></div>
       <div class="onepage-note" style="margin-top:10px"><b>Rattacher un document à un projet :</b> cliquez sur sa cellule « Projet » — ou cochez plusieurs lignes puis « 🔗 Lier à un projet » — et cherchez le projet par mots clés (code SHINE, intitulé, pôle, secteur, PM). La <b>rubrique</b> range ensuite le document dans le projet : ${GED_RUBS.join(' · ')}. Le filtre « ⛓ Sans projet » isole le vrac qui reste à rattacher.<br>Sous-ensembles : ${GED_SETS.join(' · ')}. Import natif (Word/Excel/PPT/PDF/vidéo…) intégré au suivi (base64), <b>en vrac</b> — plusieurs fichiers à la fois — privilégiez des tailles raisonnables. Documents HTML depuis modèles. Versioning (v+ → ancienne version Obsolete), favoris ★, archivage, recherche multicritères ; actions tracées dans la piste d'audit. La croix × met le document à la <b>corbeille</b> (réversible) : cochez « 🗑 Corbeille » pour le restaurer.</div>
     </div></div>
-  ${footHTML('ged',`GEDT · par projet, par rubrique (Gestion de Projet · Études | Réalisation · Construction · D.O.E Fournisseur &amp; Autres) &amp; par sous-ensemble · conservation ≥ 10 ans (CDO).`)}`;
+  ${footHTML('ged',`GEDT · par projet, par rubrique (${GED_RUBS.join(' · ')}) &amp; par sous-ensemble · conservation ≥ 10 ans (CDO).`)}`;
 
   $('#gedUp').onclick=gedUpload;
   $('#gedNew').onclick=gedCreate;
