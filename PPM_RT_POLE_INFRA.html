@@ -335,6 +335,25 @@
   .ptbl td.poff.pfer{background:var(--warn-soft)}
   .ptbl .pw1{border-left:2px solid var(--line-2)}
   .pdot-off{background:var(--panel-3);border:1px solid var(--line-2)}
+  /* ===== GEDT : recherche de projet ===== */
+  .pickov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:56px 20px}
+  .pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .pickh{padding:12px 16px;border-bottom:1px solid var(--line);font-family:Archivo;font-weight:700}
+  .pickb{padding:12px 16px 8px;display:flex;flex-direction:column;gap:7px;min-height:0}
+  .pickhint{font-size:11.5px;color:var(--muted)}
+  .picklist{overflow:auto;border:1px solid var(--line);border-radius:8px;min-height:120px}
+  .pickit{display:block;width:100%;text-align:left;padding:7px 10px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;font:inherit;font-size:12.5px;cursor:pointer}
+  .pickit:last-child{border-bottom:0}
+  .pickit:hover{background:var(--accent-soft)}
+  .pickit.on{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+  .pickit b{font-family:'IBM Plex Mono',monospace;color:var(--accent-ink);margin-right:7px}
+  .pickmeta{display:block;font-size:10.5px;color:var(--muted);margin-top:1px}
+  .pickf{padding:6px 16px 14px;display:flex;gap:8px;align-items:center}
+  .pickf .sp{margin-left:auto}
+  /* La cellule « Projet » du registre : un bouton, pas une liste deroulante. */
+  .projbtn{width:100%;text-align:left;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font:inherit;font-size:11.5px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .projbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .projbtn.vide{color:var(--muted);font-style:italic;border-style:dashed}
   /* ===== GEDT : visionneuse de document ===== */
   .gmodal{position:fixed;inset:0;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;z-index:200;padding:22px}
   .gmbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:0 22px 64px rgba(0,0,0,.34);width:min(1150px,96vw);height:min(88vh,920px);display:flex;flex-direction:column;overflow:hidden}
@@ -632,7 +651,7 @@ function buildFromSeed(){
     cdc:{},
     uoEst:[],
     uoFilter:{scope:'',q:''},
-    gedFilter:{proj:'',dossier:'',statut:'',q:''},
+    gedFilter:{proj:'',dossier:'',statut:'',q:'',rubrique:'',nolink:false},
     phScope:'__all__',
     filters:{q:'',pole:'',statut:''},
     sort:{key:'c1',dir:-1},
@@ -713,8 +732,8 @@ function migrate(saved){
   r.cers=r.cers||{}; r.gates=r.gates||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
-  (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;});
-  r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; r.footNotes=r.footNotes||{};
+  (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';});
+  r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
     const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p); if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; });
@@ -2482,6 +2501,10 @@ function renderUO(){
 const GED_CLASS=['00_CADRAGE','10_ETUDES','20_ACHATS','30_TRAVAUX','40_HSE','50_QUALIFICATION','60_CLOTURE'];
 const GED_SETS=['Chiffrage','Études','Achats','Appros','Travaux','Réception','HSE | CSSCT','Transfert','Divers'];
 const GED_PHASES=['FAISA','APS','APD','ACT','REAL'];
+/* Rubrique : ou se range le document DANS le projet, une fois celui-ci
+   identifie. Le sous-ensemble dit de quel processus il releve, la rubrique
+   dit a quelle etape du projet il appartient. Les deux se cumulent. */
+const GED_RUBS=['Gestion de Projet','Études | Réalisation','Construction','D.O.E Fournisseur & Autres'];
 const GED_ST=['Draft','In Review','Approved','Obsolete'];
 const GED_TEMPLATES={
   'Vierge':`<h1>Titre du document</h1>\n<p>…</p>`,
@@ -2491,13 +2514,69 @@ const GED_TEMPLATES={
 };
 function fmtSize(b){ if(!b) return '—'; if(b<1024) return b+' o'; if(b<1048576) return (b/1024).toFixed(0)+' Ko'; return (b/1048576).toFixed(1)+' Mo'; }
 function gedProjLabel(sh){ if(!sh) return ''; const p=S.projects.find(x=>x.shine===sh); return p?(sh+' — '+p.nom):sh; }
-function gedProjOptions(cur){
-  let opts='<option value="">—</option>', found=false;
-  S.projects.filter(p=>p.shine).forEach(p=>{ if(p.shine===cur)found=true; opts+=`<option value="${esc(p.shine)}" ${p.shine===cur?'selected':''}>${esc(p.shine+' — '+p.nom)}</option>`; });
-  if(cur&&!found) opts+=`<option value="${esc(cur)}" selected>${esc(cur)}</option>`;
-  return opts;
-}
 
+/* Choisir un projet en le cherchant, plutot qu'en le deroulant : le
+   portefeuille compte trop de lignes pour une liste deroulante. Chaque mot
+   saisi doit se retrouver quelque part dans la fiche — code SHINE, intitule,
+   pole, secteur, PM ou PL — accents et casse indifferents. */
+function projSearch(q){
+  const mots=norm(q).split(/\s+/).filter(Boolean);
+  const tous=(S.projects||[]).filter(p=>p.shine);
+  if(!mots.length) return tous;
+  return tous.filter(p=>{
+    const t=norm([p.shine,p.nom,p.pole,p.group,p.secteur,p.pm,p.pl,p.ishift,p.sponsor].join(' '));
+    return mots.every(m=>t.includes(m));
+  });
+}
+function projPicker(titre, courant, onPick){
+  const ov=document.createElement('div'); ov.className='pickov';
+  ov.innerHTML=`<div class="pickbox">
+    <div class="pickh">${esc(titre)}</div>
+    <div class="pickb">
+      <input class="search" id="pkQ" placeholder="Mots clés : code SHINE, intitulé, pôle, secteur, PM…" autocomplete="off" style="width:100%">
+      <div class="pickhint" id="pkN"></div>
+      <div class="picklist" id="pkL"></div>
+    </div>
+    <div class="pickf">
+      <button class="iconbtn" data-pk="none">Aucun projet</button>
+      <span class="sp"></span>
+      <button class="iconbtn" data-pk="close">Fermer</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const q=ov.querySelector('#pkQ'), L=ov.querySelector('#pkL'), N=ov.querySelector('#pkN');
+  const dessiner=()=>{
+    const tout=projSearch(q.value), res=tout.slice(0,120);
+    N.textContent = q.value.trim()
+      ? `${tout.length} projet(s) correspondent${tout.length>res.length?` — ${res.length} affichés`:''}`
+      : `${tout.length} projet(s) au portefeuille — tapez pour filtrer`;
+    L.innerHTML = res.length ? res.map(p=>`<button class="pickit${p.shine===courant?' on':''}" data-sh="${esc(p.shine)}">
+      <b>${esc(p.shine)}</b>${esc(p.nom||'')}
+      <span class="pickmeta">${esc(p.pole||p.group||'—')}${p.pm?' · '+esc(p.pm):''}${p.actif===false?' · clôturé':''}</span></button>`).join('')
+      : `<div class="empty" style="padding:16px">Aucun projet ne correspond à « ${esc(q.value)} ».</div>`;
+    L.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ ov.remove(); onPick(b.dataset.sh); });
+  };
+  q.oninput=dessiner; dessiner();
+  ov.querySelector('[data-pk="none"]').onclick=()=>{ ov.remove(); onPick(''); };
+  ov.querySelector('[data-pk="close"]').onclick=()=>ov.remove();
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  ov.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){ ov.remove(); return; }
+    if(e.key==='Enter'){ const b=L.querySelector('[data-sh]'); if(b) b.click(); }
+  });
+  setTimeout(()=>q.focus(),0);
+}
+/* Rattacher des documents a un projet, un par un ou par paquet. */
+function gedLier(idx){
+  if(!idx.length) return;
+  const d0=S.ged[idx[0]];
+  const titre = idx.length===1 ? ('Lier « '+((d0.file&&d0.file.name)||d0.code||'document')+' » à un projet')
+                               : ('Lier '+idx.length+' documents à un projet');
+  projPicker(titre, d0.projet||'', sh=>{
+    idx.forEach(i=>{ const d=S.ged[i]; if(d.projet===sh) return;
+      logChange('GEDT '+(d.code||''),'projet',d.projet||'—',sh||'—'); d.projet=sh; });
+    renderGED(); scheduleSave();
+  });
+}
 function gedDownload(i){
   const d=S.ged[i]; let url,name;
   if(d.file&&d.file.data){ url=d.file.data; name=d.file.name||'document'; }
@@ -2609,18 +2688,35 @@ async function gedOpen(i){
     logChange('GEDT '+(d.code||''),'ouverture','',name);
   }catch(e){ body.innerHTML=`<div style="margin:auto;padding:28px;color:var(--bad)">Impossible d'ouvrir ce document : ${esc(e.message)}</div>`; }
 }
+/* Televersement en vrac : plusieurs fichiers d'un coup, sans projet impose.
+   Le tri vient ensuite, par selection dans le registre. */
 function gedUpload(){
   const f=S.gedFilter||{}; S.gedFilter=f;
-  const inp=document.createElement('input'); inp.type='file';
-  inp.onchange=()=>{ const file=inp.files&&inp.files[0]; if(!file) return;
-    const mo=file.size/1048576;
-    if(mo>8 && !confirm('Fichier volumineux ('+mo.toFixed(1)+' Mo). L\'intégrer alourdira la sauvegarde du fichier de suivi. Continuer ?')) return;
-    const rd=new FileReader();
-    rd.onload=()=>{ S.ged.unshift({code:(file.name.replace(/\.[^.]+$/,'').slice(0,40))||('DOC-'+(S.ged.length+1)),projet:f.proj||'',sousens:f.sousens||'Études',phase:f.phase||'APD',dossier:'10_ETUDES',type:(file.name.split('.').pop()||'').toUpperCase(),version:'A',statut:'Draft',auteur:S.user||'',date:new Date().toLocaleDateString('fr-FR'),fav:false,archived:false,file:{name:file.name,mime:file.type,size:file.size,data:rd.result},html:null});
-      const _nd=S.ged[0]; f.sousens=_nd.sousens; f.q=''; f.fav=false; f.arch=false;
-      logChange('GEDT '+file.name,'téléversement','',fmtSize(file.size)); renderGED(); scheduleSave();
-      alert('✓ « '+file.name+' » ajouté dans le sous-ensemble « '+_nd.sousens+' »'+(_nd.projet?(' (projet '+_nd.projet+')'):' (aucun projet)')+'.'); };
-    rd.readAsDataURL(file);
+  const inp=document.createElement('input'); inp.type='file'; inp.multiple=true;
+  inp.onchange=()=>{
+    const files=Array.from(inp.files||[]); if(!files.length) return;
+    const mo=files.reduce((a,x)=>a+x.size,0)/1048576;
+    if(mo>8 && !confirm(files.length+' fichier(s), '+mo.toFixed(1)+' Mo au total. Les intégrer alourdira la sauvegarde du fichier de suivi. Continuer ?')) return;
+    const sous=f.sousens||'Divers';     // sans sous-ensemble choisi, le vrac va dans « Divers »
+    let reste=files.length; const ajoutes=[];
+    const fin=()=>{
+      f.q=''; f.fav=false; f.arch=false; f.trash=false;
+      renderGED(); scheduleSave();
+      alert('✓ '+ajoutes.length+' document(s) ajouté(s) dans « '+sous+' »'
+        +(f.proj?(' — projet '+f.proj+'.'):'.\n\nAucun projet associé : cochez-les dans le registre, puis « 🔗 Lier à un projet » pour les rattacher.'));
+    };
+    files.forEach(file=>{
+      const rd=new FileReader();
+      rd.onload=()=>{
+        S.ged.unshift({code:(file.name.replace(/\.[^.]+$/,'').slice(0,40))||('DOC-'+(S.ged.length+1)),projet:f.proj||'',sousens:sous,rubrique:f.rubrique||'',phase:f.phase||'APD',dossier:'10_ETUDES',type:(file.name.split('.').pop()||'').toUpperCase(),version:'A',statut:'Draft',auteur:S.user||'',date:new Date().toLocaleDateString('fr-FR'),fav:false,archived:false,file:{name:file.name,mime:file.type,size:file.size,data:rd.result},html:null});
+        ajoutes.push(file.name);
+        logChange('GEDT '+file.name,'téléversement','',fmtSize(file.size));
+        if(--reste===0) fin();
+      };
+      rd.onerror=()=>{ if(--reste===0) fin(); };
+      rd.readAsDataURL(file);
+    });
+    f.sousens=sous;
   };
   inp.click();
 }
@@ -2640,7 +2736,7 @@ function gedCreate(){
   if(sel===null) return;
   const t=names[(parseInt(sel,10)||1)-1]||names[0];
   gedModal('Créer un document HTML — '+t, GED_TEMPLATES[t], (html)=>{
-    S.ged.unshift({code:'DOC-'+String(S.ged.length+1).padStart(3,'0'),projet:f.proj||'',sousens:f.sousens||'Études',phase:f.phase||'APD',dossier:'10_ETUDES',type:'HTML',version:'A',statut:'Draft',auteur:S.user||'',date:new Date().toLocaleDateString('fr-FR'),fav:false,archived:false,file:null,html:html});
+    S.ged.unshift({code:'DOC-'+String(S.ged.length+1).padStart(3,'0'),projet:f.proj||'',sousens:f.sousens||'Études',rubrique:f.rubrique||'',phase:f.phase||'APD',dossier:'10_ETUDES',type:'HTML',version:'A',statut:'Draft',auteur:S.user||'',date:new Date().toLocaleDateString('fr-FR'),fav:false,archived:false,file:null,html:html});
     const _nd=S.ged[0]; f.sousens=_nd.sousens; f.q=''; f.fav=false; f.arch=false;
     logChange('GEDT document HTML','création','',t); renderGED(); scheduleSave();
   });
@@ -2654,42 +2750,58 @@ function renderGED(){
   else { list=list.filter(x=>!x.d.deleted); list=list.filter(x=> f.arch ? x.d.archived : !x.d.archived); }
   if(f.proj) list=list.filter(x=>x.d.projet===f.proj);
   if(f.sousens) list=list.filter(x=>x.d.sousens===f.sousens);
+  if(f.rubrique) list=list.filter(x=>(x.d.rubrique||'')===f.rubrique);
+  if(f.nolink) list=list.filter(x=>!x.d.projet);
   if(f.phase) list=list.filter(x=>x.d.phase===f.phase);
   if(f.statut) list=list.filter(x=>x.d.statut===f.statut);
   if(f.fav) list=list.filter(x=>x.d.fav);
-  if(f.q){const q=norm(f.q);list=list.filter(x=>norm(x.d.code).includes(q)||norm(x.d.type).includes(q)||norm(gedProjLabel(x.d.projet)).includes(q)||norm((x.d.file&&x.d.file.name)||'').includes(q));}
+  if(f.q){const q=norm(f.q);list=list.filter(x=>norm(x.d.code).includes(q)||norm(x.d.type).includes(q)||norm(gedProjLabel(x.d.projet)).includes(q)||norm(x.d.rubrique||'').includes(q)||norm(x.d.sousens||'').includes(q)||norm((x.d.file&&x.d.file.name)||'').includes(q));}
   const projOpts=[...new Set(S.projects.filter(p=>S.activeOnly?p.actif:true).map(p=>p.shine).filter(Boolean))];
   const active=S.ged.filter(d=>!d.archived&&!d.deleted);
   const setCount=GED_SETS.map(s=>({s,n:active.filter(d=>d.sousens===s&&(!f.proj||d.projet===f.proj)).length}));
 
   view.innerHTML=`
-  <div class="sec-title"><h2>GEDT — Gestion documentaire</h2><span class="hint">créer · téléverser · télécharger · versionner · archiver · par projet &amp; par sous-ensemble</span></div>
+  <div class="sec-title"><h2>GEDT — Gestion documentaire</h2><span class="hint">créer · téléverser en vrac · rattacher à un projet par mots clés · versionner · archiver · par rubrique &amp; par sous-ensemble</span></div>
   <div class="kpis">
     <div class="tile a"><div class="lab">Documents actifs</div><div class="big">${active.length}</div></div>
     <div class="tile"><div class="lab">Favoris</div><div class="big">${S.ged.filter(d=>d.fav&&!d.archived&&!d.deleted).length}</div></div>
     <div class="tile good"><div class="lab">Approuvés</div><div class="big">${active.filter(d=>d.statut==='Approved').length}</div></div>
     <div class="tile"><div class="lab">Archivés</div><div class="big">${S.ged.filter(d=>d.archived&&!d.deleted).length}</div></div>
+    <div class="tile ${active.filter(d=>!d.projet).length?'warn':''}"><div class="lab">Sans projet</div><div class="big">${active.filter(d=>!d.projet).length}</div><div class="sub">à rattacher</div></div>
     <div class="tile ${S.ged.filter(d=>d.deleted).length?'warn':''}"><div class="lab">Corbeille</div><div class="big">${S.ged.filter(d=>d.deleted).length}</div><div class="sub">restaurable</div></div>
   </div>
   <div class="panel"><div class="panel-h"><h3>Registre documentaire</h3><span style="display:flex;gap:8px"><button class="iconbtn" id="gedUp">⭱ Téléverser</button><button class="iconbtn" id="gedNew">＋ Créer (HTML)</button></span></div>
     <div class="panel-b">
       <div class="toolbar">
         <select id="gfProj"><option value="">Tous projets</option>${projOpts.map(pr=>`<option value="${esc(pr)}" ${f.proj===pr?'selected':''}>${esc(gedProjLabel(pr))}</option>`).join('')}</select>
+        <button class="iconbtn" id="gfPick" title="Chercher un projet par mots clés (code SHINE, intitulé, pôle, secteur, PM)">🔎 Chercher un projet…</button>
+        <select id="gfRub" title="Rubrique du projet"><option value="">Toutes rubriques</option>${GED_RUBS.map(c=>`<option ${f.rubrique===c?'selected':''}>${c}</option>`).join('')}</select>
         <select id="gfSet" title="Afficher un sous-ensemble documentaire"><option value="">Tous sous-ensembles (${setCount.reduce((a,x)=>a+x.n,0)})</option>${setCount.map(x=>`<option value="${esc(x.s)}" ${f.sousens===x.s?'selected':''}>${esc(x.s)} (${x.n})</option>`).join('')}</select>
         <select id="gfPh"><option value="">Toutes phases</option>${GED_PHASES.map(c=>`<option ${f.phase===c?'selected':''}>${c}</option>`).join('')}</select>
         <select id="gfSt"><option value="">Tous statuts</option>${GED_ST.map(c=>`<option ${f.statut===c?'selected':''}>${c}</option>`).join('')}</select>
         <input class="search" id="gfQ" placeholder="Recherche multicritères…" value="${esc(f.q)}">
+        <label class="iconbtn" style="gap:6px;${f.nolink?'background:var(--warn-soft);border-color:var(--warn);color:var(--warn)':''}" title="N'afficher que les documents qui ne sont rattachés à aucun projet"><input type="checkbox" id="gfNL" ${f.nolink?'checked':''}> ⛓ Sans projet</label>
         <label class="iconbtn" style="gap:6px"><input type="checkbox" id="gfFav" ${f.fav?'checked':''}> ★ Favoris</label>
         <label class="iconbtn" style="gap:6px"><input type="checkbox" id="gfArch" ${f.arch?'checked':''}> Archivés</label>
         <label class="iconbtn" style="gap:6px;${f.trash?'background:var(--warn-soft);border-color:var(--warn);color:var(--warn)':''}"><input type="checkbox" id="gfTrash" ${f.trash?'checked':''}> 🗑 Corbeille</label>
         <span class="sp"></span><span class="hint">${list.length}</span>
       </div>
-      <div class="tblwrap" style="max-height:500px;overflow-y:auto"><table><thead><tr><th style="width:22px"></th><th style="width:30px" title="Ouvrir / lire">👁</th><th>Code</th><th style="min-width:210px">Projet</th><th style="width:118px">Sous-ensemble</th><th style="width:66px">Phase</th><th>Type</th><th style="width:48px">Ver.</th><th style="width:104px">Statut</th><th>Fichier</th><th>Auteur</th><th style="width:86px">Date</th><th style="width:158px">Actions</th></tr></thead>
+      <div class="selbar" id="gSelBar" hidden>
+        <span><b id="gSelN">0</b> document(s) sélectionné(s)</span>
+        <button class="iconbtn" id="gSelLink" style="background:var(--accent);color:#fff;border-color:var(--accent)">🔗 Lier à un projet…</button>
+        <select id="gSelRub" title="Ranger la sélection dans une rubrique du projet"><option value="">Rubrique…</option>${GED_RUBS.map(c=>`<option>${c}</option>`).join('')}</select>
+        <select id="gSelSet" title="Déplacer la sélection dans un sous-ensemble"><option value="">Sous-ensemble…</option>${GED_SETS.map(c=>`<option>${c}</option>`).join('')}</select>
+        <span class="sp"></span>
+        <button class="iconbtn" id="gSelClear">Tout désélectionner</button>
+      </div>
+      <div class="tblwrap" style="max-height:500px;overflow-y:auto"><table><thead><tr><th style="width:24px" title="Tout sélectionner"><input type="checkbox" id="gAll"></th><th style="width:22px"></th><th style="width:30px" title="Ouvrir / lire">👁</th><th>Code</th><th style="min-width:200px">Projet</th><th style="min-width:172px">Rubrique</th><th style="width:118px">Sous-ensemble</th><th style="width:66px">Phase</th><th>Type</th><th style="width:48px">Ver.</th><th style="width:104px">Statut</th><th>Fichier</th><th>Auteur</th><th style="width:86px">Date</th><th style="width:158px">Actions</th></tr></thead>
       <tbody>${list.length?list.map(({d,i})=>{const ob=d.statut==='Obsolete';return `<tr style="${ob||d.archived?'opacity:.6':''}">
+        <td><input type="checkbox" class="gck" data-gck="${i}" title="Sélectionner pour rattacher ou ranger"></td>
         <td><button class="delbtn" data-fav="${i}" style="opacity:${d.fav?1:.45};color:${d.fav?'var(--warn)':'var(--muted)'}" title="Favori">★</button></td>
         <td><button class="iconbtn" style="padding:1px 6px;font-size:12px" data-gopen="${i}" title="Ouvrir / lire « ${esc((d.file&&d.file.name)||d.code||'')} »">👁</button></td>
         <td class="code" contenteditable data-gd="${i}|code" style="${ob?'text-decoration:line-through':''}">${esc(d.code)}</td>
-        <td><select data-gsel="${i}|projet" style="width:100%;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11.5px">${gedProjOptions(d.projet)}</select></td>
+        <td><button class="projbtn${d.projet?'':' vide'}" data-gpick="${i}" title="${d.projet?'Projet '+esc(gedProjLabel(d.projet))+' — cliquer pour changer':'Chercher un projet par mots clés et rattacher ce document'}">${d.projet?esc(gedProjLabel(d.projet)):'🔎 lier à un projet…'}</button></td>
+        <td><select data-gsel="${i}|rubrique" style="width:100%;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:${d.rubrique?'inherit':'var(--muted)'};font-size:11px"><option value="">—</option>${GED_RUBS.map(c=>`<option ${d.rubrique===c?'selected':''}>${c}</option>`).join('')}</select></td>
         <td><select data-gsel="${i}|sousens" style="padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11px">${GED_SETS.map(c=>`<option ${d.sousens===c?'selected':''}>${c}</option>`).join('')}</select></td>
         <td><select data-gsel="${i}|phase" style="padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11px">${GED_PHASES.map(c=>`<option ${d.phase===c?'selected':''}>${c}</option>`).join('')}</select></td>
         <td contenteditable data-gd="${i}|type">${esc(d.type||'')}</td>
@@ -2708,14 +2820,17 @@ function renderGED(){
           <button class="iconbtn" style="padding:1px 5px;font-size:11px" data-gver="${i}" title="Nouvelle version (ancienne → Obsolete)">v+</button>
           <button class="iconbtn" style="padding:1px 5px;font-size:11px" data-arch="${i}" title="${d.archived?'Désarchiver':'Archiver'}">${d.archived?'↩':'⧉'}</button>
           <button class="delbtn" data-gdel="${i}" title="Mettre à la corbeille (réversible)">×</button>`}
-        </td></tr>`;}).join(''):`<tr><td colspan="13" class="empty">${f.trash?'Corbeille vide.':'Aucun document. « Téléverser » un fichier natif ou « Créer » un document HTML.'}</td></tr>`}</tbody></table></div>
-      <div class="onepage-note" style="margin-top:10px">Sous-ensembles : ${GED_SETS.join(' · ')}. Import natif (Word/Excel/PPT/PDF/vidéo…) intégré au suivi (base64) — privilégiez des tailles raisonnables. Documents HTML depuis modèles. Versioning (v+ → ancienne version Obsolete), favoris ★, archivage, recherche multicritères ; actions tracées dans la piste d'audit. La croix × met le document à la <b>corbeille</b> (réversible) : cochez « 🗑 Corbeille » pour le restaurer.</div>
+        </td></tr>`;}).join(''):`<tr><td colspan="15" class="empty">${f.trash?'Corbeille vide.':(f.nolink?'Aucun document sans projet : tout est rattaché.':'Aucun document. « Téléverser » un ou plusieurs fichiers natifs, ou « Créer » un document HTML.')}</td></tr>`}</tbody></table></div>
+      <div class="onepage-note" style="margin-top:10px"><b>Rattacher un document à un projet :</b> cliquez sur sa cellule « Projet » — ou cochez plusieurs lignes puis « 🔗 Lier à un projet » — et cherchez le projet par mots clés (code SHINE, intitulé, pôle, secteur, PM). La <b>rubrique</b> range ensuite le document dans le projet : ${GED_RUBS.join(' · ')}. Le filtre « ⛓ Sans projet » isole le vrac qui reste à rattacher.<br>Sous-ensembles : ${GED_SETS.join(' · ')}. Import natif (Word/Excel/PPT/PDF/vidéo…) intégré au suivi (base64), <b>en vrac</b> — plusieurs fichiers à la fois — privilégiez des tailles raisonnables. Documents HTML depuis modèles. Versioning (v+ → ancienne version Obsolete), favoris ★, archivage, recherche multicritères ; actions tracées dans la piste d'audit. La croix × met le document à la <b>corbeille</b> (réversible) : cochez « 🗑 Corbeille » pour le restaurer.</div>
     </div></div>
-  ${footHTML('ged',`GEDT · par projet &amp; par sous-ensemble (Études · Travaux · Réception · HSE | CSSCT · Transfert) · conservation ≥ 10 ans (CDO).`)}`;
+  ${footHTML('ged',`GEDT · par projet, par rubrique (Gestion de Projet · Études | Réalisation · Construction · D.O.E Fournisseur &amp; Autres) &amp; par sous-ensemble · conservation ≥ 10 ans (CDO).`)}`;
 
   $('#gedUp').onclick=gedUpload;
   $('#gedNew').onclick=gedCreate;
   $('#gfProj').onchange=e=>{f.proj=e.target.value;renderGED();};
+  $('#gfPick').onclick=()=>projPicker('Filtrer le registre sur un projet', f.proj||'', sh=>{ f.proj=sh; renderGED(); });
+  $('#gfRub').onchange=e=>{f.rubrique=e.target.value;renderGED();};
+  $('#gfNL').onchange=e=>{f.nolink=e.target.checked;renderGED();};
   $('#gfSet').onchange=e=>{f.sousens=e.target.value;renderGED();};
   $('#gfPh').onchange=e=>{f.phase=e.target.value;renderGED();};
   $('#gfSt').onchange=e=>{f.statut=e.target.value;renderGED();};
@@ -2724,7 +2839,7 @@ function renderGED(){
   $('#gfArch').onchange=e=>{f.arch=e.target.checked;renderGED();};
   $('#gfTrash').onchange=e=>{f.trash=e.target.checked;if(f.trash){f.arch=false;f.fav=false;}renderGED();};
   $$('[data-gd]').forEach(el=>el.addEventListener('blur',()=>{const[i,k]=el.dataset.gd.split('|');S.ged[+i][k]=el.textContent.trim();scheduleSave();}));
-  $$('[data-gsel]').forEach(sel=>sel.addEventListener('change',()=>{const[i,k]=sel.dataset.gsel.split('|');if(k==='statut')logChange('GEDT '+(S.ged[+i].code),'statut',S.ged[+i].statut,sel.value);S.ged[+i][k]=sel.value;renderGED();scheduleSave();}));
+  $$('[data-gsel]').forEach(sel=>sel.addEventListener('change',()=>{const[i,k]=sel.dataset.gsel.split('|');if(k==='statut'||k==='rubrique'||k==='sousens')logChange('GEDT '+(S.ged[+i].code),k==='sousens'?'sous-ensemble':k,S.ged[+i][k]||'—',sel.value||'—');S.ged[+i][k]=sel.value;renderGED();scheduleSave();}));
   $$('[data-fav]').forEach(b=>b.onclick=()=>{S.ged[+b.dataset.fav].fav=!S.ged[+b.dataset.fav].fav;renderGED();scheduleSave();});
   $$('[data-dl]').forEach(b=>b.onclick=()=>gedDownload(+b.dataset.dl));
   $$('[data-gopen]').forEach(b=>b.onclick=e=>{e.stopPropagation();gedOpen(+b.dataset.gopen);});
@@ -2740,6 +2855,30 @@ function renderGED(){
       logChange('GEDT '+(d.code||''),'renommage fichier',anc,nv);
       renderGED(); scheduleSave(); });
   });
+  $$('[data-gpick]').forEach(b=>b.onclick=()=>gedLier([+b.dataset.gpick]));
+  // --- Selection multiple : rattacher ou ranger plusieurs documents d'un coup ---
+  const gBoxes=()=>$$('[data-gck]');
+  const gIdx=()=>gBoxes().filter(c=>c.checked).map(c=>+c.dataset.gck);
+  function gSelSync(){
+    const n=gIdx().length, bar=$('#gSelBar'); if(!bar) return;
+    bar.hidden=!n; const lab=$('#gSelN'); if(lab) lab.textContent=n;
+    const all=$('#gAll'); if(all){ const t=gBoxes().length; all.checked=n>0&&n===t; all.indeterminate=n>0&&n<t; }
+  }
+  gBoxes().forEach(c=>c.addEventListener('change',gSelSync));
+  const gAll=$('#gAll'); if(gAll) gAll.addEventListener('change',()=>{ gBoxes().forEach(c=>{c.checked=gAll.checked;}); gSelSync(); });
+  const gClear=$('#gSelClear'); if(gClear) gClear.onclick=()=>{ gBoxes().forEach(c=>{c.checked=false;}); gSelSync(); };
+  const gLink=$('#gSelLink'); if(gLink) gLink.onclick=()=>gedLier(gIdx());
+  const gRub=$('#gSelRub'); if(gRub) gRub.onchange=()=>{
+    const v=gRub.value; if(!v) return;
+    gIdx().forEach(i=>{ const d=S.ged[i]; if(d.rubrique===v) return; logChange('GEDT '+(d.code||''),'rubrique',d.rubrique||'—',v); d.rubrique=v; });
+    renderGED(); scheduleSave();
+  };
+  const gSet=$('#gSelSet'); if(gSet) gSet.onchange=()=>{
+    const v=gSet.value; if(!v) return;
+    gIdx().forEach(i=>{ const d=S.ged[i]; if(d.sousens===v) return; logChange('GEDT '+(d.code||''),'sous-ensemble',d.sousens||'—',v); d.sousens=v; });
+    renderGED(); scheduleSave();
+  };
+  gSelSync();
   $$('[data-ed]').forEach(b=>b.onclick=()=>gedEdit(+b.dataset.ed));
   $$('[data-gver]').forEach(b=>b.onclick=()=>{const i=+b.dataset.gver;const d=S.ged[i];const nv=(d.version&&/^[A-Y]$/.test(d.version))?String.fromCharCode(d.version.charCodeAt(0)+1):'B';logChange('GEDT '+d.code,'version',d.version,nv);d.statut='Obsolete';S.ged.unshift(Object.assign({},d,{version:nv,statut:'Draft',date:new Date().toLocaleDateString('fr-FR'),file:d.file?Object.assign({},d.file):null}));renderGED();scheduleSave();});
   $$('[data-arch]').forEach(b=>b.onclick=()=>{const d=S.ged[+b.dataset.arch];d.archived=!d.archived;logChange('GEDT '+d.code,'archivage',d.archived?'non':'oui',d.archived?'oui':'non');renderGED();scheduleSave();});
