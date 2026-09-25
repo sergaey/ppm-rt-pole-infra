@@ -2549,15 +2549,22 @@ function projPicker(titre, courant, onPick){
     </div></div>`;
   document.body.appendChild(ov);
   const q=ov.querySelector('#pkQ'), L=ov.querySelector('#pkL'), N=ov.querySelector('#pkN');
+  // Portefeuille vide : le dire, plutot que de laisser croire que la recherche
+  // ne trouve rien. C'est le cas quand le fichier est ouvert en double-clic,
+  // sans les donnees servies par Lancer_PPM.bat.
+  const vide=!(S.projects||[]).filter(p=>p.shine).length;
   const dessiner=()=>{
     const tout=projSearch(q.value), res=tout.slice(0,120);
-    N.textContent = q.value.trim()
-      ? `${tout.length} projet(s) correspondent${tout.length>res.length?` — ${res.length} affichés`:''}`
-      : `${tout.length} projet(s) au portefeuille — tapez pour filtrer`;
+    N.textContent = vide ? 'Aucun projet au portefeuille'
+      : (q.value.trim()
+        ? `${tout.length} projet(s) correspondent${tout.length>res.length?` — ${res.length} affichés`:''}`
+        : `${tout.length} projet(s) au portefeuille — tapez pour filtrer`);
     L.innerHTML = res.length ? res.map(p=>`<button class="pickit${p.shine===courant?' on':''}" data-sh="${esc(p.shine)}">
       <b>${esc(p.shine)}</b>${esc(p.nom||'')}
       <span class="pickmeta">${esc(p.pole||p.group||'—')}${p.pm?' · '+esc(p.pm):''}${p.actif===false?' · clôturé':''}</span></button>`).join('')
-      : `<div class="empty" style="padding:16px">Aucun projet ne correspond à « ${esc(q.value)} ».</div>`;
+      : (vide
+        ? `<div class="empty" style="padding:16px;line-height:1.5">Le portefeuille de cette fenêtre est vide : il n'y a aucun projet auquel rattacher un document.${location.protocol==='file:'?'<br>Le fichier est <b>ouvert directement</b> : vos projets ne sont pas chargés ici. Passez par <b>Lancer_PPM.bat</b>.':'<br>Chargez le portefeuille avant de rattacher des documents.'}</div>`
+        : `<div class="empty" style="padding:16px">Aucun projet ne correspond à « ${esc(q.value)} ».</div>`);
     L.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{ ov.remove(); onPick(b.dataset.sh); });
   };
   q.oninput=dessiner; dessiner();
