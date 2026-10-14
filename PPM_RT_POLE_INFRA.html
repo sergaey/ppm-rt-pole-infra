@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.5 -->
+<!-- PPM_BUILD:2026-10-14.6 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -635,7 +635,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.5';
+const APP_BUILD='2026-10-14.6';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1306,7 +1306,7 @@ const FQ_PLACE={'':'Rechercher projet / code / PM / PL…','pm':'Nom du PM | Own
 function filtered(){
   const f=S.filters;
   const base = f.trash ? S.projects.filter(p=>p.deleted)
-             : (f.dup ? (()=>{ const d=doublonIdx(); return PROJ().filter(p=>d.has(S.projects.indexOf(p))); })()
+             : (f.dup ? S.projects.filter((p,i)=>!p.deleted && doublonIdx().has(i))
                       : PROJ());
   return base.filter(p=>{
     if(f.pole){ if(p.group!==f.pole) return false; }
@@ -1373,7 +1373,7 @@ function renderDash(){
           <select id="fqScope" title="Colonne sur laquelle porte la recherche">${FQ_SCOPES.map(([v,lb])=>`<option value="${v}" ${(S.filters.qscope||'')===v?'selected':''}>${lb}</option>`).join('')}</select>
           <select id="fpole">${[...new Set(['','INFRA',...S.projects.map(p=>p.group)])].sort().map(g=>`<option value="${esc(g)}" ${S.filters.pole===g?'selected':''}>${g?esc(g):'Tous pôles'}</option>`).join('')}</select>
           <select id="fstatut">${['',...new Set(S.projects.map(p=>p.statut).filter(Boolean))].map(g=>`<option value="${esc(g)}" ${S.filters.statut===g?'selected':''}>${g?esc(g):'Tous statuts'}</option>`).join('')}</select>
-          <label class="iconbtn" style="gap:6px;${S.filters.dup?'background:var(--copper-soft);border-color:var(--copper);color:var(--copper)':''}" title="N'afficher que les projets en double — même code SHINE ou même intitulé"><input type="checkbox" id="fdup" ${S.filters.dup?'checked':''}> ⧉ Doublons${nDup?' ('+nDup+')':''}</label>
+          <label class="iconbtn" style="gap:6px;${S.filters.dup?'background:var(--copper-soft);border-color:var(--copper);color:var(--copper)':''}" title="N'afficher que les projets en double — même code SHINE ou même intitulé, accents et ponctuation ignorés. Les projets archivés sont montrés aussi, pour que les deux membres d'une paire apparaissent ensemble."><input type="checkbox" id="fdup" ${S.filters.dup?'checked':''}> ⧉ Doublons${nDup?' ('+nDup+')':''}</label>
           <label class="iconbtn" style="gap:6px;${S.filters.trash?'background:var(--warn-soft);border-color:var(--warn);color:var(--warn)':''}" title="Projets mis à la corbeille — restaurables"><input type="checkbox" id="ftrash" ${S.filters.trash?'checked':''}> 🗑 Corbeille${nTrash?' ('+nTrash+')':''}</label>
           <span class="sp"></span>
           <span class="hint" id="fqN">${list.length} / ${S.projects.length}</span>
@@ -1462,14 +1462,15 @@ function projRows(list){
     if(av<bv)return s.dir; if(av>bv)return -s.dir; return 0;
   });
   if(S._hfilter) rows=rows.filter(p=>projHealth(p).band===S._hfilter);
-  const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonIdx();
+  const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonInfo();
   if(!rows.length) return `<tr><td colspan="12" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet.')}</td></tr>`;
+  // Survoler la marque dit quel autre projet est en cause.
   return rows.map(p=>{const h=projHealth(p);const ec=ecartV(p);
-    const gi=S.projects.indexOf(p), dbl=DUP.has(gi);
+    const gi=S.projects.indexOf(p), dbl=doublonLib(DUP.get(gi));
     return `<tr data-id="${esc(p.id)}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
       <td><span class="hdot ${h.band}" title="${bandLabel[h.band]} · score ${h.composite}"></span></td>
       <td class="code">${esc(p.shine||'—')}</td>
-      <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="Un autre projet porte le même code SHINE ou le même intitulé">⧉ doublon</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
+      <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="${esc(dbl.titre)}">⧉ ${esc(dbl.court)}</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
       <td>${esc(p.group)}</td>
       <td class="edc" contenteditable data-dpf="pm|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pm||'')}</td>
       <td class="edc" contenteditable data-dpf="pl|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pl||'')}</td>
@@ -2554,17 +2555,36 @@ function PROJ(){ const v=S.projects.filter(p=>!p.deleted); return S.activeOnly? 
 /* Doublons : même code SHINE ou même intitulé, aux accents et à la ponctuation
    près. Renvoie les rangs dans S.projects — deux projets de même code portent
    le même id, lequel ne les distinguerait donc pas. */
-function doublonIdx(){
-  const vus={}, out=new Set();
+function doublonInfo(){
+  const parCode={}, parNom={}, info=new Map();
   S.projects.forEach((p,i)=>{
-    if(p.deleted) return;
-    const cles=[];
-    const c=norm(p.shine).replace(/[^a-z0-9]/g,''); if(c) cles.push('c:'+c);
-    const n=norm(p.nom).replace(/[^a-z0-9]/g,''); if(n) cles.push('n:'+n);
-    cles.forEach(k=>{ (vus[k]=vus[k]||[]).push(i); });
+    if(p.deleted) return;                       // la corbeille ne compte pas
+    const c=norm(p.shine).replace(/[^a-z0-9]/g,''); if(c) (parCode[c]=parCode[c]||[]).push(i);
+    const n=norm(p.nom).replace(/[^a-z0-9]/g,''); if(n) (parNom[n]=parNom[n]||[]).push(i);
   });
-  Object.keys(vus).forEach(k=>{ const l=vus[k]; if(l.length>1) l.forEach(i=>out.add(i)); });
-  return out;
+  const noter=(groupes,quoi)=>Object.keys(groupes).forEach(k=>{
+    const l=groupes[k]; if(l.length<2) return;
+    l.forEach(i=>{ const e=info.get(i)||{code:[],nom:[]}; e[quoi]=l.filter(j=>j!==i); info.set(i,e); });
+  });
+  noter(parCode,'code'); noter(parNom,'nom');
+  return info;
+}
+function doublonIdx(){ return new Set(doublonInfo().keys()); }
+/* Ce que dit la marque : sur quoi porte la collision, et avec quel projet. Un
+   doublon dont on ne voit pas le jumeau — archivé, ou plus bas dans une liste
+   filtrée — n'est qu'une énigme. */
+function doublonLib(e){
+  if(!e) return null;
+  const etiq = (e.code.length && e.nom.length) ? 'même code et même intitulé'
+             : e.code.length ? 'même code SHINE' : 'même intitulé';
+  const court = (e.code.length && e.nom.length) ? 'doublon'
+             : e.code.length ? 'même code' : 'même intitulé';
+  const jumeaux=[...new Set(e.code.concat(e.nom))].map(j=>{
+    const q=S.projects[j]||{};
+    return '• '+(q.shine||'sans code')+' — '+(q.nom||'sans intitulé')+(q.actif===false?'  (archivé)':'');
+  });
+  return {court, titre:'Doublon — '+etiq+'. Autre(s) projet(s) concerné(s) :\n'+jumeaux.join('\n')
+          +'\n\nLa détection ignore accents, majuscules et ponctuation, et couvre aussi les projets archivés.'};
 }
 function projArchiver(gi){
   const p=S.projects[gi]; if(!p) return;
