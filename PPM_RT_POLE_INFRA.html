@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.3 -->
+<!-- PPM_BUILD:2026-10-14.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -459,6 +459,7 @@
   .addrow{margin-top:10px}
   .addrow button{border:1px dashed var(--line-2);background:transparent;border-radius:8px;padding:6px 12px;font-size:12px;color:var(--muted);font-weight:600}
   .addrow button:hover{border-color:var(--accent);color:var(--accent)}
+  .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
   .dupmk{font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;
     background:var(--copper-soft);color:var(--copper);white-space:nowrap}
   .archmk{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;
@@ -634,7 +635,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.3';
+const APP_BUILD='2026-10-14.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1508,7 +1509,7 @@ function renderPass(){
   const pp=S.passports[p.id]||S.passports[p.shine];
   const h=projHealth(p);
   const c2=(p.c2!=null?p.c2:p.c1);
-  const atter=(p.act||0) + Math.max(0,(c2||0)-(p.act||0));
+  const atter=atterrissage(p);
   view.innerHTML=`
   <div class="sec-title"><h2>Passeport projet</h2><span class="hint">fiche synthétique unique · support d'arbitrage</span></div>
   <div class="toolbar"><button class="iconbtn" id="ppBack" title="Enregistrer et revenir au portefeuille">← Retour au portefeuille</button>
@@ -1573,12 +1574,32 @@ function renderPass(){
   bindEditables();
 }
 function subHealth(lb,sc){const b=sc>=75?'g':sc>=55?'a':'r';return `<div class="ht ${b}"><span class="dot"></span><span class="lb">${lb}</span><span class="sc">${Math.round(sc)}</span></div>`;}
+/* Atterrissage : ce que le projet aura coûté en fin de course. Au minimum son
+   budget révisé — un projet consomme ce qui lui est alloué — et davantage dès
+   que le facturé et l'engagé le dépassent. Avec des engagements nuls, c'est
+   exactement l'estimation d'avant. */
+function atterrissage(p){
+  const c2=(p.c2!=null?p.c2:p.c1)||0;
+  return Math.max(c2, (p.act||0)+(p.commit||0));
+}
 function budgetBlock(p,pp,atter){
-  const c2=(p.c2!=null?p.c2:p.c1), ec=(c2||0)-(p.c1||0);
-  return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th><th class="num">Réalisé</th></tr></thead>
+  const c1=p.c1||0, c2=(p.c2!=null?p.c2:p.c1), ec=(c2||0)-c1;
+  const act=p.act||0, com=p.commit||0, engage=act+com;     // consommé : facturé + engagé
+  const dispo1=c1-engage, dispo2=(c2||0)-engage;           // Available Amount, base C1 puis C2
+  const pc=(v,base)=>base?fmt(v/base*100,1)+' %':'—';
+  const teinte=v=>v<0?'var(--bad)':'var(--good)';
+  return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th></tr></thead>
   <tbody>
-    <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmt(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmt(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmt(p.b27):''}</td><td class="num" contenteditable data-pfn="act">${p.act!=null?fmt(p.act):''}</td></tr>
-    <tr class="tot"><td>Atterrissage estimé</td><td class="num">—</td><td class="num" colspan="3" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
+    <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmt(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmt(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmt(p.b27):''}</td></tr>
+    <tr class="tot"><td>Atterrissage estimé</td><td class="num">—</td><td class="num" colspan="2" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
+  </tbody></table></div>
+  <div class="tblwrap" style="margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
+  <tbody>
+    <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmt(p.act):''}</td><td class="num">${pc(act,c2||c1)}</td></tr>
+    <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmt(p.commit):''}</td><td class="num">${pc(com,c2||c1)}</td></tr>
+    <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage,c2||c1)}</td></tr>
+    <tr><td>Available Amount <span class="bmini">C1 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo1)};font-weight:600">${fmt(dispo1)}</td><td class="num">${pc(dispo1,c1)}</td></tr>
+    <tr><td>Available Amount <span class="bmini">C2 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo2)};font-weight:600">${fmt(dispo2)}</td><td class="num">${pc(dispo2,c2)}</td></tr>
   </tbody></table></div>`;
 }
 function milestonesBlock(p,pp){
@@ -1888,6 +1909,7 @@ function openOnePage(p,pp,atter){
   <div class=g>
     <div class=p><div class=ph>BUDGET (k€)</div><div class=pb><table><tr><th>Mesure</th><th class=num>C1</th><th class=num>C2</th><th class=num>B27</th><th class=num>ACT</th></tr>
     <tr><td>CAPEX FY</td><td class=num>${fmt(p.c1)}</td><td class=num>${fmt(c2)}</td><td class=num>${fmt(p.b27)}</td><td class=num>${fmt(p.act)}</td></tr>
+    <tr><td>Actuals / Commitments</td><td class=num colspan=4>${fmt(p.act||0)} + ${fmt(p.commit||0)} = <b>${fmt((p.act||0)+(p.commit||0))}</b> k€ — disponible ${fmt(((p.c2!=null?p.c2:p.c1)||0)-((p.act||0)+(p.commit||0)))} k€ vs C2</td></tr>
     <tr><td><b>Atterrissage</b></td><td class=num colspan=4><b>${fmt(atter)}</b> — écart ${ec>=0?'+':''}${fmt(ec)} k€</td></tr></table></div></div>
     <div class=p><div class=ph>STATUT</div><div class=pb>${esc(pp&&pp.statusTxt||p.comment||'—')}</div></div>
     <div class=p><div class=ph>KEY MILESTONES</div><div class=pb><table>${ms.map(m=>`<tr><td>${m.st==='Done'?'✓ ':''}${esc(m.name)}</td><td class=num>${esc(m.neu||m.ini||'')}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</table></div></div>
@@ -3392,6 +3414,7 @@ function openDataHub(tab){
       <button class="dtab" data-dt="json">Importer JSON</button>
       <button class="dtab" data-dt="xlsx">Importer Excel</button>
       <button class="dtab" data-dt="export">Exporter</button>
+      <button class="dtab" data-dt="maj">⟳ Mise à jour</button>
       <button class="dtab" data-dt="secu">🔒 Sécurité</button>
     </div>
     <div class="dbody">
@@ -3439,6 +3462,14 @@ function openDataHub(tab){
           <button class="af-act" style="margin-top:8px" data-copybtn>⧉ Tout copier</button>
         </div>
       </div>
+      <div class="dpane" data-dp="maj">
+        <p class="lead">Installe une nouvelle version de l'application <b>dans le dossier</b>, à la place du fichier actuel, puis recharge la page. Plus besoin de recopier le fichier à la main : choisissez-le ici, là où votre navigateur l'a téléchargé.<br>L'ancienne version est conservée à côté sous <b>PPM_RT_POLE_INFRA.bak.html</b> ; vos données ne sont pas touchées.</p>
+        <div class="drop" data-drop="maj"><span class="ic">⟳</span><b>Choisir le fichier PPM_RT_POLE_INFRA.html</b>ou glissez-le ici</div>
+        <input type="file" accept=".html,text/html" data-file="maj" hidden>
+        <div class="dmsg" data-msg="maj"></div>
+        <div class="xsect-t">Version en cours</div>
+        <div class="xrow" data-majver></div>
+      </div>
       <div class="dpane" data-dp="secu"><div data-secubody></div></div>
     </div></div>`;
   document.body.appendChild(ov);
@@ -3456,8 +3487,54 @@ function openDataHub(tab){
   drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); importJSONFile(e.dataTransfer.files[0], msg, conf); };
   wireExcelPane(ov);
   wireExportPane(ov);
+  wireMajPane(ov);
   wireSecurityPane(ov);
   sel(tab||'json');
+}
+/* Onglet « Mise à jour » : poser soi-même la nouvelle version dans le dossier.
+   Sans serveur local, il n'y a pas de dossier où écrire — la page est servie
+   depuis le web ou ouverte en fichier : on le dit, plutôt que d'échouer. */
+function wireMajPane(ov){
+  const inp=ov.querySelector('[data-file="maj"]'), drop=ov.querySelector('[data-drop="maj"]');
+  const msg=ov.querySelector('[data-msg="maj"]'), vz=ov.querySelector('[data-majver]');
+  const dire=(etat,t)=>setDMsg(msg,etat,t);
+  vz.textContent='Version ouverte : '+APP_BUILD_FR+(SRV?'':' · pas de serveur local : rien à remplacer ici.');
+  if(SRV){
+    api('/version').then(r=>r.ok?r.json():null).then(j=>{ if(j&&j.build)
+      vz.textContent='Version ouverte : '+APP_BUILD_FR+' · fichier du dossier : '+(j.build===APP_BUILD?'la même':j.build)+' ('+j.taille+' octets, '+j.modifie+')';
+    }).catch(()=>{});
+  }
+  const installer=file=>{
+    if(!file) return;
+    if(!SRV){ dire('err',"Cette fenêtre n'a pas de serveur local : il n'y a pas de dossier où installer le fichier. Passez par Lancer_PPM.bat."); return; }
+    if(!/\.html?$/i.test(file.name)){ dire('err','Sélectionnez le fichier .html de l\'application.'); return; }
+    dire('info','Lecture de « '+file.name+' » ('+Math.round(file.size/1024)+' Ko)…');
+    const rd=new FileReader();
+    rd.onerror=()=>dire('err','Lecture du fichier impossible.');
+    rd.onload=async()=>{
+      const html=String(rd.result||'');
+      const m=html.slice(0,4096).match(/PPM_BUILD:(\d{4}-\d{2}-\d{2}(?:\.\d+)?)/);
+      if(!m){ dire('err','Ce fichier ne porte pas de marqueur de version PPM : ce n\'est pas l\'application.'); return; }
+      const v=m[1].split('.'), vfr=v[0].split('-').reverse().join('/')+(v[1]?' #'+v[1]:'');
+      if(m[1]===APP_BUILD && !confirm('Ce fichier porte la version déjà ouverte ('+vfr+').\n\nL\'installer quand même ?')) { dire('info','Installation annulée.'); return; }
+      dire('info','Enregistrement des données en cours…');
+      if(dirty && !(await doSave())){ dire('err','Vos modifications n\'ont pas pu être enregistrées : installation annulée pour ne rien perdre.'); return; }
+      dire('info','Installation de la version '+vfr+'…');
+      try{
+        const r=await api('/app',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({html:html})});
+        const j=await r.json().catch(()=>null);
+        if(!r.ok){ dire('err','Installation refusée : '+((j&&j.error)||('erreur '+r.status))); return; }
+        dire('ok','Version '+vfr+' installée dans le dossier (ancienne version conservée sous '+(j&&j.garde||'.bak.html')+'). Rechargement…');
+        setTimeout(()=>location.replace(location.pathname+'?maj='+Date.now()),1200);
+      }catch(e){ dire('err','Serveur injoignable : '+(e&&e.message||e)); }
+    };
+    rd.readAsText(file);
+  };
+  drop.onclick=()=>inp.click();
+  inp.onchange=()=>{ installer(inp.files[0]); inp.value=''; };
+  drop.ondragover=e=>{ e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave=()=>drop.classList.remove('over');
+  drop.ondrop=e=>{ e.preventDefault(); drop.classList.remove('over'); installer(e.dataTransfer.files[0]); };
 }
 // Onglet « Sécurité » : verrou par mot de passe (chiffrement) de la version autonome.
 function wireSecurityPane(ov){
@@ -3599,7 +3676,7 @@ async function majApp(){
       await syncFromServer(true);
       majDire('✓ à jour');
       setTimeout(rendre,2500);
-      return;
+      return;   // pour installer une version plus récente : ⇄ Données → Mise à jour
     }
     majDire('⟳ rechargement…');
     if(location.protocol==='file:') location.reload();
