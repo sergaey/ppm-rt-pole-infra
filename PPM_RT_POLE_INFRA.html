@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.8 -->
+<!-- PPM_BUILD:2026-10-14.9 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -459,6 +459,18 @@
   .addrow{margin-top:10px}
   .addrow button{border:1px dashed var(--line-2);background:transparent;border-radius:8px;padding:6px 12px;font-size:12px;color:var(--muted);font-weight:600}
   .addrow button:hover{border-color:var(--accent);color:var(--accent)}
+  /* Risques : des paragraphes, pas des cellules de tableur. Les retours à la
+     ligne saisis sont rendus (pre-wrap), le texte respire, et la colonne
+     s'aligne en haut pour que deux cellules de hauteurs différentes se lisent
+     ensemble. */
+  .rktbl{table-layout:fixed;width:100%}
+  .rktbl td,.rktbl th{vertical-align:top}
+  .rkcell{white-space:pre-wrap;word-break:break-word;line-height:1.55;font-size:12.5px;
+    padding:8px 10px;min-width:200px}
+  .rkcell:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+  .rkmeta{padding-top:8px;font-size:12px;white-space:pre-wrap}
+  .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
+  .rkcell:empty:before,.rkmeta:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
   .dupmk{font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;
     background:var(--copper-soft);color:var(--copper);white-space:nowrap}
@@ -635,7 +647,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.8';
+const APP_BUILD='2026-10-14.9';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1676,14 +1688,14 @@ function pill(st){const s=norm(st); if(s==='done')return '<span class="pill g">D
 function risksBlock(p,pp){
   const rs=(pp&&pp.risks)||[];
   return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Risques / Problèmes</h3><span class="meta">${rs.length}</span></div>
-  <div class="tblwrap"><table><thead><tr><th>Description</th><th>Mitigation</th><th style="width:80px">Owner</th><th style="width:96px">Date</th><th style="width:24px"></th></tr></thead>
+  <div class="tblwrap"><table class="rktbl"><thead><tr><th style="width:42%">Description</th><th style="width:42%">Mitigation</th><th style="width:96px">Owner</th><th style="width:96px">Date</th><th style="width:24px"></th></tr></thead>
   <tbody>${rs.length?rs.map((r,i)=>`<tr>
-    <td class="wrap" contenteditable data-rk="${p.id}|${i}|desc">${esc(r.desc)}</td>
-    <td class="wrap" contenteditable data-rk="${p.id}|${i}|mit">${esc(r.mit)}</td>
-    <td contenteditable data-rk="${p.id}|${i}|owner">${esc(r.owner)}</td>
-    <td class="mono" contenteditable data-rk="${p.id}|${i}|date">${esc(r.date)}</td>
-    <td><button class="delbtn" data-delrk="${p.id}|${i}">×</button></td></tr>`).join(''):`<tr><td colspan="5" class="empty">Aucun risque enregistré.</td></tr>`}</tbody></table></div>
-  <div class="panel-b addrow"><button data-addrk="${p.id}">+ Ajouter un risque</button></div></div>`;
+    <td class="rkcell" contenteditable data-rk="${p.id}|${i}|desc" data-vide="Décrire le risque ou le problème…">${esc(r.desc||'')}</td>
+    <td class="rkcell" contenteditable data-rk="${p.id}|${i}|mit" data-vide="Action de mitigation, décision, parade…">${esc(r.mit||'')}</td>
+    <td class="rkmeta" contenteditable data-rk="${p.id}|${i}|owner" data-vide="Pilote">${esc(r.owner||'')}</td>
+    <td class="rkmeta mono" contenteditable data-rk="${p.id}|${i}|date" data-vide="jj/mm">${esc(r.date||'')}</td>
+    <td style="vertical-align:top;padding-top:8px"><button class="delbtn" data-delrk="${p.id}|${i}">×</button></td></tr>`).join(''):`<tr><td colspan="5" class="empty">Aucun risque enregistré.</td></tr>`}</tbody></table></div>
+  <div class="panel-b addrow"><button data-addrk="${p.id}">+ Ajouter un risque</button><span class="hint" style="margin-left:10px">Saisie libre · <b>Alt + Entrée</b> pour aller à la ligne · <b>Entrée</b> pour valider · <b>Échap</b> pour annuler</span></div></div>`;
 }
 function nextStepsBlock(p,pp){
   const ns=((pp&&pp.nextSteps)||[]).map(nsNorm);
@@ -1710,7 +1722,26 @@ function bindEditables(){
   $$('[data-ppf]').forEach(el=>el.addEventListener('blur',()=>{const pp=ensurePP(S.currentProj); pp[el.dataset.ppf]=el.textContent.trim(); scheduleSave();}));
   $$('[data-pfn]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(!p)return; const t=el.textContent.replace(/\s/g,'').replace(',','.'); const v=t===''?null:parseFloat(t); p[el.dataset.pfn]=(v==null||isNaN(v))?null:v; scheduleSave(); renderPass();}));
   $$('[data-km]').forEach(el=>el.addEventListener('blur',()=>{const[id,i,f]=el.dataset.km.split('|');const pp=ensurePP(id);pp.milestones[+i][f]=el.textContent.trim();scheduleSave();}));
-  $$('[data-rk]').forEach(el=>el.addEventListener('blur',()=>{const[id,i,f]=el.dataset.rk.split('|');const pp=ensurePP(id);pp.risks[+i][f]=el.textContent.trim();scheduleSave();}));
+  $$('[data-rk]').forEach(el=>{
+    const avant=el.innerText;
+    el.addEventListener('blur',()=>{
+      const[id,i,f]=el.dataset.rk.split('|'); const pp=ensurePP(id); const r=pp.risks[+i]; if(!r) return;
+      // innerText, et non textContent : lui seul rend les retours à la ligne
+      // tels qu'ils ont été saisis. Les espaces insécables du presse-papier
+      // sont ramenés à des espaces ordinaires.
+      const t=el.innerText.replace(/\u00a0/g,' ').replace(/\r/g,'').replace(/\n{3,}/g,'\n\n').replace(/[ \t]+$/gm,'').trim();
+      if(r[f]===t) return;
+      r[f]=t; scheduleSave();
+    });
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){ e.preventDefault(); el.innerText=avant; el.blur(); return; }
+      if(e.key!=='Enter') return;
+      e.preventDefault();
+      if(e.altKey||e.shiftKey||e.ctrlKey||e.metaKey){      // Alt+Entrée : nouvelle ligne, comme dans un tableur
+        if(!document.execCommand('insertText',false,'\n')) document.execCommand('insertLineBreak');
+      } else el.blur();                                    // Entrée seule : on valide
+    });
+  });
   $$('[data-ns]').forEach(el=>el.addEventListener('blur',()=>{const[id,i]=el.dataset.ns.split('|');const pp=ensurePP(id);const o=nsNorm(pp.nextSteps[+i]);o.t=el.textContent.trim();pp.nextSteps[+i]=o;scheduleSave();}));
   $$('[data-kmst]').forEach(sel=>sel.addEventListener('change',()=>{const[id,i]=sel.dataset.kmst.split('|');const pp=ensurePP(id);const m=pp.milestones[+i];if(!m)return;
     logChange('Jalon '+(m.name||''),'statut',m.st||'—',sel.value); m.st=sel.value; renderPass(); scheduleSave();}));
@@ -1979,7 +2010,7 @@ function openOnePage(p,pp,atter){
     <div class=p><div class=ph>STATUT</div><div class=pb>${esc(pp&&pp.statusTxt||p.comment||'—')}</div></div>
     <div class=p><div class=ph>KEY MILESTONES</div><div class=pb><table>${ms.map(m=>`<tr><td>${m.st==='Done'?'✓ ':''}${esc(m.name)}</td><td class=num>${esc(m.neu||m.ini||'')}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</table></div></div>
     <div class=p><div class=ph>NEXT STEPS</div><div class=pb><ul style="margin:0;padding-left:16px">${ns.map(nsNorm).map(s=>`<li>${esc(s.t)}${s.st?` <span style="color:#5e7485">(${esc(s.st)})</span>`:''}</li>`).join('')||'<li>—</li>'}</ul></div></div>
-    ${rs.length?`<div class=p style="grid-column:1/-1"><div class=ph>RISQUES</div><div class=pb><table><tr><th>Description</th><th>Mitigation</th><th>Owner</th><th>Date</th></tr>${rs.map(r=>`<tr><td>${esc(r.desc)}</td><td>${esc(r.mit)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
+    ${rs.length?`<div class=p style="grid-column:1/-1"><div class=ph>RISQUES</div><div class=pb><table><tr><th>Description</th><th>Mitigation</th><th>Owner</th><th>Date</th></tr>${rs.map(r=>`<tr><td style="white-space:pre-wrap;line-height:1.5">${esc(r.desc)}</td><td style="white-space:pre-wrap;line-height:1.5">${esc(r.mit)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
   </div>
   <p class=noprint style="margin-top:16px"><button onclick="print()">⎙ Imprimer / PDF</button></p></body></html>`);
   w.document.close();
@@ -2577,7 +2608,7 @@ function openDossier(p){
     <tr><td>Clôture</td><td>${clo.ok?'Autorisée':'Bloquée — '+clo.reasons.length+' point(s)'}</td></tr>
   </table></div></div>
   ${pp&&pp.milestones&&pp.milestones.length?`<div class=sec><div class=h>JALONS</div><div class=b><table>${pp.milestones.map(m=>`<tr><td>${m.st==='Done'?'✓ ':''}${esc(m.name)}</td><td class=num>${esc(m.neu||m.ini||'')}</td></tr>`).join('')}</table></div></div>`:''}
-  ${pp&&pp.risks&&pp.risks.length?`<div class=sec><div class=h>RISQUES</div><div class=b><table>${pp.risks.map(r=>`<tr><td>${esc(r.desc)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
+  ${pp&&pp.risks&&pp.risks.length?`<div class=sec><div class=h>RISQUES</div><div class=b><table>${pp.risks.map(r=>`<tr><td style="white-space:pre-wrap">${esc(r.desc)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
   ${acts.length?`<div class=sec><div class=h>ACTIONS</div><div class=b><table>${acts.map(a=>`<tr><td>${esc(a.desc)}</td><td>${esc(a.pilote)}</td><td>${esc(a.echeance)}</td><td>${esc(a.statut)}</td></tr>`).join('')}</table></div></div>`:''}
   ${h&&h.reserves.length?`<div class=sec><div class=h>RÉSERVES PVRT</div><div class=b><table>${h.reserves.map(r=>`<tr><td>${esc(r.desc)}</td><td>${r.bloquante?'bloquante':''}</td><td>${r.levee?'levée':'ouverte'}</td></tr>`).join('')}</table></div></div>`:''}
   <p class=np style="margin-top:16px"><button onclick="print()">⎙ Imprimer / PDF</button></p></body></html>`);
