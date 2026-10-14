@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.7 -->
+<!-- PPM_BUILD:2026-10-14.8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -635,7 +635,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.7';
+const APP_BUILD='2026-10-14.8';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -800,6 +800,13 @@ function migrate(saved){
       if(k && !have.has(k) && !gone.has(k)){ have.add(k); r.members.push({...m}); } });
     r.seedRoster = SEED_ROSTER_VERSION;
   }
+  /* Les étapes « Next Steps » étaient des chaînes ; elles portent désormais un
+     statut. La conversion est faite une fois pour toutes, à la lecture. */
+  Object.keys(r.passports||{}).forEach(k=>{ const pp=r.passports[k]; if(!pp) return;
+    if(Array.isArray(pp.nextSteps)) pp.nextSteps=pp.nextSteps.map(x=>
+      (x && typeof x==='object') ? {t:String(x.t||''), st:x.st||'À faire'} : {t:String(x==null?'':x), st:'À faire'});
+    if(Array.isArray(pp.milestones)) pp.milestones.forEach(m=>{ if(m && !m.st) m.st='In progress'; });
+  });
   r.presence = r.presence || {};
   /* Le planning de presence est passe de la semaine au jour. Une saisie
      hebdomadaire ancienne est reportee sur les jours ouvres de sa semaine,
@@ -1632,14 +1639,38 @@ function budgetBlock(p,pp,atter){
 function milestonesBlock(p,pp){
   const ms=(pp&&pp.milestones)||[];
   return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Key Milestones</h3><span class="meta">${ms.length} jalons</span></div>
-  <div class="tblwrap"><table><thead><tr><th>Jalon</th><th style="width:96px">Initial</th><th style="width:96px">Révisé</th><th style="width:96px">Statut</th><th style="width:24px"></th></tr></thead>
+  <div class="tblwrap"><table><thead><tr><th>Jalon</th><th style="width:96px">Initial</th><th style="width:96px">Révisé</th><th style="width:118px">Statut</th><th style="width:24px"></th></tr></thead>
   <tbody>${ms.length?ms.map((m,i)=>`<tr>
     <td class="wrap"><span class="km-done">${m.st==='Done'?'✓':'•'}</span><span contenteditable data-km="${p.id}|${i}|name">${esc(m.name)}</span></td>
     <td class="mono" contenteditable data-km="${p.id}|${i}|ini">${esc(m.ini||'')}</td>
     <td class="mono" contenteditable data-km="${p.id}|${i}|neu">${esc(m.neu||'')}</td>
-    <td>${pill(m.st)}</td>
+    <td>${stSelect('kmst',p.id+'|'+i,MS_ST,m.st||'')}</td>
     <td><button class="delbtn" data-delkm="${p.id}|${i}">×</button></td></tr>`).join(''):`<tr><td colspan="5" class="empty">Aucun jalon. Ajoutez-en.</td></tr>`}</tbody></table></div>
   <div class="panel-b addrow"><button data-addkm="${p.id}">+ Ajouter un jalon</button></div></div>`;
+}
+/* Statuts des jalons et des étapes. Le vert pour ce qui est tenu, l'ambre pour
+   ce qui glisse, le rouge pour ce qui ne passera pas en l'état. */
+const MS_ST=['Not started','In progress','On track','At risk','Delayed','Done'];
+const NS_ST=['À faire','En cours','Fait','Décalé','Reporté'];
+function stTeinte(v){
+  const t=norm(v);
+  if(t==='done'||t==='on track'||t==='fait') return ['var(--good-soft)','var(--good)'];
+  if(t==='at risk'||t==='reporte') return ['var(--bad-soft)','var(--bad)'];
+  if(t==='in progress'||t==='delayed'||t==='en cours'||t==='decale') return ['var(--warn-soft)','var(--warn)'];
+  return ['var(--panel-2)','var(--muted)'];
+}
+/* Un statut saisi hors liste — repris d'un ancien fichier — ne doit pas
+   disparaître parce qu'il ne figure pas dans le menu : on l'y ajoute. */
+function stSelect(attr,cle,liste,val){
+  // Statut vide : pas d'option fantôme, le premier de la liste s'affiche.
+  const c=stTeinte(val), opts=(!val||liste.includes(val))?liste:liste.concat([val]);
+  return `<select data-${attr}="${esc(cle)}" style="width:100%;padding:2px 5px;border:1px solid var(--line);border-radius:6px;background:${c[0]};color:${c[1]};font-size:11px;font-weight:600">`
+    + opts.map(o=>`<option ${o===(val||'')?'selected':''}>${esc(o)}</option>`).join('') + `</select>`;
+}
+/* Les étapes étaient de simples textes ; elles portent maintenant un statut. */
+function nsNorm(x){
+  return (x && typeof x==='object') ? {t:String(x.t||''), st:x.st||'À faire'}
+                                    : {t:String(x==null?'':x), st:'À faire'};
 }
 function pill(st){const s=norm(st); if(s==='done')return '<span class="pill g">Done</span>'; if(s.includes('progress'))return '<span class="pill a">In progress</span>'; if(s.includes('late')||s.includes('retard'))return '<span class="pill r">Late</span>'; return `<span class="pill n">${esc(st||'—')}</span>`;}
 function risksBlock(p,pp){
@@ -1655,10 +1686,12 @@ function risksBlock(p,pp){
   <div class="panel-b addrow"><button data-addrk="${p.id}">+ Ajouter un risque</button></div></div>`;
 }
 function nextStepsBlock(p,pp){
-  const ns=(pp&&pp.nextSteps)||[];
-  return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Next Steps</h3><span class="meta">${ns.length}</span></div>
-  <div class="panel-b"><ul style="list-style:none;padding:0;margin:0">${ns.length?ns.map((s,i)=>`<li style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--line)">
-    <span style="color:var(--accent);font-weight:700">→</span><span style="flex:1" contenteditable data-ns="${p.id}|${i}">${esc(s)}</span>
+  const ns=((pp&&pp.nextSteps)||[]).map(nsNorm);
+  const faits=ns.filter(x=>norm(x.st)==='fait').length;
+  return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Next Steps</h3><span class="meta">${ns.length} étape(s)${ns.length?' · '+faits+' faite(s)':''}</span></div>
+  <div class="panel-b"><ul style="list-style:none;padding:0;margin:0">${ns.length?ns.map((s,i)=>`<li style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)">
+    <span style="color:var(--accent);font-weight:700">→</span><span style="flex:1;${norm(s.st)==='fait'?'text-decoration:line-through;color:var(--muted)':''}" contenteditable data-ns="${p.id}|${i}">${esc(s.t)}</span>
+    <span style="flex:0 0 118px">${stSelect('nsst',p.id+'|'+i,NS_ST,s.st)}</span>
     <button class="delbtn" data-delns="${p.id}|${i}">×</button></li>`).join(''):'<li class="empty">Aucune action.</li>'}</ul>
   <div class="addrow"><button data-addns="${p.id}">+ Ajouter une étape</button></div></div></div>`;
 }
@@ -1668,7 +1701,8 @@ function orgBlock(pp){
 }
 function ensurePP(id){
   if(!S.passports[id]){ const p=S.projects.find(x=>x.id===id); S.passports[id]={milestones:[],risks:[],nextSteps:[],statusTxt:(p&&p.comment)||''}; }
-  const pp=S.passports[id]; pp.milestones=pp.milestones||[]; pp.risks=pp.risks||[]; pp.nextSteps=pp.nextSteps||[]; return pp;
+  const pp=S.passports[id]; pp.milestones=pp.milestones||[]; pp.risks=pp.risks||[];
+  pp.nextSteps=(pp.nextSteps||[]).map(nsNorm); return pp;
 }
 function bindEditables(){
   $$('[data-editpp]').forEach(el=>el.addEventListener('blur',()=>{const pp=ensurePP(S.currentProj); pp[el.dataset.editpp]=el.textContent.trim(); scheduleSave();}));
@@ -1677,10 +1711,14 @@ function bindEditables(){
   $$('[data-pfn]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(!p)return; const t=el.textContent.replace(/\s/g,'').replace(',','.'); const v=t===''?null:parseFloat(t); p[el.dataset.pfn]=(v==null||isNaN(v))?null:v; scheduleSave(); renderPass();}));
   $$('[data-km]').forEach(el=>el.addEventListener('blur',()=>{const[id,i,f]=el.dataset.km.split('|');const pp=ensurePP(id);pp.milestones[+i][f]=el.textContent.trim();scheduleSave();}));
   $$('[data-rk]').forEach(el=>el.addEventListener('blur',()=>{const[id,i,f]=el.dataset.rk.split('|');const pp=ensurePP(id);pp.risks[+i][f]=el.textContent.trim();scheduleSave();}));
-  $$('[data-ns]').forEach(el=>el.addEventListener('blur',()=>{const[id,i]=el.dataset.ns.split('|');const pp=ensurePP(id);pp.nextSteps[+i]=el.textContent.trim();scheduleSave();}));
+  $$('[data-ns]').forEach(el=>el.addEventListener('blur',()=>{const[id,i]=el.dataset.ns.split('|');const pp=ensurePP(id);const o=nsNorm(pp.nextSteps[+i]);o.t=el.textContent.trim();pp.nextSteps[+i]=o;scheduleSave();}));
+  $$('[data-kmst]').forEach(sel=>sel.addEventListener('change',()=>{const[id,i]=sel.dataset.kmst.split('|');const pp=ensurePP(id);const m=pp.milestones[+i];if(!m)return;
+    logChange('Jalon '+(m.name||''),'statut',m.st||'—',sel.value); m.st=sel.value; renderPass(); scheduleSave();}));
+  $$('[data-nsst]').forEach(sel=>sel.addEventListener('change',()=>{const[id,i]=sel.dataset.nsst.split('|');const pp=ensurePP(id);const o=nsNorm(pp.nextSteps[+i]);
+    logChange('Étape '+(o.t||''),'statut',o.st||'—',sel.value); o.st=sel.value; pp.nextSteps[+i]=o; renderPass(); scheduleSave();}));
   $$('[data-addkm]').forEach(b=>b.addEventListener('click',()=>{ensurePP(b.dataset.addkm).milestones.push({name:'Nouveau jalon',ini:'',neu:'',st:'In progress'});renderPass();scheduleSave();}));
   $$('[data-addrk]').forEach(b=>b.addEventListener('click',()=>{ensurePP(b.dataset.addrk).risks.push({desc:'Nouveau risque',mit:'',owner:'',date:''});renderPass();scheduleSave();}));
-  $$('[data-addns]').forEach(b=>b.addEventListener('click',()=>{ensurePP(b.dataset.addns).nextSteps.push('Nouvelle étape');renderPass();scheduleSave();}));
+  $$('[data-addns]').forEach(b=>b.addEventListener('click',()=>{ensurePP(b.dataset.addns).nextSteps.push({t:'Nouvelle étape',st:'À faire'});renderPass();scheduleSave();}));
   $$('[data-delkm]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const[id,i]=b.dataset.delkm.split('|');ensurePP(id).milestones.splice(+i,1);renderPass();scheduleSave();}));
   $$('[data-delrk]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const[id,i]=b.dataset.delrk.split('|');ensurePP(id).risks.splice(+i,1);renderPass();scheduleSave();}));
   $$('[data-delns]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();const[id,i]=b.dataset.delns.split('|');ensurePP(id).nextSteps.splice(+i,1);renderPass();scheduleSave();}));
@@ -1940,7 +1978,7 @@ function openOnePage(p,pp,atter){
     <tr><td><b>Atterrissage</b></td><td class=num colspan=4><b>${fmt(atter)}</b> — écart ${ec>=0?'+':''}${fmt(ec)} k€</td></tr></table></div></div>
     <div class=p><div class=ph>STATUT</div><div class=pb>${esc(pp&&pp.statusTxt||p.comment||'—')}</div></div>
     <div class=p><div class=ph>KEY MILESTONES</div><div class=pb><table>${ms.map(m=>`<tr><td>${m.st==='Done'?'✓ ':''}${esc(m.name)}</td><td class=num>${esc(m.neu||m.ini||'')}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</table></div></div>
-    <div class=p><div class=ph>NEXT STEPS</div><div class=pb><ul style="margin:0;padding-left:16px">${ns.map(s=>`<li>${esc(s)}</li>`).join('')||'<li>—</li>'}</ul></div></div>
+    <div class=p><div class=ph>NEXT STEPS</div><div class=pb><ul style="margin:0;padding-left:16px">${ns.map(nsNorm).map(s=>`<li>${esc(s.t)}${s.st?` <span style="color:#5e7485">(${esc(s.st)})</span>`:''}</li>`).join('')||'<li>—</li>'}</ul></div></div>
     ${rs.length?`<div class=p style="grid-column:1/-1"><div class=ph>RISQUES</div><div class=pb><table><tr><th>Description</th><th>Mitigation</th><th>Owner</th><th>Date</th></tr>${rs.map(r=>`<tr><td>${esc(r.desc)}</td><td>${esc(r.mit)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
   </div>
   <p class=noprint style="margin-top:16px"><button onclick="print()">⎙ Imprimer / PDF</button></p></body></html>`);
