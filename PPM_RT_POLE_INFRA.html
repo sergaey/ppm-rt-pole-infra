@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.10 -->
+<!-- PPM_BUILD:2026-10-14.11 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -472,6 +472,14 @@
   .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
   .rkcell:empty:before,.rkmeta:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
+  /* Poignée de déplacement : discrète, visible à l'approche de la ligne. */
+  #projTbl td.pgrab{width:26px;text-align:center;cursor:grab;user-select:none;padding:0}
+  #projTbl td.pgrab .grabdot{color:var(--line-2);font-size:14px;letter-spacing:-1px}
+  #projTbl tbody tr:hover td.pgrab .grabdot{color:var(--muted)}
+  #projTbl td.pgrab:active{cursor:grabbing}
+  #projTbl tbody tr.dragging{opacity:.45}
+  #projTbl tbody tr.dropav td{box-shadow:inset 0 3px 0 -1px var(--accent)}
+  #projTbl tbody tr.dropap td{box-shadow:inset 0 -3px 0 -1px var(--accent)}
   /* Une ligne qui vient d'être créée s'annonce, le temps qu'on la repère. */
   @keyframes flashrow{from{background:var(--accent-soft)}to{background:transparent}}
   tr.flashrow td{animation:flashrow 2.4s ease-out}
@@ -650,7 +658,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.10';
+const APP_BUILD='2026-10-14.11';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1493,7 +1501,7 @@ function renderDash(){
 
   <div class="cols-dash">
     <div class="panel">
-      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet</span><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
+      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -1503,11 +1511,12 @@ function renderDash(){
           <label class="iconbtn" style="gap:6px;${S.filters.dup?'background:var(--copper-soft);border-color:var(--copper);color:var(--copper)':''}" title="N'afficher que les projets en double — même code SHINE ou même intitulé, accents et ponctuation ignorés. Les projets archivés sont montrés aussi, pour que les deux membres d'une paire apparaissent ensemble."><input type="checkbox" id="fdup" ${S.filters.dup?'checked':''}> ⧉ Doublons${nDup?' ('+nDup+')':''}</label>
           <label class="iconbtn" style="gap:6px;${S.filters.trash?'background:var(--warn-soft);border-color:var(--warn);color:var(--warn)':''}" title="Projets mis à la corbeille — restaurables"><input type="checkbox" id="ftrash" ${S.filters.trash?'checked':''}> 🗑 Corbeille${nTrash?' ('+nTrash+')':''}</label>
           <span class="sp"></span>
+          ${ordreManuelActif()?`<button class="iconbtn" id="ordReset" style="background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)" title="Revenir au tri par colonne — l'ordre manuel reste enregistré et se retrouve en cliquant à nouveau une poignée">↕ Ordre manuel ✕</button>`:''}
           <span class="hint" id="fqN">${list.length} / ${S.projects.length}</span>
         </div>
         <div class="tblwrap" style="max-height:560px;overflow-y:auto">
           <table id="projTbl"><thead><tr>
-            ${th('Santé','_h',40)}${th('Code','shine')}${th('Projet','nom')}${th('Pôle','group')}${th('PM | Owner','pm')}${th('PL | Leader','pl')}
+            <th class="pgrab" style="width:26px" title="Glissez une ligne par sa poignée pour la déplacer"></th>${th('Santé','_h',40)}${th('Code','shine')}${th('Projet','nom')}${th('Pôle','group')}${th('PM | Owner','pm')}${th('PL | Leader','pl')}
             ${thn('C1','c1')}${thn('C2','c2')}${thn('B27','b27')}${thn('ACT','act')}${thn('Écart%','ecart')}
             <th class="pact" style="width:72px" title="Archiver ou mettre à la corbeille">Actions</th>
           </tr></thead><tbody>${projRows(list)}</tbody></table>
@@ -1561,6 +1570,7 @@ function renderDash(){
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
   const nb=$('#newProj'); if(nb) nb.addEventListener('click',nouveauProjet);
+  const orst=$('#ordReset'); if(orst) orst.addEventListener('click',()=>{ S.sort={key:'c1',dir:-1}; render(); scheduleSave(); });
   if(S._flash) setTimeout(()=>{ S._flash=null; },2500);
   $('#fdup').addEventListener('change',e=>{S.filters.dup=e.target.checked; if(e.target.checked)S.filters.trash=false; render();});
   $('#ftrash').addEventListener('change',e=>{S.filters.trash=e.target.checked; if(e.target.checked)S.filters.dup=false; render();});
@@ -1578,11 +1588,34 @@ function th(lbl,k,w){return `<th data-k="${k}" ${w?`style="width:${w}px"`:''}>${
 function thn(lbl,k){return `<th class="num" data-k="${k}">${lbl}${sortar(k)}</th>`;}
 function sortar(k){return S.sort.key===k?`<span class="sortar">${S.sort.dir<0?'▼':'▲'}</span>`:'<span class="sortar">↕</span>';}
 function toggleSort(which,k){const s=S[which]; if(s.key===k)s.dir*=-1; else {s.key=k;s.dir=-1;}}
+/* Ordre manuel : l'ordre du fichier fait foi, aucun tri ne s'applique. On y
+   entre en déplaçant une ligne, on en sort en cliquant un en-tête de colonne. */
+function ordreManuelActif(){ return S.sort && S.sort.key==='_ord'; }
+/* Figer l'ordre affiché : ce que l'utilisateur voit devient l'ordre du
+   portefeuille, sans que rien ne bouge sous sa souris. Les projets masqués par
+   un filtre gardent leur ordre relatif, à la suite. */
+function figerOrdreAffiche(){
+  if(ordreManuelActif()) return;
+  const vus=$$('#projTbl tbody tr[data-gi]').map(tr=>S.projects[+tr.dataset.gi]).filter(Boolean);
+  if(vus.length){ const reste=S.projects.filter(p=>vus.indexOf(p)<0); S.projects=vus.concat(reste); }
+  S.sort={key:'_ord',dir:-1};
+}
+function deplacerProjet(src,dst,apres){
+  const a=S.projects[src], b=S.projects[dst];
+  if(!a||!b||a===b) return;
+  figerOrdreAffiche();                 // les rangs changent : on repart des objets
+  const i=S.projects.indexOf(a); S.projects.splice(i,1);
+  let j=S.projects.indexOf(b); if(apres) j++;
+  S.projects.splice(j,0,a);
+  logChange('Projet '+(a.shine||a.nom),'ordre',String(i+1),String(j+1));
+  S._flash=a.id; render(); scheduleSave();
+}
 function projRows(list){
   let rows=[...list];
   const s=S.sort, k=s.key;
-  if(k==='ecart') rows.sort((a,b)=>((( (b.c2!=null?b.c2:b.c1)||0)-(b.c1||0)) - (((a.c2!=null?a.c2:a.c1)||0)-(a.c1||0)))*( -s.dir? 1: -1));
-  rows.sort((a,b)=>{
+  if(k==='_ord') { /* ordre du fichier : on ne trie pas */ }
+  else if(k==='ecart') rows.sort((a,b)=>((( (b.c2!=null?b.c2:b.c1)||0)-(b.c1||0)) - (((a.c2!=null?a.c2:a.c1)||0)-(a.c1||0)))*( -s.dir? 1: -1));
+  if(k!=='_ord') rows.sort((a,b)=>{
     let av,bv;
     if(k==='ecart'){av=ecartV(a);bv=ecartV(b);}
     else if(['c1','c2','b27','act'].includes(k)){av=a[k]||0;bv=b[k]||0;}
@@ -1592,11 +1625,12 @@ function projRows(list){
   });
   if(S._hfilter) rows=rows.filter(p=>projHealth(p).band===S._hfilter);
   const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonInfo();
-  if(!rows.length) return `<tr><td colspan="12" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet — « ＋ Nouveau projet » pour en créer un, ou « ⇄ Données » pour importer un fichier.')}</td></tr>`;
+  if(!rows.length) return `<tr><td colspan="13" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet — « ＋ Nouveau projet » pour en créer un, ou « ⇄ Données » pour importer un fichier.')}</td></tr>`;
   // Survoler la marque dit quel autre projet est en cause.
   return rows.map(p=>{const h=projHealth(p);const ec=ecartV(p);
     const gi=S.projects.indexOf(p), dbl=doublonLib(DUP.get(gi));
-    return `<tr data-id="${esc(p.id)}" class="${S._flash===p.id?'flashrow':''}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
+    return `<tr data-id="${esc(p.id)}" data-gi="${gi}" class="${S._flash===p.id?'flashrow':''}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
+      <td class="pgrab" title="Glissez pour déplacer ce projet dans la liste"><span class="grabdot">⠿</span></td>
       <td><span class="hdot ${h.band}" title="${bandLabel[h.band]} · score ${h.composite}"></span></td>
       <td class="code">${esc(p.shine||'—')}</td>
       <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="${esc(dbl.titre)}">⧉ ${esc(dbl.court)}</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
@@ -1619,6 +1653,37 @@ function projRows(list){
 function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
 function hord(p){return {r:0,a:1,g:2}[projHealth(p).band];}
 function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{S.currentProj=tr.dataset.id; S.tab='pass'; render();}));
+  /* Glisser-déposer : la ligne n'est saisissable que par sa poignée, sinon le
+     moindre glissement sur une cellule éditable deviendrait un déplacement. */
+  let source=null;
+  const nettoyer=()=>$$('#projTbl tbody tr').forEach(t=>t.classList.remove('dropav','dropap','dragging'));
+  $$('#projTbl tbody tr[data-gi]').forEach(tr=>{
+    const poignee=tr.querySelector('.pgrab');
+    if(poignee){
+      poignee.addEventListener('mousedown',()=>{ tr.draggable=true; });
+      poignee.addEventListener('click',e=>e.stopPropagation());   // ne pas ouvrir la fiche
+    }
+    tr.addEventListener('dragstart',e=>{
+      if(!tr.draggable){ e.preventDefault(); return; }
+      source=+tr.dataset.gi; tr.classList.add('dragging');
+      try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',tr.dataset.id||''); }catch(_){}
+    });
+    tr.addEventListener('dragend',()=>{ tr.draggable=false; source=null; nettoyer(); });
+    tr.addEventListener('dragover',e=>{
+      if(source==null || +tr.dataset.gi===source) return;
+      e.preventDefault(); try{ e.dataTransfer.dropEffect='move'; }catch(_){}
+      const r=tr.getBoundingClientRect(), apres=(e.clientY-r.top)>r.height/2;
+      tr.classList.toggle('dropap',apres); tr.classList.toggle('dropav',!apres);
+    });
+    tr.addEventListener('dragleave',()=>tr.classList.remove('dropav','dropap'));
+    tr.addEventListener('drop',e=>{
+      if(source==null) return;
+      e.preventDefault(); e.stopPropagation();
+      const r=tr.getBoundingClientRect(), apres=(e.clientY-r.top)>r.height/2;
+      const src=source; source=null; nettoyer();
+      deplacerProjet(src,+tr.dataset.gi,apres);
+    });
+  });
   // Les actions de ligne ne doivent pas ouvrir le passeport au passage.
   const agir=(sel,fn)=>$$('#projTbl ['+sel+']').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); fn(+b.dataset[sel.replace('data-','')]); }));
   agir('data-parch', projArchiver); agir('data-pdel', projCorbeille);
