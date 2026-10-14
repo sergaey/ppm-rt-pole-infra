@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-09-25.3 -->
+<!-- PPM_BUILD:2026-10-14 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -620,7 +620,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-09-25.3';
+const APP_BUILD='2026-10-14';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -678,7 +678,7 @@ function buildFromSeed(){
     uoFilter:{scope:'',q:''},
     gedFilter:{proj:'',dossier:'',statut:'',q:'',rubrique:'',nolink:false},
     phScope:'__all__',
-    filters:{q:'',pole:'',statut:''},
+    filters:{q:'',pole:'',statut:'',qscope:''},
     sort:{key:'c1',dir:-1},
     finSort:{key:'ecart',dir:-1},
     members: SEED_MEMBERS.map(m=>({...m})),
@@ -761,6 +761,7 @@ function migrate(saved){
     // « D.O.E Fournisseur & Autres » se separe en deux : ce qui y etait range
     // relevait du D.O.E, « Autres » n'etant qu'un fourre-tout implicite.
     if(dd.rubrique==='D.O.E Fournisseur & Autres')dd.rubrique='D.O.E Fournisseur';});
+  r.filters=r.filters||{q:'',pole:'',statut:'',qscope:''}; if(r.filters.qscope===undefined)r.filters.qscope='';
   r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.rubrique==='D.O.E Fournisseur & Autres')r.gedFilter.rubrique='D.O.E Fournisseur'; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
@@ -1283,12 +1284,23 @@ function totals(list){
     const h=projHealth(p).band; if(h==='r')t.red++; else if(h==='a')t.amber++;});
   return t;
 }
+/* Chercher « dans quelle colonne » : un nom qui est PM d'un projet et PL d'un
+   autre ne se distinguait pas, la recherche ne couvrant que le PM. */
+const FQ_SCOPES=[['','Partout'],['pm','PM | Owner'],['pl','PL | Leader'],['sponsor','Sponsor']];
+const FQ_PLACE={'':'Rechercher projet / code / PM / PL…','pm':'Nom du PM | Owner…','pl':'Nom du PL | Leader…','sponsor':'Nom du sponsor…'};
 function filtered(){
   const f=S.filters;
   return PROJ().filter(p=>{
     if(f.pole){ if(p.group!==f.pole) return false; }
     if(f.statut && p.statut!==f.statut) return false;
-    if(f.q){const q=norm(f.q); if(!(norm(p.nom).includes(q)||norm(p.shine).includes(q)||norm(p.pm).includes(q)||norm(p.ishift).includes(q)))return false;}
+    if(f.q){
+      const q=norm(f.q);
+      const champs = f.qscope==='pm' ? [p.pm]
+                   : f.qscope==='pl' ? [p.pl]
+                   : f.qscope==='sponsor' ? [p.sponsor]
+                   : [p.nom,p.shine,p.pm,p.pl,p.sponsor,p.ishift];
+      if(!champs.some(v=>norm(v).includes(q))) return false;
+    }
     return true;
   });
 }
@@ -1338,11 +1350,12 @@ function renderDash(){
       <div class="panel-h"><h3>Projets du portefeuille</h3><span class="meta">clic sur une ligne → Passeport</span></div>
       <div class="panel-b">
         <div class="toolbar">
-          <input class="search" id="fq" type="text" placeholder="Rechercher projet / code / PM…" value="${esc(S.filters.q)}">
+          <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
+          <select id="fqScope" title="Colonne sur laquelle porte la recherche">${FQ_SCOPES.map(([v,lb])=>`<option value="${v}" ${(S.filters.qscope||'')===v?'selected':''}>${lb}</option>`).join('')}</select>
           <select id="fpole">${[...new Set(['','INFRA',...S.projects.map(p=>p.group)])].sort().map(g=>`<option value="${esc(g)}" ${S.filters.pole===g?'selected':''}>${g?esc(g):'Tous pôles'}</option>`).join('')}</select>
           <select id="fstatut">${['',...new Set(S.projects.map(p=>p.statut).filter(Boolean))].map(g=>`<option value="${esc(g)}" ${S.filters.statut===g?'selected':''}>${g?esc(g):'Tous statuts'}</option>`).join('')}</select>
           <span class="sp"></span>
-          <span class="hint">${list.length} / ${S.projects.length}</span>
+          <span class="hint" id="fqN">${list.length} / ${S.projects.length}</span>
         </div>
         <div class="tblwrap" style="max-height:560px;overflow-y:auto">
           <table id="projTbl"><thead><tr>
@@ -1395,7 +1408,11 @@ function renderDash(){
   ${footHTML('dash',`PPM Vitry · données amorcées depuis Prépa C2-B26 &amp; Plan de ressources projets · éditable en ligne, sauvegarde automatique.`)}`;
 
   // wire
-  $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; const tb=$('#projTbl tbody'); tb.innerHTML=projRows(filtered()); wireRows();});
+  const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows();
+    const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
+  $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
+  $('#fqScope').addEventListener('change',e=>{S.filters.qscope=e.target.value;
+    const q=$('#fq'); if(q) q.placeholder=FQ_PLACE[e.target.value]||FQ_PLACE['']; majListe();});
   $('#fpole').addEventListener('change',e=>{S.filters.pole=e.target.value; renderDash(); scheduleSave();});
   $('#fstatut').addEventListener('change',e=>{S.filters.statut=e.target.value; renderDash(); scheduleSave();});
   $$('#projTbl thead th[data-k]').forEach(th=>th.addEventListener('click',()=>{toggleSort('sort',th.dataset.k); renderDash();}));
