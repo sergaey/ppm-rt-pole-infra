@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14 -->
+<!-- PPM_BUILD:2026-10-14.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -576,7 +576,7 @@
     <div class="sb-foot">
       <label class="iconbtn" style="justify-content:center;gap:6px" title="Afficher seulement les projets actifs"><input type="checkbox" id="activeTgl" checked> Projets actifs</label>
       <div class="row"><button class="iconbtn" id="themeBtn" title="Thème clair/sombre">◐ Thème</button><button class="iconbtn" id="exportBtn" title="Exporter la vue en CSV">⭳ CSV</button></div>
-      <button class="iconbtn" id="dataBtn" style="justify-content:center" title="Importer / exporter les données (JSON, Excel)">⇄ Données</button>
+      <div class="row"><button class="iconbtn" id="dataBtn" title="Importer / exporter les données (JSON, Excel)">⇄ Données</button><button class="iconbtn" id="majBtn" title="Recharger l'application : prend en compte un fichier HTML remplacé et les données enregistrées depuis un autre poste">⟳ MAJ</button></div>
       <button class="savebtn" id="saveBtn" title="Enregistrer maintenant (Ctrl+S)">💾 Enregistrer</button>
       <div class="savestate" id="saveState"><span class="d"></span><span class="t">Prêt</span></div>
       <button class="iconbtn" id="logoutBtn" style="justify-content:center;font-size:11.5px" title="Fermer la session">⏻ Se déconnecter</button>
@@ -620,7 +620,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14';
+const APP_BUILD='2026-10-14.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3433,6 +3433,7 @@ try{$('#activeTgl').checked=S.activeOnly;}catch(_){}
 /* Enregistrement manuel : bouton + Ctrl/Cmd+S */
 $('#saveBtn').addEventListener('click',()=>{ saveNow(); });
 try{ $('#dataBtn').addEventListener('click',()=>openDataHub('json')); }catch(_){}
+try{ $('#majBtn').addEventListener('click',majApp); }catch(_){}
 try{ $('#logoutBtn').addEventListener('click',()=>{ if(confirm('Fermer la session ?')) logout(); }); }catch(_){}
 window.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&(e.key==='s'||e.key==='S')){ e.preventDefault(); saveNow(); } });
 $('#themeBtn').addEventListener('click',()=>{
@@ -3486,6 +3487,47 @@ function shellWelcome(){
   document.body.insertBefore(bar, document.body.firstChild);
   bar.querySelector('[data-sw-open]').onclick=()=>{ openDataHub('json'); };
   bar.querySelector('.fw-x').onclick=()=>{ try{localStorage.setItem('ppm_welcome','0');}catch(_){} bar.remove(); };
+}
+/* « MAJ » : l'application ouverte ne sait pas que le fichier HTML a ete
+   remplace — le navigateur garde en memoire la page chargee au depart. Ce
+   bouton demande sa version au serveur, qui relit le fichier du dossier, et
+   recharge la page si elle a change. Rien n'est recharge tant que des
+   modifications ne sont pas enregistrees : la mise a jour ne doit jamais
+   couter une saisie. */
+function majDire(txt){ const b=$('#majBtn'); if(b) b.textContent=txt; }
+async function majApp(){
+  const b=$('#majBtn'); if(b) b.disabled=true;
+  const rendre=()=>{ majDire('⟳ MAJ'); if(b) b.disabled=false; };
+  try{
+    if(dirty){
+      majDire('⟳ enregistrement…');
+      const ok=await doSave();
+      if(!ok){
+        rendre();
+        alert("Vos modifications n'ont pas pu être enregistrées : la mise à jour est annulée pour ne rien perdre.\n\nRéessayez « Enregistrer », puis relancez la MAJ.");
+        return;
+      }
+    }
+    let dispo=null;
+    if(SRV){
+      majDire('⟳ vérification…');
+      try{ const r=await api('/version'); if(r.ok){ const j=await r.json(); dispo=j&&j.build||null; } }catch(_){}
+    }
+    if(SRV && dispo && dispo===APP_BUILD){
+      // Application deja a jour : il reste a rapatrier l'etat enregistre ailleurs.
+      majDire('⟳ synchronisation…');
+      await syncFromServer(true);
+      majDire('✓ à jour');
+      setTimeout(rendre,2500);
+      return;
+    }
+    majDire('⟳ rechargement…');
+    if(location.protocol==='file:') location.reload();
+    else location.replace(location.pathname+'?maj='+Date.now());
+  }catch(e){
+    rendre();
+    alert('Mise à jour impossible : '+(e&&e.message||e));
+  }
 }
 function fileModeWarning(){
   if(location.protocol!=='file:') return;                    // servi par le serveur : rien à signaler
