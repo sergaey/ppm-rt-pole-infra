@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.2 -->
+<!-- PPM_BUILD:2026-10-14.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -459,6 +459,20 @@
   .addrow{margin-top:10px}
   .addrow button{border:1px dashed var(--line-2);background:transparent;border-radius:8px;padding:6px 12px;font-size:12px;color:var(--muted);font-weight:600}
   .addrow button:hover{border-color:var(--accent);color:var(--accent)}
+  .dupmk{font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;
+    background:var(--copper-soft);color:var(--copper);white-space:nowrap}
+  .archmk{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;
+    background:var(--panel-3);color:var(--muted);white-space:nowrap}
+  /* Le tableau du portefeuille défile horizontalement dans sa colonne : sans
+     ancrage, les actions sortaient de l'écran et restaient introuvables. */
+  #projTbl .pact{position:sticky;right:0;background:var(--panel);z-index:1;
+    box-shadow:-6px 0 8px -7px rgba(16,42,67,.35);text-align:center}
+  /* Les autres en-têtes sont figés en haut avec z-index 2 et défilent sous le
+     doigt : sans rang supérieur, ils recouvraient « Actions ». */
+  #projTbl thead th.pact{background:var(--panel-2);z-index:3}
+  #projTbl tbody tr:hover .pact{background:var(--panel-2)}
+  td.pact .iconbtn{opacity:.45} tr:hover td.pact .iconbtn{opacity:1}
+  td.pact .delbtn{opacity:.45} tr:hover td.pact .delbtn{opacity:1}
   .delbtn{color:var(--bad);background:transparent;border:0;font-size:15px;opacity:0;padding:0 4px}
   tr:hover .delbtn{opacity:.7} .delbtn:hover{opacity:1}
 </style>
@@ -620,7 +634,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.2';
+const APP_BUILD='2026-10-14.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -678,7 +692,7 @@ function buildFromSeed(){
     uoFilter:{scope:'',q:''},
     gedFilter:{proj:'',dossier:'',statut:'',q:'',rubrique:'',nolink:false},
     phScope:'__all__',
-    filters:{q:'',pole:'',statut:'',qscope:''},
+    filters:{q:'',pole:'',statut:'',qscope:'',dup:false,trash:false},
     sort:{key:'c1',dir:-1},
     finSort:{key:'ecart',dir:-1},
     members: SEED_MEMBERS.map(m=>({...m})),
@@ -761,7 +775,7 @@ function migrate(saved){
     // « D.O.E Fournisseur & Autres » se separe en deux : ce qui y etait range
     // relevait du D.O.E, « Autres » n'etant qu'un fourre-tout implicite.
     if(dd.rubrique==='D.O.E Fournisseur & Autres')dd.rubrique='D.O.E Fournisseur';});
-  r.filters=r.filters||{q:'',pole:'',statut:'',qscope:''}; if(r.filters.qscope===undefined)r.filters.qscope='';
+  r.filters=r.filters||{q:'',pole:'',statut:'',qscope:''}; if(r.filters.qscope===undefined)r.filters.qscope=''; r.filters.dup=!!r.filters.dup; r.filters.trash=!!r.filters.trash;
   r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.rubrique==='D.O.E Fournisseur & Autres')r.gedFilter.rubrique='D.O.E Fournisseur'; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
@@ -1290,7 +1304,10 @@ const FQ_SCOPES=[['','Partout'],['pm','PM | Owner'],['pl','PL | Leader'],['spons
 const FQ_PLACE={'':'Rechercher projet / code / PM / PL…','pm':'Nom du PM | Owner…','pl':'Nom du PL | Leader…','sponsor':'Nom du sponsor…'};
 function filtered(){
   const f=S.filters;
-  return PROJ().filter(p=>{
+  const base = f.trash ? S.projects.filter(p=>p.deleted)
+             : (f.dup ? (()=>{ const d=doublonIdx(); return PROJ().filter(p=>d.has(S.projects.indexOf(p))); })()
+                      : PROJ());
+  return base.filter(p=>{
     if(f.pole){ if(p.group!==f.pole) return false; }
     if(f.statut && p.statut!==f.statut) return false;
     if(f.q){
@@ -1308,6 +1325,7 @@ function filtered(){
 /* ======================= TAB 1 — Portefeuille ======================= */
 function renderDash(){
   const list=filtered(), t=totals(list);
+  const nDup=doublonIdx().size, nTrash=S.projects.filter(p=>p.deleted).length;
   const byGroup={};
   list.forEach(p=>{const g=p.group; (byGroup[g]=byGroup[g]||{c1:0,n:0}); byGroup[g].c1+=p.c1||0; byGroup[g].n++;});
   const groups=Object.entries(byGroup).sort((a,b)=>b[1].c1-a[1].c1);
@@ -1354,6 +1372,8 @@ function renderDash(){
           <select id="fqScope" title="Colonne sur laquelle porte la recherche">${FQ_SCOPES.map(([v,lb])=>`<option value="${v}" ${(S.filters.qscope||'')===v?'selected':''}>${lb}</option>`).join('')}</select>
           <select id="fpole">${[...new Set(['','INFRA',...S.projects.map(p=>p.group)])].sort().map(g=>`<option value="${esc(g)}" ${S.filters.pole===g?'selected':''}>${g?esc(g):'Tous pôles'}</option>`).join('')}</select>
           <select id="fstatut">${['',...new Set(S.projects.map(p=>p.statut).filter(Boolean))].map(g=>`<option value="${esc(g)}" ${S.filters.statut===g?'selected':''}>${g?esc(g):'Tous statuts'}</option>`).join('')}</select>
+          <label class="iconbtn" style="gap:6px;${S.filters.dup?'background:var(--copper-soft);border-color:var(--copper);color:var(--copper)':''}" title="N'afficher que les projets en double — même code SHINE ou même intitulé"><input type="checkbox" id="fdup" ${S.filters.dup?'checked':''}> ⧉ Doublons${nDup?' ('+nDup+')':''}</label>
+          <label class="iconbtn" style="gap:6px;${S.filters.trash?'background:var(--warn-soft);border-color:var(--warn);color:var(--warn)':''}" title="Projets mis à la corbeille — restaurables"><input type="checkbox" id="ftrash" ${S.filters.trash?'checked':''}> 🗑 Corbeille${nTrash?' ('+nTrash+')':''}</label>
           <span class="sp"></span>
           <span class="hint" id="fqN">${list.length} / ${S.projects.length}</span>
         </div>
@@ -1361,6 +1381,7 @@ function renderDash(){
           <table id="projTbl"><thead><tr>
             ${th('Santé','_h',40)}${th('Code','shine')}${th('Projet','nom')}${th('Pôle','group')}${th('PM | Owner','pm')}${th('PL | Leader','pl')}
             ${thn('C1','c1')}${thn('C2','c2')}${thn('B27','b27')}${thn('ACT','act')}${thn('Écart%','ecart')}
+            <th class="pact" style="width:72px" title="Archiver ou mettre à la corbeille">Actions</th>
           </tr></thead><tbody>${projRows(list)}</tbody></table>
         </div>
       </div>
@@ -1411,6 +1432,8 @@ function renderDash(){
   const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows();
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
+  $('#fdup').addEventListener('change',e=>{S.filters.dup=e.target.checked; if(e.target.checked)S.filters.trash=false; render();});
+  $('#ftrash').addEventListener('change',e=>{S.filters.trash=e.target.checked; if(e.target.checked)S.filters.dup=false; render();});
   $('#fqScope').addEventListener('change',e=>{S.filters.qscope=e.target.value;
     const q=$('#fq'); if(q) q.placeholder=FQ_PLACE[e.target.value]||FQ_PLACE['']; majListe();});
   $('#fpole').addEventListener('change',e=>{S.filters.pole=e.target.value; renderDash(); scheduleSave();});
@@ -1438,12 +1461,14 @@ function projRows(list){
     if(av<bv)return s.dir; if(av>bv)return -s.dir; return 0;
   });
   if(S._hfilter) rows=rows.filter(p=>projHealth(p).band===S._hfilter);
-  if(!rows.length) return `<tr><td colspan="11" class="empty">Aucun projet.</td></tr>`;
+  const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonIdx();
+  if(!rows.length) return `<tr><td colspan="12" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet.')}</td></tr>`;
   return rows.map(p=>{const h=projHealth(p);const ec=ecartV(p);
-    return `<tr data-id="${esc(p.id)}">
+    const gi=S.projects.indexOf(p), dbl=DUP.has(gi);
+    return `<tr data-id="${esc(p.id)}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
       <td><span class="hdot ${h.band}" title="${bandLabel[h.band]} · score ${h.composite}"></span></td>
       <td class="code">${esc(p.shine||'—')}</td>
-      <td class="wrap">${esc(p.nom)}</td>
+      <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="Un autre projet porte le même code SHINE ou le même intitulé">⧉ doublon</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
       <td>${esc(p.group)}</td>
       <td class="edc" contenteditable data-dpf="pm|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pm||'')}</td>
       <td class="edc" contenteditable data-dpf="pl|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pl||'')}</td>
@@ -1452,11 +1477,21 @@ function projRows(list){
       <td class="num">${fmt(p.b27)}</td>
       <td class="num">${fmt(p.act)}</td>
       <td class="num" style="color:${ec>0?'var(--bad)':ec<0?'var(--good)':'inherit'}">${p.c1?((ec>=0?'+':'')+fmt(ec/ (p.c1||1)*100,1)+'%'):'—'}</td>
+      <td class="pact" style="white-space:nowrap">${corbeille?`
+        <button class="iconbtn" style="padding:1px 7px;font-size:11px;background:var(--good-soft);border-color:var(--good);color:var(--good)" data-prest="${gi}" title="Restaurer ce projet">↩</button>
+        <button class="delbtn" data-ppurge="${gi}" title="Supprimer définitivement (irréversible)">🗑</button>`:`
+        <button class="iconbtn" style="padding:1px 6px;font-size:11px" data-parch="${gi}" title="${p.actif===false?'Réactiver ce projet':'Archiver : le projet sort des vues et des totaux, sans être supprimé'}">${p.actif===false?'↩':'⧉'}</button>
+        <button class="delbtn" data-pdel="${gi}" title="Mettre à la corbeille (réversible)">×</button>`}
+      </td>
     </tr>`;}).join('');
 }
 function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
 function hord(p){return {r:0,a:1,g:2}[projHealth(p).band];}
 function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{S.currentProj=tr.dataset.id; S.tab='pass'; render();}));
+  // Les actions de ligne ne doivent pas ouvrir le passeport au passage.
+  const agir=(sel,fn)=>$$('#projTbl ['+sel+']').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); fn(+b.dataset[sel.replace('data-','')]); }));
+  agir('data-parch', projArchiver); agir('data-pdel', projCorbeille);
+  agir('data-prest', projRestaurer); agir('data-ppurge', projPurger);
   $$('#projTbl [data-dpf]').forEach(el=>{ el.addEventListener('click',e=>e.stopPropagation()); el.addEventListener('blur',()=>{const parts=el.dataset.dpf.split('|'); const f=parts[0], id=parts.slice(1).join('|'); const pr=S.projects.find(x=>x.id===id); if(pr){pr[f]=el.textContent.trim(); scheduleSave();}}); }); }
 function weightsBar(){
   const w=S.config.weights; const tot=Object.values(w).reduce((a,b)=>a+b,0);
@@ -2489,7 +2524,52 @@ function isActif(p){
   if(y && y<2025) return false;                          // portefeuille courant (>=2025)
   return true;
 }
-function PROJ(){ return S.activeOnly? S.projects.filter(p=>p.actif) : S.projects; }
+/* Trois états pour un projet : vivant, archivé (actif=false, écarté par la
+   case « Projets actifs ») et en corbeille (deleted, écarté de partout mais
+   conservé dans le fichier, donc restaurable). Aucune suppression n'est
+   définitive sans un passage par la corbeille. */
+function PROJ(){ const v=S.projects.filter(p=>!p.deleted); return S.activeOnly? v.filter(p=>p.actif) : v; }
+/* Doublons : même code SHINE ou même intitulé, aux accents et à la ponctuation
+   près. Renvoie les rangs dans S.projects — deux projets de même code portent
+   le même id, lequel ne les distinguerait donc pas. */
+function doublonIdx(){
+  const vus={}, out=new Set();
+  S.projects.forEach((p,i)=>{
+    if(p.deleted) return;
+    const cles=[];
+    const c=norm(p.shine).replace(/[^a-z0-9]/g,''); if(c) cles.push('c:'+c);
+    const n=norm(p.nom).replace(/[^a-z0-9]/g,''); if(n) cles.push('n:'+n);
+    cles.forEach(k=>{ (vus[k]=vus[k]||[]).push(i); });
+  });
+  Object.keys(vus).forEach(k=>{ const l=vus[k]; if(l.length>1) l.forEach(i=>out.add(i)); });
+  return out;
+}
+function projArchiver(gi){
+  const p=S.projects[gi]; if(!p) return;
+  p.actif=!p.actif;
+  logChange('Projet '+(p.shine||p.nom), p.actif?'réactivation':'archivage', p.actif?'archivé':'actif', p.actif?'actif':'archivé');
+  render(); scheduleSave();
+}
+function projCorbeille(gi){
+  const p=S.projects[gi]; if(!p) return;
+  p.deleted=true; p.deletedAt=Date.now();
+  if(S.currentProj===p.id){ const n=S.projects.find(x=>!x.deleted); S.currentProj=n?n.id:''; }
+  logChange('Projet '+(p.shine||p.nom),'mise à la corbeille','présent','corbeille');
+  render(); scheduleSave();
+}
+function projRestaurer(gi){
+  const p=S.projects[gi]; if(!p) return;
+  delete p.deleted; delete p.deletedAt;
+  logChange('Projet '+(p.shine||p.nom),'restauration','corbeille','présent');
+  render(); scheduleSave();
+}
+function projPurger(gi){
+  const p=S.projects[gi]; if(!p) return;
+  if(!confirm('Supprimer définitivement « '+(p.shine||'')+' '+(p.nom||'')+' » ?\n\nCette suppression est irréversible : le projet, son passeport et son phasing quittent le fichier.')) return;
+  S.projects.splice(gi,1);
+  logChange('Projet '+(p.shine||p.nom),'suppression définitive','corbeille','—');
+  render(); scheduleSave();
+}
 
 /* ---- Référentiel UO ---- */
 function renderUO(){
