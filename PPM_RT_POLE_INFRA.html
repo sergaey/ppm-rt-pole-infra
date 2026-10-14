@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.9 -->
+<!-- PPM_BUILD:2026-10-14.10 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -472,6 +472,9 @@
   .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
   .rkcell:empty:before,.rkmeta:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
+  /* Une ligne qui vient d'être créée s'annonce, le temps qu'on la repère. */
+  @keyframes flashrow{from{background:var(--accent-soft)}to{background:transparent}}
+  tr.flashrow td{animation:flashrow 2.4s ease-out}
   .dupmk{font-size:9.5px;font-weight:700;letter-spacing:.02em;padding:1px 6px;border-radius:5px;
     background:var(--copper-soft);color:var(--copper);white-space:nowrap}
   .archmk{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:5px;
@@ -647,7 +650,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.9';
+const APP_BUILD='2026-10-14.10';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1348,6 +1351,85 @@ function totals(list){
    autre ne se distinguait pas, la recherche ne couvrant que le PM. */
 const FQ_SCOPES=[['','Partout'],['pm','PM | Owner'],['pl','PL | Leader'],['sponsor','Sponsor']];
 const FQ_PLACE={'':'Rechercher projet / code / PM / PL…','pm':'Nom du PM | Owner…','pl':'Nom du PL | Leader…','sponsor':'Nom du sponsor…'};
+/* Créer un projet. Jusqu'ici le portefeuille ne se remplissait que par import
+   (JSON ou Excel) : il manquait le geste le plus simple, ajouter une ligne.
+   Le minimum est demandé ici — intitulé et code —, tout le reste se complète
+   ensuite dans le tableau ou dans le Pilotage projet. */
+function nouveauProjet(){
+  if(document.getElementById('npBox')) return;
+  const poles=[...new Set(S.projects.map(p=>p.pole).filter(Boolean))].sort();
+  const statuts=[...new Set(S.projects.map(p=>p.statut).filter(Boolean))];
+  if(!statuts.length) statuts.push('En cours');
+  const champ=(id,lb,ph,larg)=>`<label style="flex:${larg||'1 1 46%'};min-width:150px;font-size:11.5px;color:var(--muted)">${lb}
+    <input id="${id}" placeholder="${esc(ph||'')}" autocomplete="off" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;font-size:13px"></label>`;
+  const ov=document.createElement('div'); ov.className='dmodal'; ov.id='npBox';
+  ov.innerHTML=`<div class="dbox" style="width:min(680px,96vw)">
+    <div class="dhead"><span class="af-mk">＋</span><h4>Nouveau projet</h4><button class="dclose" data-npc title="Fermer">×</button></div>
+    <div class="dbody" style="padding:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        ${champ('npShine','CODE SHINE','P40123','1 1 30%')}
+        ${champ('npNom','INTITULÉ DU PROJET *','Rénovation du poste HTA — bâtiment C','1 1 62%')}
+        <label style="flex:1 1 30%;min-width:150px;font-size:11.5px;color:var(--muted)">PÔLE
+          <input id="npPole" list="npPoles" placeholder="INFRA" autocomplete="off" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;font-size:13px">
+          <datalist id="npPoles">${poles.map(p=>`<option value="${esc(p)}"></option>`).join('')}</datalist></label>
+        ${champ('npSecteur','SECTEUR / ZONE','Atelier 3','1 1 30%')}
+        <label style="flex:1 1 30%;min-width:150px;font-size:11.5px;color:var(--muted)">STATUT
+          <select id="npStatut" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:inherit;font-size:13px">${statuts.map(x=>`<option>${esc(x)}</option>`).join('')}</select></label>
+        ${champ('npPm','PM | OWNER','','1 1 30%')}
+        ${champ('npPl','PL | LEADER','','1 1 30%')}
+        ${champ('npSponsor','SPONSOR','','1 1 30%')}
+        ${champ('npC1','C1 ALLOUÉ (k€)','0','1 1 20%')}
+        ${champ('npC2','C2 RÉVISÉ (k€)','0','1 1 20%')}
+        ${champ('npB27','B27 (k€)','0','1 1 20%')}
+      </div>
+      <label style="display:flex;align-items:center;gap:7px;margin-top:14px;font-size:12.5px">
+        <input type="checkbox" id="npOuvrir"> Ouvrir la fiche « Pilotage projet » après création</label>
+      <div class="dmsg" data-npmsg></div>
+    </div>
+    <div style="padding:0 16px 16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="iconbtn" data-npc>Annuler</button>
+      <button class="savebtn" style="width:auto;padding:9px 20px" id="npOk">Créer le projet</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const q=i=>ov.querySelector('#'+i), msg=ov.querySelector('[data-npmsg]');
+  const fermer=()=>ov.remove();
+  ov.querySelectorAll('[data-npc]').forEach(b=>b.onclick=fermer);
+  ov.onclick=e=>{ if(e.target===ov) fermer(); };
+  ov.addEventListener('keydown',e=>{ if(e.key==='Escape') fermer();
+    if(e.key==='Enter' && e.target.tagName==='INPUT'){ e.preventDefault(); q('npOk').click(); } });
+  const nb=v=>{ const t=String(v||'').replace(/\s/g,'').replace(',','.'); const x=parseFloat(t); return isNaN(x)?0:x; };
+  let force=false;
+  q('npOk').onclick=()=>{
+    const nom=q('npNom').value.trim(), shine=q('npShine').value.trim();
+    if(!nom){ setDMsg(msg,'err','L\'intitulé du projet est obligatoire.'); q('npNom').focus(); return; }
+    // Même garde que la marque « doublon » du tableau : prévenir avant, plutôt
+    // que signaler après.
+    const cle=x=>norm(x).replace(/[^a-z0-9]/g,'');
+    const jumeau=S.projects.find(p=>!p.deleted && ((shine && cle(p.shine)===cle(shine)) || cle(p.nom)===cle(nom)));
+    if(jumeau && !force){
+      force=true;
+      setDMsg(msg,'err','Un projet porte déjà ce '+((shine&&cle(jumeau.shine)===cle(shine))?'code':'intitulé')+' : '
+        +(jumeau.shine||'sans code')+' — '+(jumeau.nom||'')+(jumeau.actif===false?' (archivé)':'')
+        +'. Cliquez à nouveau sur « Créer le projet » pour l\'ajouter malgré tout.');
+      return;
+    }
+    const pole=q('npPole').value.trim()||'INFRA';
+    const p={ id: shine||uid(), shine:shine, nom:nom, pole:pole, group:poleGroup(pole),
+      secteur:q('npSecteur').value.trim(), pm:q('npPm').value.trim(), pl:q('npPl').value.trim(),
+      sponsor:q('npSponsor').value.trim(), statut:q('npStatut').value, actif:true, hoverride:null,
+      c1:nb(q('npC1').value), c2:nb(q('npC2').value), b27:nb(q('npB27').value), act:0, commit:null };
+    S.projects.unshift(p);
+    // Un projet créé doit se voir : on lève les filtres qui le masqueraient.
+    S.filters.q=''; S.filters.pole=''; S.filters.statut=''; S.filters.dup=false; S.filters.trash=false;
+    S._hfilter=null; S._flash=p.id;
+    logChange('Projet '+(p.shine||p.nom),'création','—',p.nom);
+    const ouvrir=q('npOuvrir').checked;
+    fermer();
+    if(ouvrir){ S.currentProj=p.id; S.tab='pass'; }
+    render(); scheduleSave();
+  };
+  setTimeout(()=>q('npShine').focus(),0);
+}
 function filtered(){
   const f=S.filters;
   const base = f.trash ? S.projects.filter(p=>p.deleted)
@@ -1411,7 +1493,7 @@ function renderDash(){
 
   <div class="cols-dash">
     <div class="panel">
-      <div class="panel-h"><h3>Projets du portefeuille</h3><span class="meta">clic sur une ligne → Pilotage projet</span></div>
+      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet</span><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -1478,6 +1560,8 @@ function renderDash(){
   const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows();
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
+  const nb=$('#newProj'); if(nb) nb.addEventListener('click',nouveauProjet);
+  if(S._flash) setTimeout(()=>{ S._flash=null; },2500);
   $('#fdup').addEventListener('change',e=>{S.filters.dup=e.target.checked; if(e.target.checked)S.filters.trash=false; render();});
   $('#ftrash').addEventListener('change',e=>{S.filters.trash=e.target.checked; if(e.target.checked)S.filters.dup=false; render();});
   $('#fqScope').addEventListener('change',e=>{S.filters.qscope=e.target.value;
@@ -1508,11 +1592,11 @@ function projRows(list){
   });
   if(S._hfilter) rows=rows.filter(p=>projHealth(p).band===S._hfilter);
   const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonInfo();
-  if(!rows.length) return `<tr><td colspan="12" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet.')}</td></tr>`;
+  if(!rows.length) return `<tr><td colspan="12" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.':'Aucun projet — « ＋ Nouveau projet » pour en créer un, ou « ⇄ Données » pour importer un fichier.')}</td></tr>`;
   // Survoler la marque dit quel autre projet est en cause.
   return rows.map(p=>{const h=projHealth(p);const ec=ecartV(p);
     const gi=S.projects.indexOf(p), dbl=doublonLib(DUP.get(gi));
-    return `<tr data-id="${esc(p.id)}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
+    return `<tr data-id="${esc(p.id)}" class="${S._flash===p.id?'flashrow':''}" style="${p.actif===false&&!corbeille?'opacity:.62':''}">
       <td><span class="hdot ${h.band}" title="${bandLabel[h.band]} · score ${h.composite}"></span></td>
       <td class="code">${esc(p.shine||'—')}</td>
       <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="${esc(dbl.titre)}">⧉ ${esc(dbl.court)}</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
