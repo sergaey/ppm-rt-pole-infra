@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.10 -->
+<!-- PPM_BUILD:2026-10-15.11 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -903,6 +903,72 @@
   .op .opcalc{display:inline-block;padding:2px 6px;border:1px dashed var(--line-2);border-radius:5px;
     background:var(--panel-2);color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;cursor:help}
   .op .opcalc.neg{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+  /* ---- ID Card : la reproduction du support d'approbation ---- */
+  .idcnote{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;margin-bottom:11px;
+    border:1px solid var(--accent);background:var(--accent-soft);font-size:12.5px;line-height:1.45}
+  .idcnote.gate{border-color:var(--copper);background:var(--copper-soft,var(--warn-soft))}
+  .idcnote .ic{font-size:20px} .idcnote div{flex:1}
+  .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .idccard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px 15px;box-shadow:var(--shadow)}
+  .idchead{display:flex;align-items:flex-start;gap:14px;margin-bottom:11px;flex-wrap:wrap}
+  .idchl{flex:1 1 320px;min-width:260px}
+  .idct{font-family:Archivo;font-size:15px;font-weight:800;line-height:1.3}
+  .idct b{color:var(--accent-ink)}
+  .idccode{color:var(--copper)}
+  .idcsub{margin-top:5px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .idcst{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:999px;font-weight:700;white-space:nowrap}
+  .idcst.ok{background:var(--good-soft);color:var(--good)}
+  .idcst.att{background:var(--warn-soft);color:var(--warn)}
+  .idcst.ko{background:var(--bad-soft);color:var(--bad)}
+  .idcst select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
+  .idcappro{flex:0 0 auto;width:306px;table-layout:fixed;border-collapse:collapse;font-size:11.5px}
+  .idcappro th{width:84px;text-align:left;font-weight:700;background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;white-space:nowrap}
+  .idcappro td{border:1px solid var(--line);padding:3px 8px;word-break:break-word}
+  .idcgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
+  .idcgrid.bas{grid-template-columns:1fr 1fr;margin-top:11px}
+  .idcz{position:relative;border:1px solid var(--line-2);border-radius:9px;padding:14px 11px 10px;background:var(--panel)}
+  .idclab{position:absolute;top:-8px;left:11px;padding:1px 8px;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:6px;font-size:10.5px;font-weight:800;color:var(--ink-2);letter-spacing:.02em}
+  .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none}
+  .idcz.tl .idcbody{min-height:150px}
+  .idcz.fin .idcbody.gap{min-height:40px;margin-bottom:8px}
+  .idcbody:empty::before,[data-idc]:empty::before,[data-idcl]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
+  .idcbody:focus,.idcappro td:focus,.idct span:focus{background:var(--accent-soft);border-radius:4px}
+  .idcfin{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px}
+  .idcfin th:first-child{width:76px}
+  .idcfin th,.idcfin td{border:1px solid var(--line);padding:2px 5px;text-align:center}
+  .idcfin thead th{background:var(--panel-2);font-weight:700;white-space:nowrap}
+  /* Le support d'origine écrit « Gap 26 », pas « GAP 26 » : on le reproduit. */
+  .idcfin th,.idcappro th,.idcbk th{text-transform:none;letter-spacing:0}
+  .idcfin th.ref,.idcfin td.ref{background:var(--panel-3)}
+  .idcfin th.gap,.idcfin td.gap{background:var(--warn-soft)}
+  .idcfin tbody th{text-align:left;background:var(--panel-2);font-weight:800}
+  .idcfin input.num{width:100%;min-width:40px;text-align:right;font-size:11px;padding:1px 3px}
+  .idccalc{display:inline-block;min-width:34px;padding:1px 5px;border-radius:5px;font-weight:800;
+    font-variant-numeric:tabular-nums;background:var(--panel-2);color:var(--ink-2);cursor:help}
+  .idccalc.pos{background:var(--bad-soft);color:var(--bad)}
+  .idccalc.neg{background:var(--good-soft);color:var(--good)}
+  .idcbk{width:100%;border-collapse:collapse;font-size:11.5px}
+  .idcbk th,.idcbk td{border:1px solid var(--line);padding:4px 6px;vertical-align:top}
+  .idcbk thead th{background:var(--panel-2);font-weight:700;text-align:left}
+  .idcbk tfoot th{background:var(--panel-2);font-weight:800}
+  .idcbk td.an,.idcbk th.an{white-space:nowrap;font-size:10.5px}
+  .idcbk input.num{width:48px;text-align:right;font-size:10.5px;padding:1px 3px}
+  .idcgates{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+  .idcgate{border:1px solid var(--line);border-left:3px solid var(--line-2);border-radius:10px;
+    padding:9px 11px 11px;background:var(--panel);box-shadow:var(--shadow)}
+  .idcgate.ok{border-left-color:var(--good)} .idcgate.wip{border-left-color:var(--accent)}
+  .idcgate.ko{border-left-color:var(--bad)}
+  .idcgate .gh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px}
+  .idcgate .gh b{font-family:Archivo;font-size:13.5px}
+  .idcgate .gh span{font-size:10.5px;color:var(--muted)}
+  .idcgate .gs{margin-top:5px;font-size:11px;font-weight:700;text-transform:capitalize}
+  .idcgate .gd{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .idcgate .gp{height:5px;border-radius:999px;background:var(--panel-3);overflow:hidden;margin:6px 0 3px}
+  .idcgate .gp i{display:block;height:100%;background:var(--accent)}
+  .idcgate .gm{font-size:10.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .idcgate .gt{margin-top:6px;font-size:10px;font-style:italic}
+  @media (max-width:1180px){ .idcgrid{grid-template-columns:1fr} .idcgrid.bas{grid-template-columns:1fr} }
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -1074,7 +1140,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.10';
+const APP_BUILD='2026-10-15.11';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1257,6 +1323,7 @@ function migrerSuivi(r){
   r.at.sort = r.at.sort || {k:'score',d:-1};
   r.atCfg = r.atCfg || {pre:[7,3,1],post:[1,3,7],esc:7};
   r.macroV = r.macroV || 1;
+  r.idc = (r.idc && typeof r.idc==='object') ? r.idc : {};
   r.mp = r.mp || {an:new Date().getFullYear(),phase:(new Date().getMonth()<=5?1:2),pole:'',q:'',avecSeuls:false};
   if(Array.isArray(r.actions)){
     const PRIO={'Haute':'Haute','Critique':'Critique','Moyenne':'Normale','Normale':'Normale','Basse':'Basse'};
@@ -2381,8 +2448,8 @@ const KIT_STAT=['Fait','En cours','A faire','NA'];
 const KIT_LEVELS=['Sponsor','Pilotage & correspondants','Expertises techniques','Exécution & qualification'];
 const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
-const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['checklist','Check-list'],['orga','Organigramme'],
-                ['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
+const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['checklist','Check-list'],
+                ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
 const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards Sanofi STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
 const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
 const ksum=a=>a.reduce((x,y)=>x+(+y||0),0);
@@ -2732,10 +2799,11 @@ function kitResumeHTML(){
 function renderKit(){
   const h=document.getElementById('kitPane'); if(!h) return;
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
-  h.innerHTML = t==='onepage'?opPage() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+  h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   if(t==='macro') kitArmerJalons();
   if(t==='orga') kitArmerOrga();
+  if(t==='idcard') kitArmerIdCard();
   if(t==='onepage'){ opArmer(); bindEditables(); }
 }
 function kitTabsHTML(){
@@ -3113,6 +3181,293 @@ document.addEventListener('click',e=>{
   }[a]||(()=>{}))();
   scheduleSave(); renderKit();
 });
+
+
+/* ======================= ID Card =======================
+   Reprise du support « Projects ID Card 2026 ».
+
+   La règle du process, telle qu'elle y est écrite : un projet sous 250 k€ se
+   valide par une ID Card ; au-delà, c'est le process de Gate qui s'applique.
+   L'onglet lit donc le budget du projet et présente l'instrument qui convient
+   — on ne choisit pas, on constate.
+
+   L'ID Card est reproduite à l'identique : mêmes zones (description,
+   bénéfices, rationnel, planning, synthèse financière), même en-tête
+   (sponsor, PM, approbateurs), même tableau K€. Les écarts n'y sont pas
+   saisis mais calculés : besoin moins budget de référence. Elle s'imprime
+   telle quelle, pour être diffusée en approbation. */
+const IDC_SEUIL=250;                       // k€ — au-delà, process de Gate
+const IDC_STATUTS=['To approve','Approved','Rejected'];
+const IDC_ANNEES=['26','27','28','29'];
+const IDC_REFS=['C2 26','B 27','SP 28','SP 29'];
+
+function idcBudget(p){ if(!p) return 0; const c=(p.c2!=null&&p.c2!=='')?p.c2:p.c1; return +c||0; }
+function idcRegime(p){ return idcBudget(p)<IDC_SEUIL ? 'idcard' : 'gate'; }
+function idcOf(id){
+  S.idc=S.idc||{};
+  if(!S.idc[id]){
+    const p=S.projects.find(x=>x.id===id)||{};
+    S.idc[id]={
+      bucket:false,
+      nom:p.nom||'', code:p.shine||p.ishift||'', maj:'', statut:'To approve',
+      sponsor:p.sponsor||'', pm:p.pm||'', approvers:'PPM, finance, Resp secteur',
+      description:'', benefits:'', rationale:'', timeline:'',
+      gap:'Gap vs B26/H27 : Yes or No\nIf yes, justify the gap',
+      fin:{capex:{b:['','','',''],r:['','','','']}, opex:{b:['','','',''],r:['','','','']}},
+      lignes:[], bucketRef:{capex:['',''],opex:['','']},
+      diffusions:[]
+    };
+  }
+  const d=S.idc[id];
+  d.fin=d.fin||{}; ['capex','opex'].forEach(k=>{ d.fin[k]=d.fin[k]||{};
+    ['b','r'].forEach(x=>{ d.fin[k][x]=Array.isArray(d.fin[k][x])?d.fin[k][x]:['','','',''];
+      while(d.fin[k][x].length<4) d.fin[k][x].push(''); d.fin[k][x].length=4; }); });
+  d.lignes=Array.isArray(d.lignes)?d.lignes:[];
+  d.bucketRef=d.bucketRef||{capex:['',''],opex:['','']};
+  ['capex','opex'].forEach(k=>{ d.bucketRef[k]=Array.isArray(d.bucketRef[k])?d.bucketRef[k]:['','']; });
+  d.diffusions=Array.isArray(d.diffusions)?d.diffusions:[];
+  if(!IDC_STATUTS.includes(d.statut)) d.statut='To approve';
+  return d;
+}
+const idcN=v=>{ if(v==null||v==='')return null; const n=parseFloat(String(v).replace(/\s/g,'').replace(',','.')); return isFinite(n)?n:null; };
+const idcF=v=>v==null?'' : (Math.round(v*100)/100).toLocaleString('fr-FR');
+const idcSigne=v=>v==null?'—' : (v>0?'+':'')+idcF(v);
+/* L'écart d'un exercice : le besoin exprimé moins le budget de référence. */
+function idcEcart(d,k,j){ const b=idcN(d.fin[k].b[j]), r=idcN(d.fin[k].r[j]);
+  if(b==null&&r==null) return null; return (b||0)-(r||0); }
+function idcTotalLignes(d,k,j){
+  let s=null;
+  d.lignes.forEach(l=>{ const v=idcN((l[k]||[])[j]); if(v!=null) s=(s||0)+v; });
+  return s;
+}
+function idcEcartBucket(d,k,j){
+  const t=idcTotalLignes(d,k,j), r=idcN(d.bucketRef[k][j]);
+  if(t==null&&r==null) return null; return (t||0)-(r||0);
+}
+
+function kitIdCard(){
+  const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return '<div class="hint">Aucun projet.</div>';
+  const d=idcOf(p.id), bud=idcBudget(p), reg=idcRegime(p);
+  const bandeau = reg==='gate'
+    ? `<div class="idcnote gate"><span class="ic">🚦</span>
+        <div><b>Budget ${idcF(bud)} k€ — au-delà de ${IDC_SEUIL} k€, l'ID Card ne suffit pas.</b>
+          Le process de Gate s'applique : G0 Cadrage → G5 Clôture. Les six gates de ce projet sont
+          ci-dessous ; leurs supports de passage seront déposés ici dès qu'ils seront fournis.</div>
+        <button class="iconbtn" id="idcGates">🚦 Ouvrir le suivi des gates</button></div>`
+    : `<div class="idcnote"><span class="ic">🪪</span>
+        <div><b>Budget ${idcF(bud)} k€ — sous ${IDC_SEUIL} k€, le projet se valide par une ID Card.</b>
+          Rédigée par le PM, envoyée au responsable de secteur, au PPM et à la finance ; une fois
+          validée, elle ouvre la SPE.</div>
+        <label class="iconbtn" style="gap:6px" title="Une bucket regroupe plusieurs petits projets sous une même enveloppe"><input type="checkbox" id="idcBucket" ${d.bucket?'checked':''}> Bucket</label></div>`;
+  return `<div class="idc">
+    ${bandeau}
+    <div class="idctools">
+      ${reg==='gate'?'':`<button class="iconbtn" id="idcPrint">⎙ Diffuser pour approbation</button>`}
+      <button class="iconbtn" id="idcMaj" title="Reprendre le nom, le code, le PM et le sponsor de la fiche projet">⟲ Reprendre la fiche</button>
+      <span class="sp"></span>
+      <span class="hint">${reg==='gate'?'Process de Gate':(d.bucket?'Bucket ID Card':'Project ID Card')}</span>
+    </div>
+    ${reg==='gate' ? idcGatesHTML(p) : (d.bucket?idcBucketHTML(p,d):idcProjetHTML(p,d))}
+  </div>`;
+}
+
+/* ---- En-tête commun : titre, date de mise à jour, statut, approbateurs ---- */
+function idcEnteteHTML(p,d,titre){
+  const cls=norm(d.statut)==='approved'?'ok':norm(d.statut)==='rejected'?'ko':'att';
+  return `<div class="idchead">
+    <div class="idchl">
+      <div class="idct"><b>${esc(titre)} :</b>
+        <span contenteditable data-idc="nom" data-vide="Project Name">${esc(d.nom)}</span>
+        <span class="idccode">(<span contenteditable data-idc="code" data-vide="P Number">${esc(d.code)}</span>)</span></div>
+      <div class="idcsub">Update date :
+        <input type="date" class="kin" data-idc="maj" value="${esc(d.maj)}" style="width:130px">
+        ${d.bucket?'':`<span class="idcst ${cls}">Status :
+          <select class="kin" data-idc="statut">${IDC_STATUTS.map(s=>`<option ${d.statut===s?'selected':''}>${s}</option>`).join('')}</select></span>`}</div>
+    </div>
+    <table class="idcappro"><tbody>
+      <tr><th>Sponsor</th><td contenteditable data-idc="sponsor" data-vide="—">${esc(d.sponsor)}</td></tr>
+      <tr><th>PM</th><td contenteditable data-idc="pm" data-vide="—">${esc(d.pm)}</td></tr>
+      <tr><th>Approvers</th><td contenteditable data-idc="approvers" data-vide="PPM, finance, Resp secteur">${esc(d.approvers)}</td></tr>
+    </tbody></table></div>`;
+}
+const idcZone=(lbl,champ,val,cls)=>`<div class="idcz ${cls||''}"><span class="idclab">${esc(lbl)}</span>
+  <div class="idcbody" contenteditable data-idc="${champ}" data-vide="Xxx">${esc(val||'')}</div></div>`;
+
+/* ---- Project ID Card ---- */
+function idcProjetHTML(p,d){
+  const col=(k)=>`<tr><th>${k.toUpperCase()}</th>
+    ${IDC_ANNEES.map((a,j)=>`<td><input class="kin num" data-idc="fin.${k}.b.${j}" value="${esc(d.fin[k].b[j])}"></td>`).join('')}
+    ${IDC_REFS.map((r,j)=>`<td class="ref"><input class="kin num" data-idc="fin.${k}.r.${j}" value="${esc(d.fin[k].r[j])}"></td>`).join('')}
+    ${IDC_ANNEES.map((a,j)=>{const e=idcEcart(d,k,j);
+      return `<td class="gap"><span class="idccalc ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}" title="Besoin ${esc(d.fin[k].b[j]||'—')} − référence ${esc(d.fin[k].r[j]||'—')}">${idcSigne(e)}</span></td>`;}).join('')}
+  </tr>`;
+  return `<div class="idccard" id="idcCard">
+    ${idcEnteteHTML(p,d,'Project ID Card')}
+    <div class="idcgrid">
+      ${idcZone('Project description','description',d.description)}
+      ${idcZone('Benefits','benefits',d.benefits)}
+      ${idcZone('Rationale','rationale',d.rationale)}
+    </div>
+    <div class="idcgrid bas">
+      ${idcZone('Timeline','timeline',d.timeline,'tl')}
+      <div class="idcz fin"><span class="idclab">Financial Summary</span>
+        <div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No">${esc(d.gap||'')}</div>
+        <div class="tblwrap"><table class="idcfin"><thead>
+          <tr><th>(K€)</th>${IDC_ANNEES.map(a=>`<th>’${a}</th>`).join('')}
+            ${IDC_REFS.map(r=>`<th class="ref">${esc(r)}</th>`).join('')}
+            ${IDC_ANNEES.map(a=>`<th class="gap">Gap ${a}</th>`).join('')}</tr></thead>
+          <tbody>${col('capex')}${col('opex')}</tbody></table></div>
+      </div>
+    </div></div>`;
+}
+
+/* ---- Bucket ID Card ---- */
+function idcBucketHTML(p,d){
+  const cel=(i,l,k,j)=>`<input class="kin num" data-idcl="${i}|${k}|${j}" value="${esc((l[k]||[])[j]||'')}" placeholder="0">`;
+  const lignes=d.lignes.map((l,i)=>`<tr>
+    <td><span contenteditable data-idcl="${i}|nom" data-vide="Project ${i+1}">${esc(l.nom||'')}</span></td>
+    <td class="code"><span contenteditable data-idcl="${i}|wbs" data-vide="INV-042XXX">${esc(l.wbs||'')}</span></td>
+    <td class="wrap"><span contenteditable data-idcl="${i}|description" data-vide="—">${esc(l.description||'')}</span></td>
+    <td class="wrap"><span contenteditable data-idcl="${i}|benefits" data-vide="—">${esc(l.benefits||'')}</span></td>
+    <td class="wrap"><span contenteditable data-idcl="${i}|timeline" data-vide="—">${esc(l.timeline||'')}</span></td>
+    <td class="an">CAPEX ${cel(i,l,'capex',0)} / OPEX ${cel(i,l,'opex',0)}</td>
+    <td class="an">CAPEX ${cel(i,l,'capex',1)} / OPEX ${cel(i,l,'opex',1)}</td>
+    <td><button class="delbtn" data-idcdel="${i}">×</button></td></tr>`).join('')
+    ||`<tr><td colspan="8" class="empty">Aucun projet dans cette bucket. « + Projet ».</td></tr>`;
+  const tot=j=>`CAPEX <b>${idcF(idcTotalLignes(d,'capex',j))||'—'}</b> / OPEX <b>${idcF(idcTotalLignes(d,'opex',j))||'—'}</b>`;
+  const lig=(k)=>`<tr><th>${k.toUpperCase()}</th>
+    ${[0,1].map(j=>`<td class="num"><span class="idccalc" title="Somme des projets de la bucket">${idcF(idcTotalLignes(d,k,j))||'—'}</span></td>`).join('')}
+    ${[0,1].map(j=>`<td class="ref"><input class="kin num" data-idc="bucketRef.${k}.${j}" value="${esc(d.bucketRef[k][j])}"></td>`).join('')}
+    ${[0,1].map(j=>{const e=idcEcartBucket(d,k,j);
+      return `<td class="gap"><span class="idccalc ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}" title="Total projets − budget bucket">${idcSigne(e)}</span></td>`;}).join('')}
+  </tr>`;
+  return `<div class="idccard bucket" id="idcCard">
+    ${idcEnteteHTML(p,d,'Bucket ID Card')}
+    <div class="tblwrap"><table class="idcbk"><thead><tr>
+      <th style="width:120px"></th><th style="width:124px">WBS (INV-042XXX)</th><th>Description</th>
+      <th>Benefits</th><th>Timeline / Milestones</th><th style="width:150px">2026</th><th style="width:150px">2027</th><th style="width:24px"></th></tr></thead>
+      <tbody>${lignes}</tbody>
+      <tfoot><tr><th colspan="5" style="text-align:right">Total</th>
+        <th class="an">${tot(0)}</th><th class="an">${tot(1)}</th><th></th></tr></tfoot></table></div>
+    <div class="idcz fin" style="margin-top:12px"><span class="idclab">Bucket Financial Summary</span>
+      <div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No">${esc(d.gap||'')}</div>
+      <div class="tblwrap"><table class="idcfin"><thead>
+        <tr><th></th><th colspan="2">Total Projects</th><th colspan="2" class="ref">Total Bucket</th><th colspan="2" class="gap"></th></tr>
+        <tr><th>(K€)</th><th>’26 *</th><th>’27 *</th><th class="ref">C2 26</th><th class="ref">B27</th>
+          <th class="gap">Gap 26</th><th class="gap">Gap 27</th></tr></thead>
+        <tbody>${lig('capex')}${lig('opex')}</tbody></table></div>
+      <div class="hint" style="margin-top:7px">* Totaux du tableau ci-dessus, repris pour être comparés au budget de la bucket (cf. fichier CAPEX/OPEX).</div>
+    </div>
+    <div class="idctools" style="margin-top:10px"><button class="iconbtn" id="idcAdd">+ Projet dans la bucket</button></div>
+  </div>`;
+}
+
+/* ---- Au-delà du seuil : le process de Gate ---- */
+function idcGatesHTML(p){
+  const g=ensureGate(p.id);
+  return `<div class="idcgates">
+    ${g.gates.map((x,i)=>{
+      const ph=PHASES[i]||[x.code,''];
+      const cls=x.statut==='franchi'?'ok':x.statut==='en cours'?'wip':x.statut==='bloqué'?'ko':'';
+      return `<div class="idcgate ${cls}">
+        <div class="gh"><b>Gate ${i}</b><span>${esc(ph[1]||'')}</span></div>
+        <div class="gs">${esc(x.statut)}</div>
+        <div class="gd">${x.date?esc(x.date):'<span class="hint">sans date</span>'}</div>
+        <div class="gp"><i style="width:${Math.max(0,Math.min(100,+x.comp||0))}%"></i></div>
+        <div class="gm">${+x.comp||0} %</div>
+        <div class="gt hint">Support de passage à déposer</div></div>`;}).join('')}
+  </div>
+  <div class="hint" style="margin-top:10px">Les statuts, dates et avancements se saisissent dans
+    <b>Projet — cycle de vie › Gates</b>. Cet onglet accueillera les supports de passage G0 à G5
+    dès qu'ils seront fournis, sur le modèle de l'ID Card ci-contre.</div>`;
+}
+
+/* ---- Saisie ---- */
+function idcSet(d,chemin,v){
+  const c=chemin.split('.'), last=c.pop();
+  const o=c.reduce((x,k)=>x[k], d); if(o) o[last]=v;
+}
+function idcGet(d,chemin){ return chemin.split('.').reduce((o,k)=>(o==null?o:o[k]), d); }
+function kitArmerIdCard(){
+  const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+  const d=idcOf(p.id);
+  const rr=()=>renderGardeFocus(()=>{ renderKit(); });
+  $$('#kitPane [data-idc]').forEach(el=>{
+    const ev=(el.tagName==='SELECT'||el.type==='date')?'change':(el.tagName==='INPUT'?'change':'blur');
+    el.addEventListener(ev,()=>{
+      const ch=el.dataset.idc;
+      const v=(el.tagName==='INPUT'||el.tagName==='SELECT')?el.value:el.innerText.replace(/ /g,' ').trim();
+      const av=idcGet(d,ch);
+      if(String(av==null?'':av)===String(v)) return;
+      idcSet(d,ch,v);
+      logChange('ID Card — '+(p.shine||p.nom), ch, av, v);
+      scheduleSave();
+      if(/^fin\.|^bucketRef\./.test(ch)) rr();
+    });
+    if(el.isContentEditable) el.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&!e.altKey&&!e.shiftKey){ e.preventDefault(); el.blur(); }
+      if(e.key==='Escape'){ el.innerText=String(idcGet(d,el.dataset.idc)||''); el.blur(); } });
+  });
+  $$('#kitPane [data-idcl]').forEach(el=>{
+    const ev=el.tagName==='INPUT'?'change':'blur';
+    el.addEventListener(ev,()=>{
+      const [i,k,j]=el.dataset.idcl.split('|');
+      const l=d.lignes[+i]; if(!l) return;
+      const v=(el.tagName==='INPUT')?el.value:el.innerText.replace(/ /g,' ').trim();
+      if(j!==undefined){ l[k]=Array.isArray(l[k])?l[k]:['','']; if(String(l[k][+j]||'')===String(v))return; l[k][+j]=v; }
+      else { if(String(l[k]||'')===String(v))return; l[k]=v; }
+      logChange('ID Card bucket — '+(p.shine||p.nom), k, '', v);
+      scheduleSave(); if(j!==undefined) rr();
+    });
+  });
+  const lier=(sel,ev,fn)=>{const n=$(sel); if(n)n.addEventListener(ev,fn);};
+  lier('#idcBucket','change',e=>{ d.bucket=e.target.checked;
+    logChange('ID Card — '+(p.shine||p.nom),'type',d.bucket?'projet':'bucket',d.bucket?'bucket':'projet');
+    scheduleSave(); renderKit(); });
+  lier('#idcAdd','click',()=>{ d.lignes.push({nom:'',wbs:'',description:'',benefits:'',timeline:'',capex:['',''],opex:['','']});
+    scheduleSave(); renderKit(); });
+  $$('#kitPane [data-idcdel]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.idcdel, l=d.lignes[i]; if(!l) return;
+    if(!confirm('Retirer « '+(l.nom||'cette ligne')+' » de la bucket ?')) return;
+    d.lignes.splice(i,1); scheduleSave(); renderKit(); });
+  lier('#idcMaj','click',()=>{
+    const av=[d.nom,d.code,d.pm,d.sponsor].join('|');
+    d.nom=p.nom||d.nom; d.code=p.shine||p.ishift||d.code; d.pm=p.pm||d.pm; d.sponsor=p.sponsor||d.sponsor;
+    if([d.nom,d.code,d.pm,d.sponsor].join('|')!==av){ logChange('ID Card — '+(p.shine||p.nom),'reprise de la fiche','',d.nom); scheduleSave(); }
+    renderKit(); });
+  lier('#idcGates','click',()=>{ S.tab='gates'; S.navKey=''; render(); });
+  lier('#idcPrint','click',()=>idcDiffuser(p,d));
+}
+
+/* ---- Diffusion : la carte seule, prête à imprimer ou à enregistrer en PDF ---- */
+function idcDiffuser(p,d){
+  const el=document.getElementById('idcCard');
+  if(!el){ alert("La carte n'est pas affichée."); return; }
+  const w=window.open('','_blank');
+  if(!w){ alert('Autorisez les fenêtres pop-up pour diffuser l’ID Card.'); return; }
+  const styles=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  w.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+    <title>${esc((d.bucket?'Bucket':'Project')+' ID Card — '+(d.nom||p.nom))}</title>
+    <style>${styles}
+      body{margin:0;padding:14px 16px;background:#fff;color:#11202e;font-family:Inter,Segoe UI,Arial,sans-serif}
+      .idccard{box-shadow:none;border:1px solid #cfd8de}
+      [contenteditable]{outline:none}
+      .delbtn,.idctools{display:none!important}
+      .idcfoot{margin-top:10px;font-size:10.5px;color:#5e7485;display:flex;justify-content:space-between}
+      @page{size:A4 landscape;margin:8mm}
+    </style></head><body>
+    ${el.outerHTML}
+    <div class="idcfoot"><span>${esc((d.bucket?'Bucket':'Project')+' ID Card — '+(d.code||'')+' '+(d.nom||p.nom))}</span>
+      <span>Approbateurs : ${esc(d.approvers||'—')} · édité le ${new Date().toLocaleDateString('fr-FR')} par ${esc(S.user||'—')}</span></div>
+    </body></html>`);
+  w.document.close();
+  d.diffusions=d.diffusions||[];
+  d.diffusions.unshift({le:new Date().toISOString().slice(0,10), par:S.user||'', statut:d.statut});
+  if(d.diffusions.length>50) d.diffusions.length=50;
+  logChange('ID Card — '+(p.shine||p.nom),'diffusion','',d.statut);
+  scheduleSave();
+  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(_){} },400);
+}
 
 /* ======================= CSD — Comité Schéma Directeur =======================
    Reprise de l'outil « Comité Schéma Directeur » : la revue de portefeuille
