@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15 -->
+<!-- PPM_BUILD:2026-10-15.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -340,6 +340,78 @@
   .ptbl td.poff.pfer{background:var(--warn-soft)}
   .ptbl .pw1{border-left:2px solid var(--line-2)}
   .pdot-off{background:var(--panel-3);border:1px solid var(--line-2)}
+  /* ===== Kit projet : check-list, organigramme, chiffrage, charge, macroplanning ===== */
+  .ktabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+  .ktabs button{border:1px solid var(--line);background:var(--panel);color:var(--ink-2);border-radius:9px;
+    padding:7px 13px;font-family:Archivo;font-weight:700;font-size:12.5px;cursor:pointer}
+  .ktabs button:hover{border-color:var(--accent)}
+  .ktabs button.on{background:linear-gradient(135deg,var(--accent),var(--accent-ink));color:#fff;border-color:var(--accent)}
+  .kstats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .kstat{flex:1 1 120px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 13px;box-shadow:var(--shadow)}
+  .kstat b{display:block;font-family:Archivo;font-size:19px;font-weight:800;color:var(--accent-ink);line-height:1.1}
+  .kstat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .kbar-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:9px;font-size:12px;color:var(--muted)}
+  .kbar-tools input,.kbar-tools select{padding:5px 8px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:inherit;font-size:12px}
+  .ktbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .ktbl th{background:var(--panel-2);color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+  .ktbl td{padding:4px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .ktbl tr.kgrp td{background:var(--panel-2);font-weight:700}
+  .ktbl tr.ktot td{background:var(--panel-2);font-weight:800;font-family:Archivo}
+  .ktbl tr.kna{opacity:.5}
+  .ktbl .num{text-align:right;font-variant-numeric:tabular-nums}
+  .kin{width:100%;border:1px solid transparent;border-radius:6px;background:transparent;color:inherit;
+    font:inherit;font-size:12.5px;padding:3px 5px;resize:vertical}
+  .kin:hover{border-color:var(--line)}
+  .kin:focus{border-color:var(--accent);background:var(--panel);outline:none}
+  textarea.kin{min-height:26px;line-height:1.45;white-space:pre-wrap}
+  .kdel{border:0;background:transparent;color:var(--bad);font-size:14px;cursor:pointer;opacity:.35;padding:0 4px}
+  tr:hover .kdel{opacity:1}
+  .kadd{border:1px dashed var(--line-2);background:transparent;color:var(--accent-ink);border-radius:8px;
+    padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
+  .kadd:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .kst-Fait{background:var(--good-soft);color:var(--good)}
+  .kst-En{background:var(--warn-soft);color:var(--warn)}
+  .kst-A{background:var(--panel-2);color:var(--muted)}
+  .kst-NA{background:var(--panel-3);color:var(--faint)}
+  .ktbl select.kin{padding:3px 4px;font-weight:600}
+  /* une couleur par lot / par pôle, comme dans l'outil d'origine */
+  .lc0{border-left:3px solid #115e75}.lc1{border-left:3px solid #b0651f}.lc2{border-left:3px solid #1d7a52}
+  .lc3{border-left:3px solid #7d4f9e}.lc4{border-left:3px solid #bd8413}.lc5{border-left:3px solid #c0392b}
+  .lc6{border-left:3px solid #2b7e97}.lc7{border-left:3px solid #6a8a99}
+  /* Organigramme : un bandeau par niveau */
+  .ktier{margin-bottom:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .ktier h4{margin:0;padding:7px 12px;background:var(--panel-2);font-family:Archivo;font-size:12px;
+    text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line)}
+  .ktier.n1 h4{background:linear-gradient(135deg,var(--accent),var(--accent-ink));color:#fff}
+  .kgrid{display:grid;gap:9px;padding:11px}
+  .kperson{border:1px solid var(--line);border-radius:10px;padding:8px 9px;background:var(--panel-2);min-width:0}
+  .kperson .kph{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .kperson small{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+  .kperson .krole{font-weight:700;font-size:12px}
+  /* Macroplanning */
+  .kgantt{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+  .kaxis{display:flex;background:var(--panel-2);border-bottom:1px solid var(--line);font-size:10px;color:var(--muted)}
+  .kaxis div{padding:4px 2px;text-align:center;border-right:1px solid var(--line);white-space:nowrap;overflow:hidden}
+  .krow{position:relative;height:30px;border-bottom:1px solid var(--line)}
+  .krow:last-child{border-bottom:0}
+  .kmonth{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.7}
+  .kbar{position:absolute;top:5px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--accent),var(--accent-ink));
+    color:#fff;font-size:10.5px;display:flex;align-items:center;padding:0 7px;white-space:nowrap;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .kbar.coordination{background:linear-gradient(135deg,#b0651f,#8a4e18)}
+  .kbar.gate{background:linear-gradient(135deg,#7d4f9e,#5d3a76)}
+  .kbar i{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28);border-radius:5px 0 0 5px}
+  .kbar span{position:relative}
+  .kms{position:absolute;top:3px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;
+    border:0;background:transparent;cursor:grab;color:inherit;font:inherit;padding:0}
+  .kms:active{cursor:grabbing}
+  .kms.libre{transform:none;flex-direction:row;align-items:center;gap:5px;padding-left:7px;opacity:.75}
+  .kms.libre i{background:var(--faint)}
+  .kms i{width:13px;height:13px;background:var(--copper);transform:rotate(45deg);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .kms span{font-size:9.5px;color:var(--ink-2);white-space:nowrap;margin-top:1px}
+  .knodate{padding:6px 10px;font-size:11.5px;color:var(--faint);font-style:italic}
+  .klegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}
+  .klegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
   /* ===== GEDT : recherche de projet ===== */
   .pickov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:56px 20px}
   .pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -662,7 +734,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15';
+const APP_BUILD='2026-10-15.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1702,6 +1774,349 @@ function weightsBar(){
   return Object.keys(w).map(k=>`<div style="flex:${w[k]};background:${cols[k]}" title="${labs[k]} ${w[k]}%">${w[k]>=10?w[k]+'%':''}</div>`).join('');
 }
 
+/* ======================= Kit projet =======================
+   Reprise de l'outil « Passeport projet industriel » : check-list des phases,
+   organigramme, chiffrage, plan de charge et macroplanning — pour chaque
+   projet du portefeuille, et non plus dans un fichier séparé par projet.
+
+   Les données vivent dans S.kits[idProjet] : elles suivent donc le fichier de
+   données, les comptes et les sauvegardes comme le reste de la plateforme. Le
+   gabarit ci-dessous est le standard RT — 68 actions réparties en 7 phases,
+   18 fonctions d'organigramme, les lots de chiffrage et les pôles de charge —
+   dont hérite tout projet qui n'a pas encore de kit. */
+const KIT_STAT=['Fait','En cours','A faire','NA'];
+const KIT_LEVELS=['Sponsor','Pilotage & correspondants','Expertises techniques','Exécution & qualification'];
+const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
+const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
+const KIT_TABS=[['synthese','Synthèse'],['checklist','Check-list'],['orga','Organigramme'],
+                ['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
+const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards Sanofi STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
+const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
+const ksum=a=>a.reduce((x,y)=>x+(+y||0),0);
+const keur=v=>(+v||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+const kfmt=v=>(+v||0).toLocaleString('fr-FR',{maximumFractionDigits:2});
+function kitMois(n){
+  const out=[], d=new Date(); d.setDate(1);
+  for(let i=0;i<n;i++){ out.push(d.toLocaleDateString('fr-FR',{month:'short',year:'2-digit'})); d.setMonth(d.getMonth()+1); }
+  return out;
+}
+/* Le kit d'un projet, créé depuis le gabarit à la première ouverture puis
+   complété : une structure absente d'un ancien fichier ne doit jamais faire
+   échouer le rendu. */
+function kitOf(id){
+  S.kits=S.kits||{};
+  if(!S.kits[id]){
+    const t=JSON.parse(JSON.stringify(KIT_TPL)), M=kitMois(12);
+    S.kits[id]={
+      phases:t.phases.map(p=>({id:kuid(),name:p.name,rows:p.rows.map(r=>({id:kuid(),task:r.task,owner:r.owner,status:r.status,notes:r.notes}))})),
+      people:t.people.map(p=>({id:kuid(),role:p.role,name:'',level:p.level})),
+      budgetGroups:t.budgetGroups.map(g=>({id:kuid(),name:g.name,section:g.section,rows:[]})),
+      months:M,
+      groups:t.groups.map(g=>({id:kuid(),name:g.name,rows:g.rows.map(r=>({id:kuid(),name:r.name,values:M.map(()=>0)}))})),
+      milestones:t.milestones.map((m,i)=>({id:kuid(),name:m.name,date:'',owner:'',notes:'',colorIndex:i})),
+      tasks:[], dnd:0.1, dailyRate:550, jpf:20
+    };
+  }
+  const k=S.kits[id];
+  k.phases=Array.isArray(k.phases)?k.phases:[]; k.people=Array.isArray(k.people)?k.people:[];
+  k.budgetGroups=Array.isArray(k.budgetGroups)?k.budgetGroups:[]; k.tasks=Array.isArray(k.tasks)?k.tasks:[];
+  k.milestones=Array.isArray(k.milestones)?k.milestones:[]; k.groups=Array.isArray(k.groups)?k.groups:[];
+  k.months=(Array.isArray(k.months)&&k.months.length)?k.months:kitMois(12);
+  if(k.dnd==null)k.dnd=0.1; if(k.dailyRate==null)k.dailyRate=550; if(k.jpf==null)k.jpf=20;
+  k.groups.forEach(g=>{ g.rows=g.rows||[]; g.rows.forEach(r=>{
+    r.values=Array.isArray(r.values)?r.values:[];
+    while(r.values.length<k.months.length) r.values.push(0);
+    r.values.length=k.months.length; }); });
+  k.milestones.forEach((m,i)=>{ if(!Number.isInteger(m.colorIndex)) m.colorIndex=i; });
+  return k;
+}
+/* Saisie : un chemin dans le kit du projet courant, comme dans l'outil
+   d'origine. Les champs qui changent un calcul redessinent leur seul volet. */
+function kGet(p){ return p.split('.').reduce((o,x)=>(o==null?o:o[x]), kitOf(S.currentProj)); }
+function kSet(p,v){ const c=p.split('.'), last=c.pop(); const o=c.reduce((o,x)=>o[x], kitOf(S.currentProj)); if(o) o[last]=v; }
+const kinp=(p,type,extra)=>`<input class="kin${type==='number'?' num':''}" type="${type||'text'}" ${type==='number'?'step="any"':''} value="${esc(kGet(p))}" data-kp="${p}" data-kt="${type||'text'}" ${extra||''}>`;
+const kta=p=>`<textarea class="kin" data-kp="${p}" rows="1">${esc(kGet(p))}</textarea>`;
+const kbtn=(a,l,cls)=>`<button class="${cls||'kadd'}" data-ka="${a}">${l}</button>`;
+
+/* ---- Check-list ---- */
+function kitChecklist(k){
+  const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
+  const base=Math.max(1, all.length-c('NA'));
+  let h=`<div class="kstats"><div class="kstat"><b>${all.length}</b><span>Actions</span></div>
+    ${KIT_STAT.map(s=>`<div class="kstat"><b>${c(s)}</b><span>${s}</span></div>`).join('')}
+    <div class="kstat"><b>${Math.round(c('Fait')/base*100)} %</b><span>Avancement</span></div></div>
+    <div class="kbar-tools">${kbtn('addPhase','+ Phase')}<span class="sp" style="margin-left:auto"></span>
+    <span>Pilote : qui porte l'action — RT, Utilisateur, Q/V, HSE…</span></div>
+    <table class="ktbl"><thead><tr><th>Action</th><th style="width:140px">Pilote</th><th style="width:118px">Statut</th><th style="width:30%">Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
+  k.phases.forEach((p,pi)=>{
+    const fait=p.rows.filter(r=>r.status==='Fait').length, net=Math.max(1,p.rows.length-p.rows.filter(r=>r.status==='NA').length);
+    h+=`<tr class="kgrp lc lc${pi%8}"><td colspan="3">${kinp(`phases.${pi}.name`)}</td>
+      <td class="num">${p.rows.length?Math.round(fait/net*100)+' %':'—'}</td>
+      <td><button class="kdel" data-ka="delPhase|${pi}" title="Supprimer la phase">✕</button></td></tr>`;
+    p.rows.forEach((r,ri)=>{ const b=`phases.${pi}.rows.${ri}`;
+      h+=`<tr class="lc lc${pi%8}${r.status==='NA'?' kna':''}"><td>${kta(b+'.task')}</td>
+        <td>${kinp(b+'.owner')}</td>
+        <td><select class="kin kst-${(r.status||'A').split(' ')[0]}" data-kp="${b}.status" data-kr="checklist">${KIT_STAT.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td>
+        <td>${kta(b+'.notes')}</td>
+        <td><button class="kdel" data-ka="delRow|${pi}|${ri}">✕</button></td></tr>`; });
+    h+=`<tr class="lc lc${pi%8}"><td colspan="5">${kbtn('addRow|'+pi,'+ Action')}</td></tr>`;
+  });
+  if(!k.phases.length) h+=`<tr><td colspan="5" class="empty">Aucune phase.</td></tr>`;
+  return h+'</tbody></table>';
+}
+/* ---- Organigramme ---- */
+function kitOrga(k){
+  let h=`<div class="kbar-tools">${kbtn('addPerson','+ Fonction')}<span style="margin-left:auto">Quatre niveaux, du sponsor à l'exécution</span></div>`;
+  KIT_LEVELS.forEach((lab,li)=>{
+    const lv=li+1, mem=k.people.map((p,i)=>({p,i})).filter(x=>+x.p.level===lv);
+    h+=`<div class="ktier n${lv}"><h4>${lv}. ${esc(lab)} — ${mem.length} fonction(s)</h4>
+      <div class="kgrid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">`;
+    mem.forEach(({p,i})=>{ h+=`<div class="kperson">
+      <div class="kph"><small>Fonction</small><button class="kdel" data-ka="delPerson|${i}">✕</button></div>
+      <div class="krole">${kta(`people.${i}.role`)}</div>
+      <div class="kph" style="margin-top:4px"><small>Responsable</small>
+        <select class="kin" style="width:58px" data-kp="people.${i}.level" data-kt="number" data-kr="orga">${KIT_LEVELS.map((_,j)=>`<option value="${j+1}" ${j+1===lv?'selected':''}>N${j+1}</option>`).join('')}</select></div>
+      ${kinp(`people.${i}.name`)}</div>`; });
+    if(!mem.length) h+=`<div class="hint" style="padding:4px 2px">Aucune fonction à ce niveau.</div>`;
+    h+='</div></div>';
+  });
+  return h;
+}
+/* ---- Chiffrage ---- */
+function kitDnd(k,key){ return Math.round(ksum(k.budgetGroups.filter(g=>g.section==='Travaux'||g.section===KIT_BOTH).flatMap(g=>g.rows.map(r=>+r[key]||0)))*(+k.dnd||0)); }
+function kitBudget(k){
+  const an=key=>{ const rows=g=>g.rows.map(r=>+r[key]||0);
+    const all=ksum(k.budgetGroups.flatMap(rows)),
+      st=ksum(k.budgetGroups.filter(g=>g.section==='Études').flatMap(rows)),
+      w=ksum(k.budgetGroups.filter(g=>g.section==='Travaux').flatMap(rows)),
+      mx=ksum(k.budgetGroups.filter(g=>g.section===KIT_BOTH).flatMap(rows)),
+      c=kitDnd(k,key);
+    return {st,w,mx,ot:all-st-w-mx,c,t:all+c}; };
+  const a=an('y1'), b=an('y2'), A=k.year1||new Date().getFullYear(), B=k.year2||(A+1);
+  let h=`<div class="kstats">
+    <div class="kstat"><b>${keur(a.t+b.t)}</b><span>Budget total HT</span></div>
+    <div class="kstat"><b>${keur(a.t)}</b><span>${A}</span></div>
+    <div class="kstat"><b>${keur(b.t)}</b><span>${B}</span></div>
+    <div class="kstat"><b>${keur(a.c+b.c)}</b><span>Contingence D.N.D.</span></div></div>
+   <div class="kbar-tools">Taux D.N.D. <input class="kin num" style="width:70px" type="number" step="any" value="${esc(k.dnd)}" data-kp="dnd" data-kt="number" data-kr="budget">
+     Taux journalier (€) <input class="kin num" style="width:84px" type="number" value="${esc(k.dailyRate)}" data-kp="dailyRate" data-kt="number" data-kr="budget">
+     1<sup>re</sup> année <input class="kin num" style="width:70px" type="number" value="${A}" data-kp="year1" data-kt="number" data-kr="budget">
+     ${kbtn('addLot','+ Lot')}<span style="margin-left:auto">${k.budgetGroups.length} lot(s) · une couleur par lot</span></div>
+   <table class="ktbl"><thead><tr><th>Poste</th><th style="width:130px">Section</th><th style="width:90px">Unité / jours</th>
+     <th class="num" style="width:110px">${A} (€ HT)</th><th class="num" style="width:110px">${B} (€ HT)</th><th class="num" style="width:110px">Total</th><th style="width:22%">Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
+  k.budgetGroups.forEach((g,gi)=>{ const lc='lc'+(gi%8);
+    h+=`<tr class="kgrp lc ${lc}"><td>${kinp(`budgetGroups.${gi}.name`)}</td>
+      <td><select class="kin" data-kp="budgetGroups.${gi}.section" data-kr="budget">${KIT_SECT.map(s=>`<option ${s===g.section?'selected':''}>${s}</option>`).join('')}</select></td>
+      <td></td><td class="num">${keur(ksum(g.rows.map(r=>r.y1)))}</td><td class="num">${keur(ksum(g.rows.map(r=>r.y2)))}</td>
+      <td class="num">${keur(ksum(g.rows.map(r=>(+r.y1||0)+(+r.y2||0))))}</td><td></td>
+      <td><button class="kdel" data-ka="delLot|${gi}">✕</button></td></tr>`;
+    g.rows.forEach((r,ri)=>{ const p=`budgetGroups.${gi}.rows.${ri}`;
+      h+=`<tr class="lc ${lc}"><td>${kta(p+'.name')}</td><td></td><td>${kinp(p+'.unit')}</td>
+        <td>${kinp(p+'.y1','number','data-kr="budget"')}</td><td>${kinp(p+'.y2','number','data-kr="budget"')}</td>
+        <td class="num"><b>${keur((+r.y1||0)+(+r.y2||0))}</b></td><td>${kta(p+'.notes')}</td>
+        <td><button class="kdel" data-ka="delLotRow|${gi}|${ri}">✕</button></td></tr>`; });
+    h+=`<tr class="lc ${lc}"><td colspan="8">${kbtn('addLotRow|'+gi,'+ Ligne')}</td></tr>`;
+  });
+  const ligne=(lb,x,y)=>`<tr class="ktot"><td>${lb}</td><td colspan="2"></td><td class="num">${keur(x)}</td><td class="num">${keur(y)}</td><td class="num">${keur(x+y)}</td><td colspan="2"></td></tr>`;
+  h+=ligne('Études',a.st,b.st)+ligne('Travaux',a.w,b.w)
+   +(k.budgetGroups.some(g=>g.section===KIT_BOTH)?ligne(KIT_BOTH,a.mx,b.mx):'')
+   +((a.ot||b.ot)?ligne('Autre',a.ot,b.ot):'')
+   +ligne('Contingence D.N.D.',a.c,b.c)+ligne('TOTAL HT',a.t,b.t);
+  return h+'</tbody></table>';
+}
+/* ---- Plan de charge ---- */
+function kitLoad(k){
+  const M=k.months, all=k.groups.flatMap(g=>g.rows), col=i=>ksum(all.map(r=>r.values[i]));
+  const tot=ksum(M.map((_,i)=>col(i)));
+  let h=`<div class="kstats"><div class="kstat"><b>${kfmt(tot)} FTE</b><span>Charge totale</span></div>
+    <div class="kstat"><b>${kfmt(tot*k.jpf)} j</b><span>Jours</span></div>
+    <div class="kstat"><b>${keur(tot*k.jpf*k.dailyRate)}</b><span>Coût interne estimé</span></div>
+    <div class="kstat"><b>${M.length}</b><span>Mois</span></div></div>
+   <div class="kbar-tools">Jours / FTE <input class="kin num" style="width:64px" type="number" value="${esc(k.jpf)}" data-kp="jpf" data-kt="number" data-kr="load">
+     ${kbtn('addMonth','+ Mois')} ${kbtn('addPole','+ Pôle')}<span style="margin-left:auto">${k.groups.length} pôle(s)</span></div>
+   <div class="tblwrap" style="overflow:auto"><table class="ktbl"><thead><tr><th style="min-width:160px">Pôle / poste</th>
+     ${M.map((m,i)=>`<th style="min-width:72px"><input class="kin" value="${esc(m)}" data-kp="months.${i}"><button class="kdel" data-ka="delMonth|${i}">✕</button></th>`).join('')}
+     <th class="num">Total FTE</th><th class="num">Jours</th><th style="width:26px"></th></tr></thead><tbody>`;
+  k.groups.forEach((g,gi)=>{ const pc='lc'+(gi%8), t=ksum(g.rows.flatMap(r=>r.values));
+    h+=`<tr class="kgrp lc ${pc}"><td>${kinp(`groups.${gi}.name`)}</td>
+      ${M.map((_,i)=>`<td class="num">${kfmt(ksum(g.rows.map(r=>r.values[i])))}</td>`).join('')}
+      <td class="num">${kfmt(t)}</td><td class="num">${kfmt(t*k.jpf)}</td>
+      <td><button class="kdel" data-ka="delPole|${gi}">✕</button></td></tr>`;
+    g.rows.forEach((r,ri)=>{ const p=`groups.${gi}.rows.${ri}`;
+      h+=`<tr class="lc ${pc}"><td>${kinp(p+'.name')}</td>
+        ${M.map((_,i)=>`<td>${kinp(`${p}.values.${i}`,'number','data-kr="load"')}</td>`).join('')}
+        <td class="num"><b>${kfmt(ksum(r.values))}</b></td><td class="num">${kfmt(ksum(r.values)*k.jpf)}</td>
+        <td><button class="kdel" data-ka="delPoleRow|${gi}|${ri}">✕</button></td></tr>`; });
+    h+=`<tr class="lc ${pc}"><td colspan="${M.length+4}">${kbtn('addPoleRow|'+gi,'+ Poste')}</td></tr>`;
+  });
+  h+=`<tr class="ktot"><td>TOTAL FTE</td>${M.map((_,i)=>`<td class="num">${kfmt(col(i))}</td>`).join('')}
+    <td class="num">${kfmt(tot)}</td><td class="num">${kfmt(tot*k.jpf)}</td><td></td></tr>`;
+  return h+'</tbody></table></div>';
+}
+/* ---- Macroplanning ---- */
+let kitAxe={start:0,end:0};
+function kitMacro(k){
+  const dd=s=>Date.parse(s+'T00:00:00Z');
+  const ok=k.tasks.filter(t=>t.start&&t.end&&t.end>=t.start);
+  const dates=[...ok.flatMap(t=>[dd(t.start),dd(t.end)]), ...k.milestones.filter(m=>m.date&&Number.isFinite(dd(m.date))).map(m=>dd(m.date))];
+  let lo,hi;
+  if(dates.length){ lo=Math.min(...dates); hi=Math.max(...dates); }
+  else { lo=Date.now(); hi=lo+864e5*365; }
+  const s0=new Date(lo); s0.setUTCDate(1); const e0=new Date(hi); e0.setUTCMonth(e0.getUTCMonth()+1,1);
+  const A=+s0, B=+e0; kitAxe={start:A,end:B};
+  const pc=v=>(v-A)/(B-A)*100;
+  const mois=[]; for(let m=new Date(A); +m<B; m.setUTCMonth(m.getUTCMonth()+1)) mois.push(new Date(m));
+  const lignesMois=mois.map(m=>`<i class="kmonth" style="left:${pc(+m)}%"></i>`).join('');
+  let g=`<div class="kaxis">${mois.map(m=>{const n=new Date(m);n.setUTCMonth(n.getUTCMonth()+1);
+      return `<div style="width:${pc(+n)-pc(+m)}%">${m.toLocaleDateString('fr-FR',{month:'short',year:'2-digit',timeZone:'UTC'})}</div>`;}).join('')}</div>`;
+  k.milestones.forEach((m,i)=>{ const pose=m.date&&Number.isFinite(dd(m.date));
+    g+=`<div class="krow" data-kms-lane="${i}">${lignesMois}
+      <button class="kms${pose?'':' libre'}" data-kms="${i}" style="left:${pose?pc(dd(m.date))+'%':'0'}" title="${esc(m.name)}${pose?' · '+esc(m.date):' — sans date : glissez-le sur la frise ou saisissez la date ci-dessous'}">
+      <i></i><span>${esc(m.name)}${pose?' · '+new Date(dd(m.date)).toLocaleDateString('fr-FR',{timeZone:'UTC'}):''}</span></button></div>`; });
+  k.tasks.forEach(t=>{
+    if(!(t.start&&t.end&&t.end>=t.start)){ g+=`<div class="krow"><span class="knodate">${esc(t.name)} · dates à renseigner</span></div>`; return; }
+    const l=pc(dd(t.start)), w=Math.max(.4, pc(dd(t.end)+864e5)-l);
+    g+=`<div class="krow">${lignesMois}<div class="kbar ${esc(t.kind||'activity')}" style="left:${l}%;width:${w}%">
+      <i style="width:${+t.progress||0}%"></i><span><b>${+t.progress||0} %</b> ${esc(t.name)}</span></div></div>`; });
+  if(!k.tasks.length && !k.milestones.length) g+=`<div class="krow"><span class="knodate">Aucune activité ni jalon — ajoutez-en ci-dessous.</span></div>`;
+  let h=`<div class="kgantt">${g}</div>
+    <div class="klegend"><span><i style="background:var(--accent)"></i>Activité</span>
+      <span><i style="background:#b0651f"></i>Coordination</span>
+      <span><i style="background:#7d4f9e"></i>Gate</span>
+      <span><i style="background:var(--copper);transform:rotate(45deg)"></i>Jalon — glissable</span></div>
+    <div class="kbar-tools" style="margin-top:14px"><b>Activités</b>${kbtn('addTask','+ Activité')}</div>
+    <table class="ktbl"><thead><tr><th>Activité</th><th style="width:118px">Début</th><th style="width:118px">Fin</th>
+      <th style="width:120px">Type</th><th style="width:80px">Avanc. %</th><th style="width:120px">Pilote</th><th style="width:26px"></th></tr></thead><tbody>`;
+  k.tasks.forEach((t,i)=>{ const p=`tasks.${i}`;
+    h+=`<tr><td>${kinp(p+'.name')}</td><td>${kinp(p+'.start','date','data-kr="macro"')}</td><td>${kinp(p+'.end','date','data-kr="macro"')}</td>
+      <td><select class="kin" data-kp="${p}.kind" data-kr="macro">${KIT_KINDS.map(([v,l])=>`<option value="${v}" ${v===(t.kind||'activity')?'selected':''}>${l}</option>`).join('')}</select></td>
+      <td>${kinp(p+'.progress','number','data-kr="macro"')}</td><td>${kinp(p+'.owner')}</td>
+      <td><button class="kdel" data-ka="delTask|${i}">✕</button></td></tr>`; });
+  if(!k.tasks.length) h+=`<tr><td colspan="7" class="empty">Aucune activité.</td></tr>`;
+  h+=`</tbody></table>
+    <div class="kbar-tools" style="margin-top:14px"><b>Jalons du process ingénierie</b>${kbtn('addMs','+ Jalon')}</div>
+    <table class="ktbl"><thead><tr><th>Jalon</th><th style="width:140px">Date</th><th style="width:140px">Pilote</th><th>Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
+  k.milestones.forEach((m,i)=>{ const p=`milestones.${i}`;
+    h+=`<tr><td>${kinp(p+'.name','text','data-kr="macro"')}</td><td>${kinp(p+'.date','date','data-kr="macro"')}</td>
+      <td>${kinp(p+'.owner')}</td><td>${kta(p+'.notes')}</td>
+      <td><button class="kdel" data-ka="delMs|${i}">✕</button></td></tr>`; });
+  if(!k.milestones.length) h+=`<tr><td colspan="5" class="empty">Aucun jalon.</td></tr>`;
+  return h+'</tbody></table>';
+}
+/* ---- Synthèse du kit, reprise dans la fiche projet ---- */
+function kitSynthese(k){
+  const all=k.phases.flatMap(p=>p.rows), fait=all.filter(r=>r.status==='Fait').length;
+  const net=Math.max(1,all.length-all.filter(r=>r.status==='NA').length);
+  const bud=ksum(k.budgetGroups.flatMap(g=>g.rows.map(r=>(+r.y1||0)+(+r.y2||0))))+kitDnd(k,'y1')+kitDnd(k,'y2');
+  const fte=ksum(k.groups.flatMap(g=>g.rows.flatMap(r=>r.values)));
+  const jal=k.milestones.filter(m=>m.date).length;
+  return {av:Math.round(fait/net*100), actions:all.length, fait, bud, fte, jours:fte*k.jpf,
+          equipe:k.people.filter(p=>String(p.name||'').trim()).length, jal, nbJal:k.milestones.length,
+          taches:k.tasks.length};
+}
+/* Redessiner le volet sans perdre la frappe : les champs du kit n'ont pas
+   d'identifiant, on les retrouve par leur chemin. */
+function renderKitGarde(){
+  const a=document.activeElement, kp=a&&a.dataset&&a.dataset.kp;
+  let deb=null,fin=null; try{ deb=a.selectionStart; fin=a.selectionEnd; }catch(_){}
+  renderKit();
+  if(!kp) return;
+  const n=document.querySelector('#kitPane [data-kp="'+kp+'"]');
+  if(!n || n===document.activeElement) return;
+  try{ n.focus({preventScroll:true}); }catch(_){ n.focus(); }
+  try{ if(deb!=null && n.setSelectionRange) n.setSelectionRange(deb,fin); }catch(_){}
+}
+/* La synthèse du projet annonce ce que contiennent les cinq onglets : sans
+   cela, le kit resterait invisible pour qui ne clique pas. */
+function kitResumeHTML(){
+  if(!S.currentProj) return '';
+  const k=kitOf(S.currentProj), r=kitSynthese(k);
+  const tuile=(v,l,t)=>`<button class="kstat" style="text-align:left;cursor:pointer;border-color:var(--line)" data-ktab="${t}"><b>${v}</b><span>${l}</span></button>`;
+  return `<div class="kstats" style="margin-top:12px">
+    ${tuile(r.av+' %','Check-list — '+r.fait+'/'+r.actions+' actions','checklist')}
+    ${tuile(r.equipe+'/'+k.people.length,'Organigramme renseigné','orga')}
+    ${tuile(keur(r.bud),'Chiffrage HT (D.N.D. incluse)','budget')}
+    ${tuile(kfmt(r.fte)+' FTE',kfmt(r.jours)+' jours de charge','load')}
+    ${tuile(r.jal+'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)','macro')}</div>`;
+}
+function renderKit(){
+  const h=document.getElementById('kitPane'); if(!h) return;
+  const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
+  h.innerHTML = t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+              : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
+  if(t==='macro') kitArmerJalons();
+}
+function kitTabsHTML(){
+  const t=S.kitTab||'synthese';
+  return `<div class="ktabs">${KIT_TABS.map(([i,l])=>`<button data-ktab="${i}" class="${i===t?'on':''}">${l}</button>`).join('')}</div>`;
+}
+/* Glisser un jalon sur la frise pour le dater : le geste de l'outil d'origine. */
+function kitArmerJalons(){
+  $$('#kitPane [data-kms]').forEach(b=>{
+    b.addEventListener('pointerdown',e=>{
+      e.preventDefault(); e.stopPropagation();
+      const lane=b.closest('.krow'), i=+b.dataset.kms, k=kitOf(S.currentProj);
+      const bouger=ev=>{
+        const r=lane.getBoundingClientRect();
+        const x=Math.min(1,Math.max(0,(ev.clientX-r.left)/r.width));
+        const t=kitAxe.start+(kitAxe.end-kitAxe.start)*x;
+        b.style.left=(x*100)+'%';
+        b.dataset.kdate=new Date(t).toISOString().slice(0,10);
+      };
+      const finir=ev=>{
+        document.removeEventListener('pointermove',bouger); document.removeEventListener('pointerup',finir);
+        if(b.dataset.kdate){ k.milestones[i].date=b.dataset.kdate;
+          logChange('Jalon '+(k.milestones[i].name||''),'date','',b.dataset.kdate);
+          scheduleSave(); renderKit(); }
+      };
+      document.addEventListener('pointermove',bouger); document.addEventListener('pointerup',finir);
+    });
+  });
+}
+/* Saisie et actions du kit : écoutes posées une seule fois, le volet étant
+   redessiné à chaque frappe utile. */
+document.addEventListener('input',e=>{
+  const p=e.target.dataset&&e.target.dataset.kp; if(!p) return;
+  let v=e.target.value;
+  if(e.target.dataset.kt==='number') v=parseFloat(String(v).replace(',','.'))||0;
+  kSet(p,v); scheduleSave();
+  if(e.target.dataset.kr) renderKitGarde();
+});
+document.addEventListener('change',e=>{
+  const p=e.target.dataset&&e.target.dataset.kp; if(!p) return;
+  kSet(p, e.target.dataset.kt==='number'? (+e.target.value||0) : e.target.value);
+  scheduleSave(); if(e.target.dataset.kr) renderKit();
+});
+document.addEventListener('click',e=>{
+  const t=e.target.closest&&e.target.closest('[data-ktab]');
+  if(t){ S.kitTab=t.dataset.ktab; scheduleSave(); renderPass(); return; }
+  const b=e.target.closest&&e.target.closest('[data-ka]'); if(!b) return;
+  const [a,...args]=b.dataset.ka.split('|'), n=args.map(x=>+x), k=kitOf(S.currentProj);
+  const M=k.months.length;
+  ({ addPhase:()=>k.phases.push({id:kuid(),name:'Nouvelle phase',rows:[]}),
+     delPhase:()=>k.phases.splice(n[0],1),
+     addRow:()=>k.phases[n[0]].rows.push({id:kuid(),task:'Nouvelle action',owner:'',status:'A faire',notes:''}),
+     delRow:()=>k.phases[n[0]].rows.splice(n[1],1),
+     addPerson:()=>k.people.push({id:kuid(),role:'Nouvelle fonction',name:'',level:4}),
+     delPerson:()=>k.people.splice(n[0],1),
+     addLot:()=>k.budgetGroups.push({id:kuid(),name:'Nouveau lot',section:'Travaux',rows:[]}),
+     delLot:()=>k.budgetGroups.splice(n[0],1),
+     addLotRow:()=>k.budgetGroups[n[0]].rows.push({id:kuid(),name:'Nouvelle ligne',unit:'',y1:0,y2:0,notes:''}),
+     delLotRow:()=>k.budgetGroups[n[0]].rows.splice(n[1],1),
+     addPole:()=>k.groups.push({id:kuid(),name:'Nouveau pôle',rows:[]}),
+     delPole:()=>k.groups.splice(n[0],1),
+     addPoleRow:()=>k.groups[n[0]].rows.push({id:kuid(),name:'Nouveau poste',values:k.months.map(()=>0)}),
+     delPoleRow:()=>k.groups[n[0]].rows.splice(n[1],1),
+     addMonth:()=>{ k.months.push('nouveau'); k.groups.forEach(g=>g.rows.forEach(r=>r.values.push(0))); },
+     delMonth:()=>{ if(M<=1) return; k.months.splice(n[0],1); k.groups.forEach(g=>g.rows.forEach(r=>r.values.splice(n[0],1))); },
+     addTask:()=>k.tasks.push({id:kuid(),name:'Nouvelle activité',start:'',end:'',kind:'activity',owner:'',progress:0,notes:''}),
+     delTask:()=>k.tasks.splice(n[0],1),
+     addMs:()=>k.milestones.push({id:kuid(),name:'Nouveau jalon',date:'',owner:'',notes:'',colorIndex:k.milestones.length}),
+     delMs:()=>k.milestones.splice(n[0],1)
+  }[a]||(()=>{}))();
+  scheduleSave(); renderKit();
+});
+
 /* ======================= TAB 2 — Passeport ======================= */
 function renderPass(){
   const opts=S.projects.map(p=>`<option value="${esc(p.id)}" ${p.id===S.currentProj?'selected':''}>${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('');
@@ -1716,6 +2131,8 @@ function renderPass(){
   <div class="toolbar"><button class="iconbtn" id="ppBack" title="Enregistrer et revenir au portefeuille">← Retour au portefeuille</button>
     <span class="sp"></span><select id="ppSel" style="min-width:340px;max-width:600px">${opts}</select>
     <span class="sp"></span><button class="iconbtn" id="onePageBtn">⎙ Mode One-Page</button></div>
+  ${kitTabsHTML()}
+  ${(S.kitTab&&S.kitTab!=='synthese')?'<div id="kitPane"></div>':`
   <div class="pp-grid">
     <div>
       <div class="panel"><div class="panel-b">
@@ -1730,6 +2147,7 @@ function renderPass(){
           <span><b>Prochain Gate:</b> <span class="ppedit" contenteditable data-ppf="gate">${esc((pp&&pp.gate)||'')}</span></span>
         </div>
         <div class="onepage-note" contenteditable data-editpp="statusTxt">${esc(pp&&pp.statusTxt || p.comment || 'Cliquez pour saisir le commentaire de statut / point clé du projet…')}</div>
+        ${kitResumeHTML()}
         ${budgetBlock(p,pp,atter)}
         ${cerMiniPass(p)}
       </div></div>
@@ -1767,11 +2185,15 @@ function renderPass(){
         </div>
       </div>
     </div>
-  </div>`;
-  $('#ppSel').addEventListener('change',e=>{S.currentProj=e.target.value; renderPass();});
-  $('#hov').addEventListener('change',e=>{p.hoverride=e.target.value||null; renderPass(); scheduleSave();});
-  $('#onePageBtn').addEventListener('click',()=>openOnePage(p,pp,atter));
-  $('#ppBack').addEventListener('click',()=>{ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur(); S.tab='dash'; S.navKey='ppole'; render(); });
+  </div>`}`;
+  if(S.kitTab&&S.kitTab!=='synthese') renderKit();
+  // Les onglets du kit remplacent la synthèse : les champs de celle-ci ne sont
+  // alors pas dans la page, et leur câblage doit l'admettre.
+  const lier=(sel,ev,fn)=>{ const el=$(sel); if(el) el.addEventListener(ev,fn); };
+  lier('#ppSel','change',e=>{S.currentProj=e.target.value; renderPass();});
+  lier('#hov','change',e=>{p.hoverride=e.target.value||null; renderPass(); scheduleSave();});
+  lier('#onePageBtn','click',()=>openOnePage(p,pp,atter));
+  lier('#ppBack','click',()=>{ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur(); S.tab='dash'; S.navKey='ppole'; render(); });
   bindEditables();
 }
 function subHealth(lb,sc){const b=sc>=75?'g':sc>=55?'a':'r';return `<div class="ht ${b}"><span class="dot"></span><span class="lb">${lb}</span><span class="sc">${Math.round(sc)}</span></div>`;}
