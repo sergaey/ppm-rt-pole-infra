@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.7 -->
+<!-- PPM_BUILD:2026-10-15.8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -877,6 +877,28 @@
   .mp-sw input{position:absolute;opacity:0;pointer-events:none}
   .mp-sw:has(input:checked){border-color:var(--ink);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink-2)}
   @media (max-width:1100px){ .atkan{grid-template-columns:repeat(2,minmax(160px,1fr))} }
+  /* ---- Choix d'une personne dans BDD Membres · changement de pôle ---- */
+  .nawrap{display:flex;align-items:center;gap:4px;min-width:0}
+  .nawrap .na{flex:1;min-width:0}
+  .orgpick{flex:none;border:1px solid var(--line);background:var(--panel);border-radius:6px;
+    padding:1px 5px;font-size:11px;line-height:1.5;cursor:pointer;opacity:.5;transition:opacity .12s,border-color .12s}
+  .orgcard:hover .orgpick,.orgcard.vide .orgpick{opacity:1}
+  .orgcard.vide .orgpick{border-color:var(--accent);color:var(--accent-ink)}
+  .orgpick:hover{border-color:var(--accent);background:var(--accent-soft)}
+  .orgmeta{margin:5px 0 0;font-size:10px;color:var(--muted);line-height:1.35;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .orgmeta.hors{color:var(--warn);font-style:italic}
+  .pickbadge{display:inline-block;margin-left:6px;padding:0 6px;border-radius:999px;font-size:9.5px;
+    font-weight:800;background:var(--accent-soft);color:var(--accent-ink);vertical-align:1px}
+  .pickbadge.pris{background:var(--warn-soft);color:var(--warn)}
+  .polesel{max-width:100%;padding:2px 4px;border:1px solid transparent;border-radius:6px;
+    background:transparent;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+  .polesel:hover{border-color:var(--line);background:var(--panel-2)}
+  .polesel:focus{border-color:var(--accent);background:var(--panel)}
+  .polenote{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:9px 12px;border-radius:10px;
+    border:1px solid var(--accent);background:var(--accent-soft);font-size:12.5px}
+  .polenote .pn-ic{font-size:16px;color:var(--accent-ink)}
+  .polenote .pn-tx{flex:1;line-height:1.45;color:var(--ink)}
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -1041,7 +1063,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.7';
+const APP_BUILD='2026-10-15.8';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1058,6 +1080,35 @@ function poleGroup(p){
   if(s.includes('qc')||s==='sc'||s==='fu'||s.includes('fu qc sc')||s==='npi') return 'SC/QC/FU';
   if(s==='autom'||s==='hse'||s==='qa') return 'Transverse';
   return 'Autres';
+}
+
+/* Les pôles du portefeuille. poleGroup() les déduit du libellé d'origine ;
+   cette liste est celle qu'on propose à la main, quand un projet doit changer
+   de pôle (un Housekeeping rattaché à INFRA qui relève en fait du BLP). */
+const POLES=['INFRA','EE','BLP','Plan Transfo','SC/QC/FU','Digital','Transverse','Autres'];
+function polesConnus(){
+  return [...new Set(POLES.concat((S&&S.projects||[]).filter(p=>!p.deleted).map(p=>p.group).filter(Boolean)))];
+}
+/* Changer le pôle d'un projet. Le choix est marqué (p.poleFixe) pour que les
+   déductions de migrate() ne le défassent pas au chargement suivant : sans
+   cela, « Housekeeping » redeviendrait INFRA et le changement paraîtrait ne
+   jamais s'enregistrer. Le libellé d'origine (p.pole) est conservé — c'est la
+   provenance de la donnée, et elle garde sa valeur une fois le pôle corrigé ;
+   le secteur n'est repris que s'il ne disait rien de plus que l'ancien pôle. */
+function changerPole(p,nouveau){
+  if(!p || !nouveau) return false;
+  const av=p.group||'';
+  if(nouveau===av) return false;
+  p.group=nouveau;
+  p.poleFixe=true;
+  if(!p.secteur || norm(p.secteur)===norm(av)) p.secteur=nouveau;
+  logChange('Projet '+(p.shine||p.nom),'pôle',av||'—',nouveau);
+  return true;
+}
+function selPole(p,attr,extra){
+  return `<select class="polesel" ${attr} ${extra||''} title="Changer le pôle : le projet quitte cette section et rejoint celle du pôle choisi">`
+    + polesConnus().sort((a,b)=>a.localeCompare(b,'fr')).map(g=>`<option value="${esc(g)}" ${g===p.group?'selected':''}>${esc(g)}</option>`).join('')
+    + `</select>`;
 }
 
 // A incrementer chaque fois que SEED_MEMBERS gagne une personne : c'est ce
@@ -1254,7 +1305,9 @@ function migrate(saved){
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
   migrerSuivi(r);
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
-    const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p); if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; });
+    const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p);
+    /* Un pôle choisi à la main l'emporte sur la déduction faite du libellé. */
+    if(!p.poleFixe){ if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; } });
   // Membres retires a la main. Sans cette memoire, le rapprochement ci-dessous
   // recreerait a chaque chargement tout PM|PL d'un projet, et une suppression
   // dans BDD Membres paraitrait ne jamais s'enregistrer.
@@ -1970,6 +2023,7 @@ function renderDash(){
           ${ordreManuelActif()?`<button class="iconbtn" id="ordReset" style="background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)" title="Revenir au tri par colonne — l'ordre manuel reste enregistré et se retrouve en cliquant à nouveau une poignée">↕ Ordre manuel ✕</button>`:''}
           <span class="hint" id="fqN">${list.length} / ${S.projects.length}</span>
         </div>
+        ${poleNoteHTML()}
         <div class="tblwrap" style="max-height:560px;overflow-y:auto">
           <table id="projTbl"><thead><tr>
             <th class="pgrab" style="width:26px" title="Glissez une ligne par sa poignée pour la déplacer"></th>${th('Santé','_h',40)}${th('Code','shine')}${th('Projet','nom')}${th('Pôle','group')}${th('PM | Owner','pm')}${th('PL | Leader','pl')}
@@ -2022,7 +2076,7 @@ function renderDash(){
   ${footHTML('dash',`PPM Vitry · données amorcées depuis Prépa C2-B26 &amp; Plan de ressources projets · éditable en ligne, sauvegarde automatique.`)}`;
 
   // wire
-  const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows();
+  const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows(); armerPole();
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
   const nb=$('#newProj'); if(nb) nb.addEventListener('click',nouveauProjet);
@@ -2039,6 +2093,41 @@ function renderDash(){
   $$('[data-gp]').forEach(el=>el.addEventListener('click',()=>{S.filters.pole=el.dataset.gp; renderDash();}));
   $$('[data-fid2]').forEach(el=>el.addEventListener('click',()=>{S.currentProj=el.dataset.fid2;S.tab='pass';render();}));
   wireRows();
+  armerPole();
+}
+/* Un projet qui change de pôle depuis une vue filtrée par pôle disparaît sous
+   la souris. Plutôt que de le laisser s'évanouir, on dit où il est parti et on
+   propose d'y aller. */
+function poleNoteHTML(){
+  const n=S._poleNote; if(!n) return '';
+  const p=S.projects.find(x=>x.id===n.id); if(!p) return '';
+  return `<div class="polenote"><span class="pn-ic">⇄</span>
+    <div class="pn-tx"><b>${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</b> est passé de
+      <b>${esc(n.de||'—')}</b> à <b>${esc(n.vers)}</b> : il n'apparaît plus dans cette vue.</div>
+    <button class="iconbtn" data-pnvoir="${esc(n.vers)}">Voir ${esc(n.vers)}</button>
+    <button class="iconbtn" data-pnx title="Masquer">✕</button></div>`;
+}
+/* Le sélecteur de pôle, partout où il est posé (liste du portefeuille, fiche
+   projet). Dans la liste, la ligne entière ouvre la fiche : le clic sur le
+   sélecteur ne doit pas remonter jusque-là. */
+function armerPole(){
+  $$('[data-ppole]').forEach(sel=>{
+    sel.addEventListener('click',e=>e.stopPropagation());
+    sel.addEventListener('mousedown',e=>e.stopPropagation());
+    sel.addEventListener('change',e=>{
+      e.stopPropagation();
+      const p=S.projects.find(x=>x.id===sel.dataset.ppole); if(!p) return;
+      const av=p.group||'';
+      if(!changerPole(p,sel.value)){ return; }
+      S._flash=p.id;
+      S._poleNote=(S.tab==='dash' && S.filters.pole && S.filters.pole!==p.group)
+        ? {id:p.id,de:av,vers:p.group} : null;
+      scheduleSave(); render();
+    });
+  });
+  const v=$('[data-pnvoir]'); if(v) v.addEventListener('click',()=>{
+    S.filters.pole=v.dataset.pnvoir; S.navKey=''; S._poleNote=null; renderDash(); });
+  const x=$('[data-pnx]'); if(x) x.addEventListener('click',()=>{ S._poleNote=null; renderDash(); });
 }
 function th(lbl,k,w){return `<th data-k="${k}" ${w?`style="width:${w}px"`:''}>${lbl}${sortar(k)}</th>`;}
 function thn(lbl,k){return `<th class="num" data-k="${k}">${lbl}${sortar(k)}</th>`;}
@@ -2090,7 +2179,7 @@ function projRows(list){
       <td><span class="hdot ${h.band}" title="${bandLabel[h.band]} · score ${h.composite}"></span></td>
       <td class="code">${esc(p.shine||'—')}</td>
       <td class="wrap">${esc(p.nom)}${dbl?` <span class="dupmk" title="${esc(dbl.titre)}">⧉ ${esc(dbl.court)}</span>`:''}${p.actif===false&&!corbeille?` <span class="archmk">archivé</span>`:''}</td>
-      <td>${esc(p.group)}</td>
+      <td>${selPole(p,`data-ppole="${esc(p.id)}"`)}</td>
       <td class="edc" contenteditable data-dpf="pm|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pm||'')}</td>
       <td class="edc" contenteditable data-dpf="pl|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pl||'')}</td>
       <td class="num">${fmt(p.c1)}</td>
@@ -2248,24 +2337,36 @@ function kitChecklist(k){
    ses initiales ; une fonction sans titulaire se voit du premier coup d'œil
    et se compte. Les cartes se déplacent d'un niveau à l'autre à la souris. */
 const ORG_INI=n=>{
-  const m=String(n||'').trim().split(/[\s'’-]+/).filter(Boolean);
+  /* Un nom saisi à la main porte parfois une civilité et une société :
+     « M. Durand (SPIE) ». On ne garde que les mots qui sont des noms. */
+  const m=String(n||'').replace(/\([^)]*\)/g,' ').trim().split(/[\s'’-]+/)
+    .filter(w=>/^[\p{L}]{2,}$/u.test(w) && !/^(m|mme|mr|dr|monsieur|madame|entreprise|societe|société)$/i.test(w));
   if(!m.length) return '—';
   return ((m[0][0]||'')+(m.length>1?(m[m.length-1][0]||''):'')).toUpperCase();
 };
+/* Retrouver la fiche du référentiel correspondant à un nom saisi. La casse et
+   les accents varient d'une saisie à l'autre ; la comparaison les ignore. */
+function memTrouve(nom){
+  const k=norm(nom||'').replace(/\s+/g,' ').trim();
+  if(!k) return null;
+  return (S.members||[]).find(m=>norm(m.nom||'').replace(/\s+/g,' ').trim()===k)||null;
+}
 function kitOrga(k){
   const pourvues=k.people.filter(p=>String(p.name||'').trim()).length;
   const manquantes=k.people.length-pourvues;
+  const connues=k.people.filter(p=>memTrouve(p.name)).length;
   let h=`<div class="orgc">
     <div class="orgtop">
       <div class="orgkpi">
         <div class="orgk"><b>${k.people.length}</b><span>Fonctions</span></div>
         <div class="orgk"><b>${pourvues}</b><span>Pourvues</span></div>
         <div class="orgk"><b>${manquantes}</b><span>À pourvoir</span></div>
+        <div class="orgk" title="Personnes reconnues dans Capacité › BDD Membres"><b>${connues}</b><span>Du référentiel</span></div>
         <div class="orgk"><b>${KIT_LEVELS.length}</b><span>Niveaux</span></div>
       </div>
       <span class="sp" style="margin-left:auto"></span>
       ${kbtn('addPerson','+ Fonction')}
-      <span class="hint">Glissez une carte sur un autre niveau pour la rattacher</span>
+      <span class="hint">👤 choisit une personne dans BDD Membres · glissez une carte sur un autre niveau pour la rattacher</span>
     </div>`;
   KIT_LEVELS.forEach((lab,li)=>{
     const lv=li+1, mem=k.people.map((p,i)=>({p,i})).filter(x=>+x.p.level===lv);
@@ -2275,12 +2376,18 @@ function kitOrga(k){
       <div class="orgr${mem.length<2?' solo':''}" data-orglvl="${lv}">`;
     mem.forEach(({p,i})=>{
       const vide=!String(p.name||'').trim();
+      const fiche=vide?null:memTrouve(p.name);
       h+=`<div class="orgcard l${lv}${vide?' vide':''}" draggable="true" data-orgi="${i}">
         <div class="hd"><div class="av">${esc(ORG_INI(p.name))}</div>
           <div style="flex:1;min-width:0">
             <div class="ro" contenteditable data-kp="people.${i}.role">${esc(p.role||'')}</div>
-            <div class="na" contenteditable data-kp="people.${i}.name" data-vide="Fonction à pourvoir">${esc(p.name||'')}</div>
+            <div class="nawrap">
+              <div class="na" contenteditable data-kp="people.${i}.name" data-vide="Fonction à pourvoir">${esc(p.name||'')}</div>
+              <button class="orgpick" draggable="false" data-orgpick="${i}" title="Choisir une personne dans BDD Membres">👤</button>
+            </div>
           </div></div>
+        ${fiche?`<div class="orgmeta" title="Fiche du référentiel — Capacité › BDD Membres">${esc(fiche.role||'rôle non renseigné')}${fiche.pole?' · '+esc(fiche.pole):''}${fiche.type?' · '+esc(fiche.type):''}${fiche.dispo!=null?' · dispo '+fmt(fiche.dispo)+' %':''}</div>`
+          :(vide?'':`<div class="orgmeta hors" title="Ce nom n'est pas au référentiel : prestataire, renfort ou orthographe différente">hors référentiel</div>`)}
         <div class="ft">
           <select data-kp="people.${i}.level" data-kt="number" data-kr="orga" title="Rattacher à un autre niveau">
             ${KIT_LEVELS.map((x,j)=>`<option value="${j+1}" ${j+1===lv?'selected':''}>N${j+1} · ${esc(x)}</option>`).join('')}
@@ -2301,6 +2408,22 @@ function kitArmerOrga(){
     const c=[...r.querySelectorAll('.orgcard')]; if(!c.length) return;
     const y0=c[0].offsetTop;
     c.forEach(x=>x.classList.toggle('nostub', x.offsetTop>y0+4));
+  });
+  /* Choisir la personne dans le référentiel plutôt que de retaper son nom. */
+  $$('#kitPane [data-orgpick]').forEach(b=>{
+    b.addEventListener('mousedown',e=>e.stopPropagation());
+    b.addEventListener('click',e=>{
+      e.preventDefault(); e.stopPropagation();
+      const i=+b.dataset.orgpick, k=kitOf(S.currentProj), p=k.people[i];
+      if(!p) return;
+      const autres=k.people.filter((x,j)=>j!==i).map(x=>x.name).filter(Boolean);
+      memPicker('Qui tient la fonction « '+(p.role||'sans intitulé')+' » ?', p.name||'', autres, p.role||'', nom=>{
+        if(String(p.name||'')===String(nom||'')) return;
+        const proj=S.projects.find(x=>x.id===S.currentProj);
+        logChange('Organigramme — '+((proj&&(proj.shine||proj.nom))||S.currentProj), p.role||'fonction', p.name||'—', nom||'—');
+        p.name=nom; scheduleSave(); renderKitGarde();
+      });
+    });
   });
   let src=null;
   $$('#kitPane .orgcard').forEach(c=>{
@@ -4303,7 +4426,7 @@ function renderPass(){
         <div class="pp-id"><span class="c">${esc(p.ishift||p.shine||'—')}</span><h2 contenteditable data-pf="nom">${esc(p.nom)}</h2></div>
         <div class="pp-meta">
           <span><b>Code:</b> <span class="mono">${esc(p.shine||'—')}</span></span>
-          <span><b>Pôle:</b> ${esc(p.group)} / <span class="ppedit" contenteditable data-pf="secteur">${esc(p.secteur||'')}</span></span>
+          <span><b>Pôle:</b> ${selPole(p,`data-ppole="${esc(p.id)}"`,'style="font-size:11.5px"')} / <span class="ppedit" contenteditable data-pf="secteur">${esc(p.secteur||'')}</span></span>
           <span><b>PM | Owner:</b> <span class="ppedit" contenteditable data-pf="pm">${esc(p.pm||'')}</span></span>
           <span><b>PL | Leader:</b> <span class="ppedit" contenteditable data-pf="pl">${esc(p.pl||'')}</span></span>
           <span><b>Sponsor:</b> <span class="ppedit" contenteditable data-pf="sponsor">${esc(p.sponsor||(pp&&pp.sponsor)||'')}</span></span>
@@ -4363,6 +4486,7 @@ function renderPass(){
   lier('#hov','change',e=>{p.hoverride=e.target.value||null; renderPass(); scheduleSave();});
   lier('#onePageBtn','click',()=>openOnePage(p,pp,atter));
   lier('#ppBack','click',()=>{ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur(); S.tab='dash'; S.navKey='ppole'; render(); });
+  armerPole();
   bindEditables();
 }
 function subHealth(lb,sc){const b=sc>=75?'g':sc>=55?'a':'r';return `<div class="ht ${b}"><span class="dot"></span><span class="lb">${lb}</span><span class="sc">${Math.round(sc)}</span></div>`;}
@@ -5491,6 +5615,73 @@ function projSearch(q){
     const t=norm([p.shine,p.nom,p.pole,p.group,p.secteur,p.pm,p.pl,p.ishift,p.sponsor].join(' '));
     return mots.every(m=>t.includes(m));
   });
+}
+/* Choisir une personne dans BDD Membres, pour l'organigramme du kit projet.
+   La saisie libre reste possible : un prestataire ou un renfort ponctuel n'a
+   pas toujours de fiche. Les personnes déjà placées dans cet organigramme
+   sont signalées, pour ne pas affecter deux fois la même sans le voir. */
+function memPicker(titre, courant, dejaPris, roleCible, onPick){
+  const ov=document.createElement('div'); ov.className='pickov';
+  ov.innerHTML=`<div class="pickbox">
+    <div class="pickh">${esc(titre)}</div>
+    <div class="pickb">
+      <input class="search" id="mkQ" placeholder="Nom, rôle, pôle, société…" autocomplete="off" style="width:100%">
+      <div class="pickhint" id="mkN"></div>
+      <div class="picklist" id="mkL"></div>
+    </div>
+    <div class="pickf">
+      <button class="iconbtn" data-mk="none">Fonction à pourvoir</button>
+      <button class="iconbtn" data-mk="libre" title="Une personne qui n'est pas au référentiel">✎ Nom libre…</button>
+      <span class="sp"></span>
+      <button class="iconbtn" data-mk="close">Fermer</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  const q=ov.querySelector('#mkQ'), L=ov.querySelector('#mkL'), N=ov.querySelector('#mkN');
+  const roster=(S.members||[]).filter(m=>String(m.nom||'').trim());
+  const pris=new Set((dejaPris||[]).map(x=>norm(x)));
+  const rc=norm(roleCible||'');
+  const dessiner=()=>{
+    const t=norm(q.value).trim(), mots=t?t.split(/\s+/):[];
+    let res=roster.filter(m=>{
+      if(!mots.length) return true;
+      const foin=norm([m.nom,m.role,m.pole,m.type,m.societe].join(' '));
+      return mots.every(w=>foin.includes(w));
+    });
+    /* Le poste à pourvoir d'abord : les personnes dont le rôle correspond. */
+    res.sort((a,b)=>{
+      const ra=rc&&norm(a.role||'')&&(norm(a.role).includes(rc)||rc.includes(norm(a.role)))?0:1;
+      const rb=rc&&norm(b.role||'')&&(norm(b.role).includes(rc)||rc.includes(norm(b.role)))?0:1;
+      if(ra!==rb) return ra-rb;
+      return String(a.nom).localeCompare(String(b.nom),'fr');
+    });
+    const vus=res.slice(0,150);
+    N.textContent = !roster.length ? 'Aucun membre au référentiel — Capacité › BDD Membres'
+      : (q.value.trim() ? `${res.length} personne(s) correspondent`
+                        : `${roster.length} personne(s) au référentiel — tapez pour filtrer`);
+    L.innerHTML = vus.length ? vus.map(m=>{
+      const ici=pris.has(norm(m.nom)), moi=norm(m.nom)===norm(courant||'');
+      return `<button class="pickit${moi?' on':''}" data-nom="${esc(m.nom)}">
+        <b>${esc(m.ini||ORG_INI(m.nom))}</b>${esc(m.nom)}${moi?' <span class="pickbadge">en poste</span>':(ici?' <span class="pickbadge pris">déjà placé</span>':'')}
+        <span class="pickmeta">${esc(m.role||'rôle non renseigné')}${m.pole?' · '+esc(m.pole):''}${m.type?' · '+esc(m.type):''}${m.societe?' · '+esc(m.societe):''}${m.dispo!=null?' · '+fmt(m.dispo)+' %':''}${m.depart?' · départ '+esc(m.depart):''}</span></button>`;
+    }).join('')
+      : (!roster.length
+        ? `<div class="empty" style="padding:16px;line-height:1.5">Le référentiel est vide. Renseignez-le dans <b>Capacité › BDD Membres</b>, ou saisissez un nom libre.</div>`
+        : `<div class="empty" style="padding:16px">Personne ne correspond à &laquo; ${esc(q.value)} &raquo;.</div>`);
+    L.querySelectorAll('[data-nom]').forEach(b=>b.onclick=()=>{ ov.remove(); onPick(b.dataset.nom); });
+  };
+  q.oninput=dessiner; dessiner();
+  ov.querySelector('[data-mk="none"]').onclick=()=>{ ov.remove(); onPick(''); };
+  ov.querySelector('[data-mk="libre"]').onclick=()=>{
+    const v=prompt('Nom de la personne (hors référentiel) :', courant||'');
+    if(v==null) return; ov.remove(); onPick(v.trim());
+  };
+  ov.querySelector('[data-mk="close"]').onclick=()=>ov.remove();
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  ov.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){ ov.remove(); return; }
+    if(e.key==='Enter'){ const b=L.querySelector('[data-nom]'); if(b) b.click(); }
+  });
+  setTimeout(()=>q.focus(),0);
 }
 function projPicker(titre, courant, onPick){
   const ov=document.createElement('div'); ov.className='pickov';
