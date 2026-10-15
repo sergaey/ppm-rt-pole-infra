@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.9 -->
+<!-- PPM_BUILD:2026-10-15.10 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -899,6 +899,10 @@
     border:1px solid var(--accent);background:var(--accent-soft);font-size:12.5px}
   .polenote .pn-ic{font-size:16px;color:var(--accent-ink)}
   .polenote .pn-tx{flex:1;line-height:1.45;color:var(--ink)}
+  /* Ligne calculée du bloc budget : lisible comme une valeur, pas comme une saisie. */
+  .op .opcalc{display:inline-block;padding:2px 6px;border:1px dashed var(--line-2);border-radius:5px;
+    background:var(--panel-2);color:var(--ink-2);font-variant-numeric:tabular-nums;font-weight:700;font-size:11px;cursor:help}
+  .op .opcalc.neg{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -1045,7 +1049,7 @@ const SEED_PASSPORTS = {"P40203":{"code":"P40203","phase":"Travaux","gate":"G3",
    projet correspondant du portefeuille, une seule fois et seulement si sa
    page est encore vierge : une saisie faite depuis n'est jamais ecrasee.
    Les autres projets gardent la structure de base. */
-const SEED_OP = {"demo":{"cles":{"codes":["P40156"],"nom":[]},"etiquette":"Extension quai de réception matières","sante":"a","statusTxt":"Attente du retour du charpentier sur le chiffrage de la couverture.\n\nBudget à piloter : l'atterrissage dépasse le C1 de 440 k€.","op":{"ganttStart":"2025-10-01","ganttEnd":"2026-09-01","endMarker":"2026-07-31","wbs":[{"type":"milestones","name":"Jalons Projet","milestones":[{"label":"CDO","date":"2025-10-14","color":"#f59e0b","topPct":0},{"label":"CER","date":"2025-11-20","color":"#db2777","topPct":50},{"label":"Gate 3","date":"2026-01-15","color":"#4f46e5","topPct":100},{"label":"Gate 5","date":"2026-07-31","color":"#16a34a","topPct":0}]},{"type":"bar","name":"1. Terrassement et fondations du quai","start":"2025-11-03","end":"2026-01-30","label":"3 mois →","color":"#16a34a","status":"Done"},{"type":"bar","name":"2. Charpente métallique et couverture","start":"2026-02-02","end":"2026-04-30","label":"3 mois →","color":"#2563eb","status":"Done"},{"type":"bar","name":"3. Quai niveleur, portes sectionnelles et abri","start":"2026-05-04","end":"2026-06-30","label":"2 mois →","color":"#f59e0b","status":"WIP"},{"type":"bar","name":"4. Réception, CSSCT et mise en service","start":"2026-07-01","end":"2026-07-31","label":"1 mois →","color":"#2563eb","status":"Not started"}],"budget":{"years":["Capex 2025","Capex 2026"],"rows":[{"label":"Budget C1","values":[1200,2000]},{"label":"YTD Commit.","values":[980,1410]},{"label":"Spent","values":[910,1500]},{"label":"Final Cost","values":[1200,2440],"total":true}]},"ach":["Fondations coulées et séchées, contrôle béton conforme","Charpente levée et couverture posée, bardage en cours","Commande du quai niveleur passée, livraison confirmée en S20"]},"pp":{"milestones":[{"name":"Réception des fondations et contrôle béton","ini":"30/01/2026","neu":"30/01/2026","st":"Done"},{"name":"Levage de la charpente métallique","ini":"20/02/2026","neu":"06/03/2026","st":"Done"},{"name":"Pose du quai niveleur et des portes sectionnelles","ini":"15/05/2026","neu":"12/06/2026","st":"In progress"},{"name":"Visite CSSCT et permis de démarrage","ini":"20/07/2026","neu":"20/07/2026","st":"Not started"}],"risks":[{"desc":"Chiffrage de la couverture non reçu du charpentier","mit":"Relance hebdomadaire, devis de secours demandé","owner":"AV","date":"28/02/2026"},{"desc":"Co-activité avec la circulation des camions pendant les travaux","mit":"Plan de circulation provisoire validé avec la logistique","owner":"HSM","date":"15/03/2026"}],"nextSteps":[{"t":"Réception du quai niveleur et essais de charge","st":"En cours"},{"t":"Raccordement électrique des portes sectionnelles","st":"À faire"},{"t":"Dossier de réception et visite CSSCT","st":"À faire"}]}}};
+const SEED_OP = {"demo":{"cles":{"codes":["P40156"],"nom":[]},"etiquette":"Extension quai de réception matières","sante":"a","statusTxt":"Attente du retour du charpentier sur le chiffrage de la couverture.\n\nBudget à piloter : l'atterrissage dépasse le C1 de 440 k€.","op":{"ganttStart":"2025-10-01","ganttEnd":"2026-09-01","endMarker":"2026-07-31","wbs":[{"type":"milestones","name":"Jalons Projet","milestones":[{"label":"CDO","date":"2025-10-14","color":"#f59e0b","topPct":0},{"label":"CER","date":"2025-11-20","color":"#db2777","topPct":50},{"label":"Gate 3","date":"2026-01-15","color":"#4f46e5","topPct":100},{"label":"Gate 5","date":"2026-07-31","color":"#16a34a","topPct":0}]},{"type":"bar","name":"1. Terrassement et fondations du quai","start":"2025-11-03","end":"2026-01-30","label":"3 mois →","color":"#16a34a","status":"Done"},{"type":"bar","name":"2. Charpente métallique et couverture","start":"2026-02-02","end":"2026-04-30","label":"3 mois →","color":"#2563eb","status":"Done"},{"type":"bar","name":"3. Quai niveleur, portes sectionnelles et abri","start":"2026-05-04","end":"2026-06-30","label":"2 mois →","color":"#f59e0b","status":"WIP"},{"type":"bar","name":"4. Réception, CSSCT et mise en service","start":"2026-07-01","end":"2026-07-31","label":"1 mois →","color":"#2563eb","status":"Not started"}],"budget":{"years":["Capex 2025","Capex 2026"],"rows":[{"role":"budget","label":"Budget Value","values":[1200,2000]},{"role":"act","label":"Actuals Amount","values":[910,1500]},{"role":"commit","label":"Open Commitments","values":[240,410]},{"role":"dispo","label":"Available Amount","values":[0,0]},{"role":"final","label":"Final Cost","values":[1200,2440],"total":true}]},"ach":["Fondations coulées et séchées, contrôle béton conforme","Charpente levée et couverture posée, bardage en cours","Commande du quai niveleur passée, livraison confirmée en S20"]},"pp":{"milestones":[{"name":"Réception des fondations et contrôle béton","ini":"30/01/2026","neu":"30/01/2026","st":"Done"},{"name":"Levage de la charpente métallique","ini":"20/02/2026","neu":"06/03/2026","st":"Done"},{"name":"Pose du quai niveleur et des portes sectionnelles","ini":"15/05/2026","neu":"12/06/2026","st":"In progress"},{"name":"Visite CSSCT et permis de démarrage","ini":"20/07/2026","neu":"20/07/2026","st":"Not started"}],"risks":[{"desc":"Chiffrage de la couverture non reçu du charpentier","mit":"Relance hebdomadaire, devis de secours demandé","owner":"AV","date":"28/02/2026"},{"desc":"Co-activité avec la circulation des camions pendant les travaux","mit":"Plan de circulation provisoire validé avec la logistique","owner":"HSM","date":"15/03/2026"}],"nextSteps":[{"t":"Réception du quai niveleur et essais de charge","st":"En cours"},{"t":"Raccordement électrique des portes sectionnelles","st":"À faire"},{"t":"Dossier de réception et visite CSSCT","st":"À faire"}]}}};
 
 /* ======================= State ======================= */
 let S = null;
@@ -1070,7 +1074,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.9';
+const APP_BUILD='2026-10-15.10';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1481,9 +1485,9 @@ async function idbHydrate(){
 // Adopte un état venu du serveur (plus récent) — ne écrase jamais silencieusement.
 function adoptServerState(st,msg){
   try{ S=migrate(st); }catch(_){ return false; }
-  try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
   baselineSavedAt=(S&&S._savedAt)||0; dirty=false;
-  try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
   // Aucune copie navigateur en clair quand l'auth serveur OU le verrou local est actif.
   if(!AUTH.enforced && !(typeof LOCK!=='undefined' && LOCK.active)){ try{ localStorage.setItem('ppm_vitry_state',JSON.stringify(S)); }catch(_){} }
   try{ render(); }catch(_){}
@@ -2287,6 +2291,43 @@ function opFondre(cible,ajouts,cle){
   (ajouts||[]).forEach(x=>{ const k=norm(cle(x)); if(!k||vus.has(k))return; vus.add(k); cible.push(x); n++; });
   return n;
 }
+/* Reprise des blocs budget enregistrés avant la refonte des lignes.
+   Les libellés que l'application posait elle-même (« Budget », « YTD
+   Commit. », « Spent ») prennent les nouveaux ; un libellé saisi à la main
+   garde le sien, et ne reçoit qu'un rôle — sans quoi renommer la ligne de
+   quelqu'un reviendrait à décider à sa place. La ligne « Available Amount »
+   est insérée avant l'atterrissage quand elle manque. */
+const OP_BLABELS={'budget':'Budget Value','ytd commit.':'Open Commitments','ytd commitment':'Open Commitments',
+                  'spent':'Actuals Amount'};
+function migrerBudgetOP(){
+  if(!S.kits) return 0;
+  let n=0;
+  Object.keys(S.kits).forEach(id=>{
+    const k=S.kits[id]; const o=k&&k.op; if(!o||!o.budget||!Array.isArray(o.budget.rows)) return;
+    const av=JSON.stringify(o.budget.rows.map(r=>[r.role||'',r.label]));
+    o.budget.rows.forEach(rw=>{
+      const std=OP_BLABELS[String(rw.label||'').trim().toLowerCase()];
+      if(std) rw.label=std;
+      const r=opRole(rw); if(r) rw.role=r;
+    });
+    /* Aucune ligne ne se donne pour la dotation : c'est la première, par
+       convention de l'outil comme de la lecture. Sans ce repli, le disponible
+       se calculerait sur un budget nul dès qu'une ligne a été renommée. */
+    if(!o.budget.rows.some(rw=>rw.role==='budget')){
+      const p=o.budget.rows.find(rw=>!rw.role);
+      if(p) p.role='budget';
+    }
+    if(!o.budget.rows.some(rw=>rw.role==='dispo'))
+      o.budget.rows.push({id:kuid(),role:'dispo',label:'Available Amount',values:o.budget.years.map(()=>0)});
+    /* Ordre de lecture : dotation, dépensé, engagé, disponible, atterrissage.
+       Les lignes ajoutées à la main gardent leur rang relatif, à la suite. */
+    const rang=r=>{ const i2=OP_BROLES.findIndex(x=>x[0]===r.role); return i2<0?99:i2; };
+    o.budget.rows=o.budget.rows.map((r,i2)=>({r,i2}))
+      .sort((a,b)=>(rang(a.r)-rang(b.r))||(a.i2-b.i2)).map(x=>x.r);
+    if(JSON.stringify(o.budget.rows.map(r=>[r.role||'',r.label]))!==av) n++;
+  });
+  return n;
+}
 function appliquerSeedOP(){
   if(typeof SEED_OP!=='object'||!SEED_OP) return 0;
   S.opSeeded=S.opSeeded||{};
@@ -2807,10 +2848,11 @@ function opOf(id){
     k.op={ wbs:[{id:kuid(),type:'milestones',name:'RT Process Ingénierie',milestones:[],status:''},
                 {id:kuid(),type:'bar',name:'Études',start:'',end:'',label:'',color:OP_BARC[4],status:'WIP'}],
       budget:{years:[an],rows:[
-        {id:kuid(),label:'Budget',values:[+p.c1||0]},
-        {id:kuid(),label:'YTD Commit.',values:[+p.commit||0]},
-        {id:kuid(),label:'Spent',values:[+p.act||0]},
-        {id:kuid(),label:'Final Cost',values:[Math.round(atterrissage(p))],total:true}]},
+        {id:kuid(),role:'budget',label:'Budget Value',values:[+p.c1||0]},
+        {id:kuid(),role:'act',   label:'Actuals Amount',values:[+p.act||0]},
+        {id:kuid(),role:'commit',label:'Open Commitments',values:[+p.commit||0]},
+        {id:kuid(),role:'dispo', label:'Available Amount',values:[0]},
+        {id:kuid(),role:'final', label:'Final Cost',values:[Math.round(atterrissage(p))],total:true}]},
       ach:[], endMarker:'', todayMarker:'' };
   }
   const o=k.op;
@@ -2823,6 +2865,31 @@ function opOf(id){
   o.wbs.forEach(r=>{ if(r.type==='milestones') r.milestones=Array.isArray(r.milestones)?r.milestones:[]; });
   return o;
 }
+/* Le bloc budget porte cinq lignes de sens fixe : la dotation, ce qui est
+   dépensé, ce qui est engagé sans l'être encore, ce qui reste et
+   l'atterrissage. Le rôle est tenu par la ligne, pas par son libellé — celui-ci
+   reste libre, et une page ancienne garde le sien. */
+const OP_BROLES=[['budget','Budget Value'],['act','Actuals Amount'],
+                 ['commit','Open Commitments'],['dispo','Available Amount'],['final','Final Cost']];
+/* Rôle d'une ligne dont le fichier n'en porte pas encore : déduit du libellé,
+   y compris des intitulés d'origine (« YTD Commit. », « Spent »). */
+function opRole(rw){
+  if(rw.role) return rw.role;
+  const l=norm(rw.label||'');
+  if(l.includes('available')||l.includes('disponible')) return 'dispo';
+  if(l.includes('final')||rw.total) return 'final';
+  if(l.includes('commit')) return 'commit';
+  if(l.includes('actual')||l.includes('spent')||l.includes('depense')) return 'act';
+  if(l.startsWith('budget')) return 'budget';
+  return '';
+}
+function opLigne(o,role){ return (o.budget.rows||[]).find(r=>opRole(r)===role)||null; }
+function opMontant(o,role,j){ const r=opLigne(o,role); return r?(+r.values[j]||0):0; }
+/* Disponible : la dotation moins ce qui est dépensé et ce qui est engagé.
+   Calculé, jamais saisi — une valeur recopiée à la main cesse d'être vraie
+   dès la première correction d'un des trois autres montants. */
+function opDispo(o,j){ return opMontant(o,'budget',j)-opMontant(o,'act',j)-opMontant(o,'commit',j); }
+
 /* Fenêtre de la frise : toutes les dates du WBS, arrondies au mois. */
 function opRange(o){
   const ds=[];
@@ -2891,7 +2958,8 @@ function opPage(){
       <td style="padding:0"><div class="garea">${fond}${bar}${marq(false)}</div></td>
       <td style="text-align:center">${opPill(w.status,'wbs',i)}</td></tr>`;
   }).join('');
-  const bud=o.budget, tot=r2=>ksum(r2.values);
+  const bud=o.budget;
+  const tot=r2=>(opRole(r2)==='dispo') ? ksum(bud.years.map((_,j)=>opDispo(o,j))) : ksum(r2.values);
   const ach=o.ach.map((t,i)=>`<div class="opitem"><span class="b">✓</span><span style="flex:1" contenteditable data-opb="ach.${i}">${esc(t)}</span><button class="kdel" data-opa="delAch|${i}">✕</button></div>`).join('')||'<div class="hint">Aucune réalisation.</div>';
   const ns=(pp.nextSteps||[]).map((x,i)=>{const s2=nsNorm(x);
     return `<div class="opitem ns"><span class="b">→</span><span style="flex:1" contenteditable data-ns="${esc(id)}|${i}">${esc(s2.t)}</span><span class="pill p-ns">${esc(s2.st)}</span></div>`;}).join('')||'<div class="hint">Aucune étape.</div>';
@@ -2943,7 +3011,10 @@ function opPage(){
         <table><thead><tr><th></th>${bud.years.map((y,i)=>`<th class="num"><span contenteditable data-opb="budget.years.${i}">${esc(y)}</span></th>`).join('')}<th class="num">TOTAL</th><th style="width:22px"></th></tr></thead>
         <tbody>${bud.rows.map((rw,i)=>`<tr${rw.total?' style="font-weight:800;background:var(--panel-2)"':''}>
           <td><span contenteditable data-opb="budget.rows.${i}.label">${esc(rw.label)}</span></td>
-          ${rw.values.map((v,j)=>`<td class="num"><input class="kin num" type="number" step="any" value="${esc(v)}" data-opd="budget.rows.${i}.values.${j}" data-opr="1"></td>`).join('')}
+          ${opRole(rw)==='dispo'
+            ? bud.years.map((_,j)=>{const v=opDispo(o,j);
+                return `<td class="num"><span class="opcalc ${v<0?'neg':''}" title="Budget Value − Actuals Amount − Open Commitments">${fmt(v)}</span></td>`;}).join('')
+            : rw.values.map((v,j)=>`<td class="num"><input class="kin num" type="number" step="any" value="${esc(v)}" data-opd="budget.rows.${i}.values.${j}" data-opr="1"></td>`).join('')}
           <td class="num">${fmt(tot(rw))}</td><td><button class="kdel" data-opa="delBudRow|${i}">✕</button></td></tr>`).join('')}
         </tbody></table></div>
     </div>
@@ -6350,7 +6421,7 @@ async function applyStateObject(obj, meta, msgEl){
   // les membres de demonstration se melangeraient aux vrais.
   if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
-  try{ appliquerSeedOP(); }catch(_){}
+  try{ appliquerSeedOP(); migrerBudgetOP(); }catch(_){}
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
   const ok=await doSave();
@@ -6736,7 +6807,7 @@ function decorateNav(){
   document.querySelectorAll('.sb-sec[data-sec]').forEach(sec=>{ if(sec.querySelector('.nav-ic'))return; const s=document.createElement('span'); s.className='nav-ic'; s.textContent=NAV_ICONS.sec[sec.dataset.sec]||'•'; sec.insertBefore(s,sec.firstChild); });
 }
 decorateNav();
-try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
+try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
 /* ---------- Ouverture directe du fichier : prévenir, faute de pouvoir relier ----------
