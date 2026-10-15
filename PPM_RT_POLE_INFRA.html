@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.6 -->
+<!-- PPM_BUILD:2026-10-15.7 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -749,6 +749,134 @@
   td.pact .delbtn{opacity:.45} tr:hover td.pact .delbtn{opacity:1}
   .delbtn{color:var(--bad);background:transparent;border:0;font-size:15px;opacity:0;padding:0 4px}
   tr:hover .delbtn{opacity:.7} .delbtn:hover{opacity:1}
+  /* ---- Achats & Engagements · Actions de suivi · Macroplanning ---- */
+  .ktabs.sm button{padding:4px 10px;font-size:11.5px}
+  .ktabs .atn{display:inline-block;min-width:16px;padding:0 4px;margin-left:4px;border-radius:999px;
+    background:var(--panel-3);color:var(--muted);font-size:10.5px;font-weight:800}
+  .ktabs button.on .atn{background:rgba(255,255,255,.22);color:#fff}
+  .ktabs .atn.r{background:var(--bad-soft);color:var(--bad)} .ktabs .atn.o{background:var(--warn-soft);color:var(--warn)}
+  .dfoot{display:flex;gap:9px;justify-content:flex-end;align-items:center;padding:12px 17px 15px;border-top:1px solid var(--line);background:var(--panel-2)}
+  .lnk{border:0;background:transparent;color:var(--accent-ink);font:inherit;font-weight:600;cursor:pointer;padding:0;text-align:left}
+  .lnk:hover{text-decoration:underline}
+  .achtbl td,.attbl td{vertical-align:top}
+  .achtbl tfoot th{background:var(--panel-2);font-size:12px}
+  .achsel{padding:3px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11.5px;max-width:100%}
+  .achsel.mini{font-size:10px;padding:1px 2px;max-width:72px}
+  .achdate{padding:3px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11.5px;width:122px}
+  .achnum{padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:11.5px;width:58px;text-align:right}
+  .achbar{display:flex;height:9px;border-radius:999px;overflow:hidden;background:var(--panel-3);border:1px solid var(--line)}
+  .achbar.solo{height:11px}
+  .achbar i{display:block;height:100%}
+  .achbar i.r{background:var(--good)} .achbar i.e{background:var(--copper)}
+  .achbar i.d{background:var(--warn)} .achbar i.f{background:transparent}
+  .achpct{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .achleg{display:flex;gap:14px;flex-wrap:wrap;margin:0 0 9px;font-size:11px;color:var(--muted)}
+  .achleg span{display:inline-flex;align-items:center;gap:5px}
+  .achleg i{width:11px;height:9px;border-radius:3px;border:1px solid var(--line)}
+  .achleg i.r{background:var(--good)} .achleg i.e{background:var(--copper)}
+  .achleg i.d{background:var(--warn)} .achleg i.f{background:var(--panel-3)}
+  .achwarn{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:800;
+    background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+  .achwarn.late{background:var(--bad-soft);color:var(--bad)}
+  tr.achmort td{opacity:.48;text-decoration:line-through}
+  /* ---- Actions ---- */
+  .atdot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--good)}
+  .atdot.al-soon{background:var(--warn)} .atdot.al-due{background:var(--copper)}
+  .atdot.al-late{background:var(--bad)} .atdot.al-esc{background:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+  .atdot.done{background:var(--line-2)}
+  .attitre{min-height:17px;font-weight:600;line-height:1.4}
+  .atsub{margin-top:3px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+  .atal{display:inline-block;padding:1px 7px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap;
+    background:var(--warn-soft);color:var(--warn)}
+  .atal.late,.atal.esc{background:var(--bad-soft);color:var(--bad)}
+  .atal.due{background:var(--copper-soft,var(--warn-soft));color:var(--copper)}
+  .atal.blocked{background:var(--panel-3);color:var(--muted)}
+  .atscore{display:inline-block;min-width:26px;padding:1px 6px;border-radius:7px;font-size:11px;font-weight:800;
+    font-variant-numeric:tabular-nums;background:var(--good-soft);color:var(--good);cursor:help}
+  .atscore.o{background:var(--warn-soft);color:var(--warn)} .atscore.r{background:var(--bad-soft);color:var(--bad)}
+  .atprog{height:5px;border-radius:999px;background:var(--panel-3);overflow:hidden;margin-bottom:3px}
+  .atprog i{display:block;height:100%;background:var(--accent)}
+  tr.atfini td{opacity:.6}
+  .attbl select.st-done{color:var(--muted)} .attbl select.st-blocked{color:var(--bad);font-weight:700}
+  .attbl select.st-doing{color:var(--accent-ink);font-weight:600}
+  .atkan{display:grid;grid-template-columns:repeat(5,minmax(176px,1fr));gap:10px;align-items:start}
+  .atcol{background:var(--panel-2);border:1px solid var(--line);border-radius:11px;overflow:hidden;min-height:120px}
+  .atcol.over{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .atcolh{padding:8px 11px;font-size:11.5px;font-weight:800;border-bottom:1px solid var(--line);background:var(--panel)}
+  .atcolh.st-blocked{color:var(--bad)} .atcolh.st-done{color:var(--muted)}
+  .atcolh b{float:right;color:var(--muted)}
+  .atcolb{padding:8px;display:flex;flex-direction:column;gap:7px;max-height:620px;overflow:auto}
+  .atcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:9px;
+    padding:8px 9px;cursor:grab;box-shadow:var(--shadow)}
+  .atcard.orange{border-left-color:var(--warn)} .atcard.red{border-left-color:var(--bad)}
+  .atcard.grey{border-left-color:var(--line-2);opacity:.72}
+  .atcard.drag{opacity:.4}
+  .atch{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .atct{font-size:12px;font-weight:600;line-height:1.35;margin-bottom:3px}
+  .atcm{font-size:10.5px;color:var(--muted);margin-bottom:5px}
+  .atcf{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-2);margin-bottom:5px}
+  .atcard .atal{margin-bottom:5px}
+  .atcal{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:11px;align-items:start}
+  .atcal-c{background:var(--panel-2);border:1px solid var(--line);border-radius:11px;padding:9px 10px 11px}
+  .atcal-c.now{border-color:var(--accent);background:var(--accent-soft)}
+  .atcal-c.late{border-color:var(--bad)}
+  .atcal-h{font-size:11.5px;font-weight:800;margin-bottom:7px;display:flex;gap:6px;align-items:baseline}
+  .atcal-h b{margin-left:auto;color:var(--muted)}
+  .atcal-i{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--good);border-radius:8px;
+    padding:6px 8px;margin-bottom:6px;font-size:11.5px;line-height:1.4}
+  .atcal-i.orange{border-left-color:var(--warn)} .atcal-i.red{border-left-color:var(--bad)}
+  .atcal-i.grey{border-left-color:var(--line-2)}
+  .atcal-m{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+  .atexec{display:grid;gap:14px}
+  .atexec .panel{margin:0}
+  /* ---- Macroplanning portefeuille ---- */
+  .mpwrap{overflow:auto;border:1px solid var(--line);border-radius:11px;background:var(--panel)}
+  .mptbl{min-width:max-content}
+  .mp-hd,.mp-ln{display:grid;grid-template-columns:260px var(--mpw) 104px;align-items:stretch}
+  .mp-hd{position:sticky;top:0;z-index:3;background:var(--panel-2);border-bottom:1px solid var(--line-2)}
+  .mp-hd .mp-nom,.mp-hd .mp-tot{display:flex;align-items:flex-end;padding:6px 10px;font-size:11px;font-weight:800;
+    text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+  .mp-ln{border-bottom:1px solid var(--line)}
+  .mp-ln:hover{background:var(--panel-2)}
+  .mp-nom{padding:8px 10px;border-right:1px solid var(--line);position:sticky;left:0;background:inherit;z-index:2;min-width:0}
+  .mp-hd .mp-nom{background:var(--panel-2)}
+  .mp-ln .mp-nom{background:var(--panel)}
+  .mp-ln:hover .mp-nom{background:var(--panel-2)}
+  .mp-nom .lnk{display:block;font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:238px}
+  .mp-sub{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+  .mp-tot{padding:8px 10px;border-left:1px solid var(--line);font-size:11px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+  .mp-ax{min-width:0}
+  .mp-row{display:flex}
+  .mp-m{font-size:10.5px;font-weight:800;color:var(--ink-2);text-align:center;border-left:1px solid var(--line-2);
+    padding:4px 0 2px;overflow:hidden;white-space:nowrap}
+  .mp-w{font-size:9px;color:var(--muted);text-align:center;padding:1px 0 3px;border-left:1px solid var(--line)}
+  .mp-w.cur{background:var(--accent-soft);color:var(--accent-ink);font-weight:800}
+  .mp-grid{position:relative;cursor:crosshair}
+  .mp-ml{position:absolute;top:0;bottom:0;width:1px;background:var(--line-2)}
+  .mp-now{position:absolute;top:0;bottom:0;width:2px;background:var(--copper);opacity:.8}
+  .mp-vide{position:absolute;left:8px;top:7px;font-size:10.5px;color:var(--faint);pointer-events:none;font-style:italic}
+  .mp-bar{position:absolute;height:17px;border-radius:5px;color:#fff;font-size:10.5px;font-weight:700;
+    display:flex;align-items:center;overflow:hidden;cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .mp-bar.cg{border-top-left-radius:0;border-bottom-left-radius:0}
+  .mp-bar.cd{border-top-right-radius:0;border-bottom-right-radius:0}
+  .mp-bar.fant{opacity:.55;background:var(--accent)!important;pointer-events:none}
+  .mp-av{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.26);pointer-events:none}
+  .mp-lb{position:relative;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+  .mp-h{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:2}
+  .mp-h.l{left:0} .mp-h.r{right:0}
+  .mp-bar:hover .mp-h{background:rgba(255,255,255,.4)}
+  .mp-dia{position:absolute;width:11px;height:11px;margin-left:-6px;background:var(--copper);
+    transform:rotate(45deg);border:1px solid var(--panel);border-radius:2px}
+  body.mp-drag{cursor:ew-resize;user-select:none}
+  body.mp-drag .mp-bar{cursor:ew-resize}
+  .mplegend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:11px;font-size:11px;color:var(--muted)}
+  .mplegend span{display:inline-flex;align-items:center;gap:5px}
+  .mplegend i{width:14px;height:9px;border-radius:3px}
+  .mplegend i.dia{width:10px;height:10px;background:var(--copper);transform:rotate(45deg);border-radius:2px}
+  .mp-sw{width:26px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent;display:inline-block;position:relative}
+  .mp-sw input{position:absolute;opacity:0;pointer-events:none}
+  .mp-sw:has(input:checked){border-color:var(--ink);box-shadow:0 0 0 2px var(--panel),0 0 0 4px var(--ink-2)}
+  @media (max-width:1100px){ .atkan{grid-template-columns:repeat(2,minmax(160px,1fr))} }
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -757,6 +885,9 @@
       <div class="sb-sec" data-sec="pf">Project Portfolio<span class="sb-chev">▾</span></div>
       <div class="sb-secwrap" data-secwrap="pf">
       <button class="sb-par nav" data-tab="csd" data-key="csd">CSD — Comité Schéma Directeur</button>
+      <button class="sb-par nav" data-tab="ach" data-key="pach">Achats &amp; Engagements</button>
+      <button class="sb-par nav" data-tab="actions" data-key="pact">Actions de suivi</button>
+      <button class="sb-par nav" data-tab="macro" data-key="pmac">Macroplanning portefeuille</button>
       <button class="sb-par nav" data-grp="p1" data-tab="dash" data-key="ppole">Pôle RT Ingénierie<span class="sb-chev">▾</span></button>
       <div class="sb-subwrap" data-grpwrap="p1">
         <button class="sb-sub" data-tab="dash" data-pole="INFRA" data-key="p1a">INFRA</button>
@@ -910,7 +1041,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.6';
+const APP_BUILD='2026-10-15.7';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1026,15 +1157,82 @@ const weeks=Array.from({length:CAL[CAL.length-1].sem},(_,i)=>i+1);
 S = (function(){
   // Verrou local actif : ne rien charger en clair au démarrage (données chiffrées en IndexedDB,
   // déverrouillées après saisie du mot de passe via idbHydrate/showUnlock).
-  try{ const lk=JSON.parse(localStorage.getItem('ppm_lock')||'null'); if(lk&&lk.active) return buildFromSeed(); }catch(_){}
+  try{ const lk=JSON.parse(localStorage.getItem('ppm_lock')||'null'); if(lk&&lk.active) return migrerSuivi(buildFromSeed()); }catch(_){}
   let emb=null, lsv=null;
   try{ if(SAVED) emb=SAVED; }catch(_){}
   try{ const raw=localStorage.getItem('ppm_vitry_state'); if(raw) lsv=JSON.parse(raw); }catch(_){}
   let pick=null;
   if(emb&&lsv) pick=((lsv._savedAt||0)>=(emb._savedAt||0))?lsv:emb;  // le plus récent gagne
   else pick=emb||lsv;
-  return pick?migrate(pick):buildFromSeed();
+  return pick?migrate(pick):migrerSuivi(buildFromSeed());
 })();
+/* Valeurs par défaut et conversions des trois modules repris de l'outil CSD —
+   achats, actions de suivi, macroplanning. Appelée aussi bien sur un fichier
+   enregistré que sur un portefeuille neuf, et déclarée ici pour ne dépendre
+   d'aucune constante définie plus bas dans le script. */
+function suiviDateAuto(v){
+  if(v==null||v==='') return '';
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){ const y=+m[3]<100?2000+ +m[3]:+m[3]; return y+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[1]).padStart(2,'0'); }
+  return '';
+}
+function migrerSuivi(r){
+  /* ---- Achats & Engagements ---- */
+  r.achats = Array.isArray(r.achats) ? r.achats : [];
+  r.ach = r.ach || {view:'synth',pid:'',pole:'',q:'',f:{type:'',statut:'',four:'',nature:''},sort:{k:'pct',d:-1},avecSeuls:false};
+  r.ach.f = Object.assign({type:'',statut:'',four:'',nature:''}, r.ach.f||{});
+  r.ach.sort = r.ach.sort || {k:'pct',d:-1};
+  r.achats.forEach(l=>{ if(!l.id) l.id='ach'+Math.random().toString(36).slice(2,9);
+    if(l.projId===undefined) l.projId=l.projetId||'';
+    if(!l.type) l.type='Commande'; if(!l.statut) l.statut='Commandée'; if(!l.nature) l.nature='CAPEX'; });
+  /* ---- Actions de suivi : le registre d'origine ne portait qu'une criticité
+     et un statut ; chaque fiche est convertie, aucune n'est perdue. ---- */
+  r.at = r.at || {vue:'table',rapide:'ouvertes',q:'',f:{pole:'',projId:'',pilote:'',phase:'',statut:'',priorite:'',origine:''},sort:{k:'score',d:-1}};
+  r.at.f = Object.assign({pole:'',projId:'',pilote:'',phase:'',statut:'',priorite:'',origine:''}, r.at.f||{});
+  r.at.sort = r.at.sort || {k:'score',d:-1};
+  r.atCfg = r.atCfg || {pre:[7,3,1],post:[1,3,7],esc:7};
+  r.macroV = r.macroV || 1;
+  r.mp = r.mp || {an:new Date().getFullYear(),phase:(new Date().getMonth()<=5?1:2),pole:'',q:'',avecSeuls:false};
+  if(Array.isArray(r.actions)){
+    const PRIO={'Haute':'Haute','Critique':'Critique','Moyenne':'Normale','Normale':'Normale','Basse':'Basse'};
+    const ST={'Clôturée':'Fait','Clôturé':'Fait','Fait':'Fait','Fermée':'Fait','En cours':'En cours',
+              'À faire':'À faire','A faire':'À faire','Bloqué':'Bloqué','Bloquée':'Bloqué','En attente':'En attente'};
+    let num=0;
+    r.actions.forEach(a=>{
+      if(!a.id || !/^A-\d/.test(String(a.id))) a.id='A-'+String(++num).padStart(4,'0');
+      else { const n=parseInt(String(a.id).replace(/\D/g,''),10); if(n>num) num=n; }
+      if(a.titre===undefined){                       // fiche de l'ancien registre
+        const d=String(a.desc||'').trim();
+        const coupe=d.indexOf(' — ');
+        a.titre = coupe>0 ? d.slice(0,coupe) : (d.split('\n')[0]||'Action');
+        a.desc  = coupe>0 ? d.slice(coupe+3) : '';
+      }
+      if(a.projId===undefined){
+        // l'ancien registre ne retenait qu'un code projet, pas son identifiant
+        const code=String(a.projet||'').trim();
+        const p=code?(r.projects||[]).find(x=>x.shine===code||x.id===code||x.ishift===code):null;
+        a.projId=p?p.id:'';
+      }
+      if(a.priorite===undefined) a.priorite=PRIO[a.crit]||'Normale';
+      if(a.statut===undefined||!['À faire','En cours','Bloqué','En attente','Fait'].includes(a.statut)) a.statut=ST[a.statut]||'À faire';
+      if(a.type===undefined) a.type='Action';
+      if(a.phase===undefined) a.phase='';
+      if(a.avancement===undefined) a.avancement=(a.statut==='Fait')?100:0;
+      if(a.faitLe===undefined) a.faitLe=(a.statut==='Fait')?(a.echeance||''):'';
+      if(a.dependance===undefined) a.dependance='';
+      if(a.debut===undefined) a.debut='';
+      if(a.ref===undefined) a.ref='';
+      if(a.commentaire===undefined) a.commentaire='';
+      if(a.echeance) a.echeance=suiviDateAuto(a.echeance)||a.echeance;
+      if(a.origine===undefined) a.origine='COPROJ';
+      delete a.crit;
+    });
+  }
+  return r;
+}
 function migrate(saved){
   const base=buildFromSeed();
   const r=Object.assign(base, saved, {
@@ -1054,6 +1252,7 @@ function migrate(saved){
   r.filters=r.filters||{q:'',pole:'',statut:'',qscope:''}; if(r.filters.qscope===undefined)r.filters.qscope=''; r.filters.dup=!!r.filters.dup; r.filters.trash=!!r.filters.trash;
   r.uoFilter=r.uoFilter||{scope:'',q:''}; r.gedFilter=r.gedFilter||{proj:'',dossier:'',statut:'',q:''}; if(r.gedFilter.rubrique===undefined)r.gedFilter.rubrique=''; if(r.gedFilter.rubrique==='D.O.E Fournisseur & Autres')r.gedFilter.rubrique='D.O.E Fournisseur'; if(r.gedFilter.nolink===undefined)r.gedFilter.nolink=false; r.footNotes=r.footNotes||{};
   if(!r.phScope) r.phScope='__all__'; if(!r.actFilter) r.actFilter={proj:'',statut:'',crit:''};
+  migrerSuivi(r);
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
     const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p); if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; });
   // Membres retires a la main. Sans cette memoire, le rapprochement ci-dessous
@@ -1535,6 +1734,8 @@ function render(){
   else if(S.tab==='kpi') renderKPIAudit();
   else if(S.tab==='uo') renderUO();
   else if(S.tab==='csd') renderCSD();
+  else if(S.tab==='ach') renderAch();
+  else if(S.tab==='macro') renderMacro();
   else if(S.tab==='ged') renderGED();
   else if(S.tab==='cdc') renderCDC();
 }
@@ -2870,6 +3071,1201 @@ function csdAppliquer(lignes,nom){
   alert('Import CSD terminé.\n\n'+crees+' projet(s) créé(s), '+maj+' mis à jour.\n\nLes montants en euros ont été convertis en k€. Vérifiez le portefeuille, puis enregistrez.');
 }
 
+
+/* ======================= Achats & Engagements =======================
+   Reprise du module « Achats » de l'outil CSD. Une ligne d'achat est une
+   demande d'achat, une commande passée ou une imputation directe, rattachée
+   à un projet du portefeuille. Trois agrégats en découlent :
+
+     Réalisé    = montants réceptionnés des commandes + imputations
+     Engagé     = commandé non encore réceptionné (hors commandes soldées)
+     Disponible = budget de référence (C2 à défaut C1) − Réalisé − Engagé
+
+   Le budget projet est tenu en k€ dans la plateforme, les achats en € :
+   la conversion est faite ici, une fois, et signalée dans l'écran.
+   Le rapprochement avec les colonnes « Actuals » et « Open Commitments »
+   du suivi financier signale les projets dont les deux sources divergent. */
+const ACH_TYPES=['Commande',"Demande d'achat",'Imputation'];
+const ACH_TICON={'Commande':'🧾',"Demande d'achat":'📝','Imputation':'📌'};
+const ACH_ST={'Commande':['Commandée','Partiellement réceptionnée','Réceptionnée','Facturée','Soldée','Annulée'],
+  "Demande d'achat":['DA émise','DA validée','DA refusée','Transformée en commande'],
+  'Imputation':['Imputée','Annulée']};
+const ACH_ST_DEF={'Commande':'Commandée',"Demande d'achat":'DA émise','Imputation':'Imputée'};
+const ACH_DEAD=['Annulée','DA refusée','Transformée en commande'];
+const ACH_NATURES=['CAPEX','OPEX'];
+const ACH_VIEWS=[['synth','📁 Par projet'],['lines','☰ Toutes les lignes'],['four','🏭 Par fournisseur'],['mois','📅 Par mois']];
+const ACH_FIELDS={projId:'Projet',type:'Type',statut:'Statut',numDA:'N° DA',numCmd:'N° commande',fournisseur:'Fournisseur',
+  objet:'Objet',montant:'Montant HT',recu:'Montant réceptionné',facture:'Montant facturé',dateDA:'Date DA',
+  dateCmd:'Date commande',dateLiv:'Livraison prévue',dateRecep:'Date réception',wbs:'WBS | INV',
+  compte:'Compte / nature comptable',nature:'CAPEX / OPEX',demandeur:'Demandeur',commentaire:'Commentaire'};
+
+const achEur=v=>v==null?'—':(+v||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+function achNum(v){ if(v==null||v==='')return 0; if(typeof v==='number')return isFinite(v)?v:0;
+  const s=String(v).replace(/[^0-9,.\-]/g,'').replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
+  const n=parseFloat(s); return isFinite(n)?n:0; }
+function achToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function achJours(iso){ if(!iso)return null; const m=String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m)return null;
+  const d=new Date(+m[1],+m[2]-1,+m[3]), t=new Date(); return Math.round((d-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/864e5); }
+function achFR(iso){ const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m?m[3]+'/'+m[2]+'/'+m[1]:''; }
+
+/* Une ligne pèse sur le budget selon son type : une DA n'est pas un engagement
+   ferme, une imputation est déjà dépensée, une commande se partage entre
+   réceptionné (réalisé) et reste à recevoir (engagé). */
+function achCalc(l){
+  const z={dem:0,cmd:0,real:0,eng:0,fact:0,mort:ACH_DEAD.includes(l.statut)};
+  if(z.mort) return z;
+  const m=achNum(l.montant), r=achNum(l.recu), f=achNum(l.facture);
+  if(l.type==="Demande d'achat"){ z.dem=m; return z; }
+  if(l.type==='Imputation'){ z.real=m; z.fact=f||m; return z; }
+  z.cmd=m; z.real=r; z.fact=f; z.eng=(l.statut==='Soldée')?0:Math.max(0,m-r);
+  return z;
+}
+function achRetard(l){ return l.type==='Commande' && ['Commandée','Partiellement réceptionnée'].includes(l.statut)
+  && !!l.dateLiv && achJours(l.dateLiv)<0; }
+function achSomme(lignes){
+  const s={dem:0,cmd:0,real:0,eng:0,fact:0,n:0,retard:0,ouvert:0};
+  lignes.forEach(l=>{ const c=achCalc(l); s.dem+=c.dem; s.cmd+=c.cmd; s.real+=c.real; s.eng+=c.eng; s.fact+=c.fact; s.n++;
+    if(achRetard(l))s.retard++; if(c.eng>0||c.dem>0)s.ouvert++; });
+  return s;
+}
+function achProjets(){ return S.projects.filter(p=>!p.deleted); }
+function achProj(id){ return id?S.projects.find(p=>p.id===id&&!p.deleted):null; }
+function achLibelle(l){ const p=achProj(l.projId); return p?(p.shine?p.shine+' — ':'')+p.nom:'— non rattaché —'; }
+/* Budget de référence : la même règle que le suivi financier (C2, C1 à défaut),
+   convertie des k€ du portefeuille vers les € des lignes d'achat. */
+function achBase(p){ const c=(p.c2!=null&&p.c2!=='')?p.c2:p.c1; return (c==null||c==='')?null:(+c||0)*1000; }
+function achProjSomme(p,lignes){
+  const s=achSomme(lignes||S.achats.filter(l=>l.projId===p.id));
+  const base=achBase(p), dispo=base==null?null:base-s.real-s.eng;
+  return {...s, base, dispo, dispoDA:dispo==null?null:dispo-s.dem,
+    pct:base>0?(s.real+s.eng)/base*100:null, finA:(+p.act||0)*1000, finC:(+p.commit||0)*1000};
+}
+/* Écart de rapprochement : les achats saisis ne disent pas la même chose que
+   les colonnes Actuals / Commitments. Tolérance de 500 € pour ne pas crier
+   sur un arrondi de saisie. */
+function achEcart(s){ return s.n>0 && (Math.abs(s.finA-s.real)>500 || Math.abs(s.finC-s.eng)>500); }
+
+function achFiltre(l){
+  const f=S.ach.f, p=achProj(l.projId);
+  if(S.ach.pid){ if(l.projId!==S.ach.pid) return false; }
+  else if(S.ach.pole && (!p||p.group!==S.ach.pole)) return false;
+  if(f.type && l.type!==f.type) return false;
+  if(f.statut){
+    if(f.statut==='__retard'){ if(!achRetard(l)) return false; }
+    else if(f.statut==='__ouvert'){ const c=achCalc(l); if(!(c.eng>0||c.dem>0)) return false; }
+    else if(l.statut!==f.statut) return false;
+  }
+  if(f.four && norm(l.fournisseur)!==norm(f.four)) return false;
+  if(f.nature && l.nature!==f.nature) return false;
+  const q=norm(S.ach.q||'').trim();
+  if(q.length>1){
+    const foin=norm([achLibelle(l),l.numDA,l.numCmd,l.fournisseur,l.objet,l.wbs,l.compte,l.demandeur,l.commentaire].join(' '));
+    if(!q.split(/\s+/).every(w=>foin.includes(w))) return false;
+  }
+  return true;
+}
+function achLignes(){ return S.achats.filter(achFiltre); }
+function achNouvelle(projId){
+  const l={id:'ach'+Math.random().toString(36).slice(2,9), projId:projId||S.ach.pid||'', type:'Commande',
+    statut:'Commandée', numDA:'', numCmd:'', fournisseur:'', objet:'', montant:0, recu:0, facture:0,
+    dateDA:'', dateCmd:achToday(), dateLiv:'', dateRecep:'', wbs:'', compte:'', nature:'CAPEX', demandeur:S.user||'', commentaire:''};
+  S.achats.unshift(l); logChange('Achats','création','', (l.objet||'nouvelle ligne')); return l;
+}
+
+function renderAch(){
+  S.ach=S.ach||{view:'synth',pid:'',pole:'',q:'',f:{type:'',statut:'',four:'',nature:''},sort:{k:'pct',d:-1},avecSeuls:false};
+  if(S.ach.pid && !achProj(S.ach.pid)) S.ach.pid='';
+  const lignes=achLignes(), tout=achSomme(lignes);
+  const poles=[...new Set(achProjets().map(p=>p.group).filter(Boolean))].sort();
+  const fours=[...new Set(S.achats.map(l=>l.fournisseur).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+  const pSel=achProj(S.ach.pid);
+  /* Disponible : seulement sur un périmètre dont le budget est connu. */
+  const lot=pSel?[pSel]:achProjets().filter(p=>!S.ach.pole||p.group===S.ach.pole);
+  const base=lot.reduce((a,p)=>{const b=achBase(p); return b==null?a:a+b;},0);
+  const dispo=base>0?base-tout.real-tout.eng:null;
+  const statuts=[...new Set(Object.values(ACH_ST).flat())];
+  const vue=S.ach.view;
+
+  view.innerHTML=`
+  <div class="sec-title"><h2>Achats &amp; Engagements</h2><span class="hint">demandes d'achat · commandes · imputations — montants en € HT, budget projet converti des k€</span></div>
+  <div class="kpis">
+    <div class="tile a"><div class="lab">Réalisé <span class="bmini">réceptionné + imputé</span></div><div class="big">${achEur(tout.real)}</div></div>
+    <div class="tile c"><div class="lab">Engagé <span class="bmini">commandé non reçu</span></div><div class="big">${achEur(tout.eng)}</div></div>
+    <div class="tile"><div class="lab">DA en attente</div><div class="big">${achEur(tout.dem)}</div></div>
+    <div class="tile ${dispo==null?'':(dispo<0?'bad':'good')}"><div class="lab">Disponible ${pSel?'· ce projet':(S.ach.pole?'· '+esc(S.ach.pole):'· portefeuille')}</div><div class="big">${dispo==null?'—':achEur(dispo)}</div></div>
+    <div class="tile ${tout.retard?'bad':''} ${tout.retard?'click':''}" ${tout.retard?'data-achk="__retard"':''}><div class="lab">Livraisons en retard</div><div class="big">${tout.retard}</div></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h3>${esc((ACH_VIEWS.find(v=>v[0]===vue)||['','']) [1].replace(/^\S+\s/,''))}</h3>
+    <span class="meta">${lignes.length} ligne${lignes.length>1?'s':''} sur ${S.achats.length}</span>
+    <button class="iconbtn" id="achAdd">+ Ligne d'achat</button>
+    <button class="iconbtn" id="achImp" title="Coller un export (CSV, ou colonnes copiées depuis Excel)">⤓ Importer</button></div>
+    <div class="panel-b">
+      <div class="toolbar">
+        <span class="ktabs" style="margin:0">${ACH_VIEWS.map(([k,l])=>`<button class="${vue===k?'on':''}" data-achv="${k}">${l}</button>`).join('')}</span>
+        <span class="sp"></span>
+        <select id="achPole" title="Restreindre à un pôle"><option value="">Tous pôles</option>${poles.map(g=>`<option value="${esc(g)}" ${S.ach.pole===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+        <select id="achPid" title="Restreindre à un projet"><option value="">Tous projets</option>${achProjets().filter(p=>!S.ach.pole||p.group===S.ach.pole).map(p=>`<option value="${esc(p.id)}" ${S.ach.pid===p.id?'selected':''}>${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('')}</select>
+        <select id="achType"><option value="">Tous types</option>${ACH_TYPES.map(t=>`<option ${S.ach.f.type===t?'selected':''}>${t}</option>`).join('')}</select>
+        <select id="achSt"><option value="">Tous statuts</option><option value="__ouvert" ${S.ach.f.statut==='__ouvert'?'selected':''}>— engagements ouverts —</option><option value="__retard" ${S.ach.f.statut==='__retard'?'selected':''}>— livraisons en retard —</option>${statuts.map(t=>`<option ${S.ach.f.statut===t?'selected':''}>${t}</option>`).join('')}</select>
+        <select id="achNat"><option value="">CAPEX + OPEX</option>${ACH_NATURES.map(t=>`<option ${S.ach.f.nature===t?'selected':''}>${t}</option>`).join('')}</select>
+        <select id="achFour"><option value="">Tous fournisseurs</option>${fours.map(t=>`<option value="${esc(t)}" ${S.ach.f.four===t?'selected':''}>${esc(t)}</option>`).join('')}</select>
+        <input id="achQ" placeholder="N° commande, objet, WBS…" value="${esc(S.ach.q||'')}" style="min-width:190px">
+        <label class="hint" style="display:inline-flex;align-items:center;gap:5px" title="Masquer les projets sur lesquels aucun achat n'est saisi"><input type="checkbox" id="achAvec" ${S.ach.avecSeuls?'checked':''}> avec achats seulement</label>
+        <button class="iconbtn" id="achRaz" title="Effacer les filtres">✕ Filtres</button>
+      </div>
+      ${vue==='synth'?achVueProjets(lignes):vue==='lines'?achVueLignes(lignes):vue==='four'?achVueFournisseurs(lignes):achVueMois(lignes)}
+    </div></div>
+  ${footHTML('ach',`Achats &amp; Engagements · Réalisé = réceptionné + imputé · Engagé = commandé non reçu · Disponible = budget C2 (C1 à défaut) − Réalisé − Engagé. L'écart ⚠ signale un projet dont les achats saisis ne recoupent pas les colonnes Actuals / Open Commitments.`)}`;
+
+  const rr=()=>renderGardeFocus(()=>renderAch());
+  $$('[data-achv]').forEach(b=>b.onclick=()=>{S.ach.view=b.dataset.achv;scheduleSave();rr();});
+  $$('[data-achk]').forEach(b=>b.onclick=()=>{S.ach.f.statut=b.dataset.achk;rr();});
+  const lier=(sel,ev,fn)=>{const n=$(sel); if(n)n.addEventListener(ev,fn);};
+  lier('#achPole','change',e=>{S.ach.pole=e.target.value;S.ach.pid='';scheduleSave();rr();});
+  lier('#achPid','change',e=>{S.ach.pid=e.target.value;scheduleSave();rr();});
+  lier('#achType','change',e=>{S.ach.f.type=e.target.value;rr();});
+  lier('#achSt','change',e=>{S.ach.f.statut=e.target.value;rr();});
+  lier('#achNat','change',e=>{S.ach.f.nature=e.target.value;rr();});
+  lier('#achFour','change',e=>{S.ach.f.four=e.target.value;rr();});
+  lier('#achQ','input',e=>{S.ach.q=e.target.value;rr();});
+  lier('#achAvec','change',e=>{S.ach.avecSeuls=e.target.checked;scheduleSave();rr();});
+  lier('#achRaz','click',()=>{S.ach.q='';S.ach.f={type:'',statut:'',four:'',nature:''};S.ach.pid='';S.ach.pole='';S.ach.avecSeuls=false;rr();});
+  lier('#achAdd','click',()=>{achNouvelle();S.ach.view='lines';scheduleSave();rr();});
+  lier('#achImp','click',()=>achImportDlg());
+  /* saisie dans la table des lignes */
+  $$('[data-achf]').forEach(el=>{
+    const maj=()=>{
+      const [id,k]=el.dataset.achf.split('|'); const l=S.achats.find(x=>x.id===id); if(!l)return;
+      const av=l[k];
+      let v = el.tagName==='SELECT' ? el.value : (el.tagName==='INPUT'?el.value:el.textContent.trim());
+      if(['montant','recu','facture'].includes(k)) v=achNum(v);
+      if(String(av)===String(v)) return;
+      l[k]=v;
+      if(k==='type' && !(ACH_ST[v]||[]).includes(l.statut)) l.statut=ACH_ST_DEF[v];
+      logChange('Achat '+(l.numCmd||l.numDA||l.objet||l.id), ACH_FIELDS[k]||k, av, v);
+      scheduleSave(); rr();
+    };
+    el.addEventListener(el.tagName==='SELECT'?'change':'blur',maj);
+  });
+  $$('[data-achdel]').forEach(b=>b.onclick=()=>{
+    const l=S.achats.find(x=>x.id===b.dataset.achdel); if(!l)return;
+    if(!confirm('Supprimer cette ligne d’achat ?\n\n'+(l.objet||l.numCmd||l.numDA||'—')+' · '+achEur(achNum(l.montant))))return;
+    S.achats=S.achats.filter(x=>x.id!==l.id); logChange('Achats','suppression',(l.objet||l.id),''); scheduleSave(); rr();
+  });
+  $$('[data-achgo]').forEach(b=>b.onclick=()=>{S.ach.pid=b.dataset.achgo;S.ach.view='lines';rr();window.scrollTo(0,0);});
+  $$('[data-achsort]').forEach(th=>th.onclick=()=>{
+    const k=th.dataset.achsort; if(S.ach.sort.k===k)S.ach.sort.d*=-1; else {S.ach.sort.k=k;S.ach.sort.d=k==='projet'?1:-1;} rr();});
+  $$('[data-achnew]').forEach(b=>b.onclick=()=>{achNouvelle(b.dataset.achnew);S.ach.pid=b.dataset.achnew;S.ach.view='lines';scheduleSave();rr();});
+}
+
+function achBarre(s){
+  const base=s.base;
+  if(!base||base<=0) return `<span class="hint">budget non renseigné</span>`;
+  const p=v=>Math.max(0,Math.min(100,v/base*100));
+  const r=p(s.real), e=p(s.eng), d=p(s.dem), reste=Math.max(0,100-r-e-d);
+  return `<div class="achbar" title="Réalisé ${achEur(s.real)} · Engagé ${achEur(s.eng)} · DA ${achEur(s.dem)} · Disponible ${achEur(s.dispo)}">
+    <i class="r" style="width:${r}%"></i><i class="e" style="width:${e}%"></i><i class="d" style="width:${d}%"></i><i class="f" style="width:${reste}%"></i></div>`;
+}
+function achLegende(){
+  return `<div class="achleg"><span><i class="r"></i>Réalisé</span><span><i class="e"></i>Engagé</span><span><i class="d"></i>DA en attente</span><span><i class="f"></i>Disponible</span></div>`;
+}
+function achVueProjets(lignes){
+  const par={}; lignes.forEach(l=>{ (par[l.projId]=par[l.projId]||[]).push(l); });
+  let rows=achProjets()
+    .filter(p=>(!S.ach.pole||p.group===S.ach.pole)&&(!S.ach.pid||p.id===S.ach.pid))
+    .map(p=>({p,s:achProjSomme(p,par[p.id]||[])}))
+    .filter(r=>r.s.n>0||!S.ach.avecSeuls);
+  const k=S.ach.sort.k,d=S.ach.sort.d;
+  const val=r=>k==='projet'?norm(r.p.nom):k==='pole'?norm(r.p.group||''):r.s[k];
+  rows.sort((a,b)=>{const x=val(a),y=val(b);
+    if(x==null&&y==null)return 0; if(x==null)return 1; if(y==null)return -1;
+    return (typeof x==='string'?x.localeCompare(y,'fr'):x-y)*d;});
+  const tot=achSomme(lignes);
+  const th=(k2,l,w)=>`<th data-achsort="${k2}" style="cursor:pointer${w?';width:'+w:''}" title="Trier">${l}${S.ach.sort.k===k2?(S.ach.sort.d>0?' ▲':' ▼'):''}</th>`;
+  return `${achLegende()}
+  <div class="tblwrap"><table class="achtbl"><thead><tr>
+    ${th('projet','Projet')}${th('pole','Pôle','110px')}${th('base','Budget réf.','118px')}
+    ${th('real','Réalisé','118px')}${th('eng','Engagé','118px')}${th('dem','DA','106px')}
+    ${th('dispo','Disponible','122px')}<th style="width:160px">Consommation</th>${th('n','Lignes','74px')}<th style="width:28px"></th></tr></thead>
+  <tbody>${rows.length?rows.map(({p,s})=>{
+    const ec=achEcart(s);
+    return `<tr>
+      <td class="wrap"><button class="lnk" data-achgo="${esc(p.id)}" title="Voir les lignes de ce projet">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</button>
+        ${ec?`<span class="achwarn" title="Écart de rapprochement — Actuals ${achEur(s.finA)} vs réalisé ${achEur(s.real)} ; Commitments ${achEur(s.finC)} vs engagé ${achEur(s.eng)}">⚠ écart</span>`:''}
+        ${s.retard?`<span class="achwarn late" title="${s.retard} livraison(s) en retard">⏱ ${s.retard}</span>`:''}</td>
+      <td>${esc(p.group||'—')}</td>
+      <td class="num">${s.base==null?'—':achEur(s.base)}</td>
+      <td class="num">${achEur(s.real)}</td>
+      <td class="num">${achEur(s.eng)}</td>
+      <td class="num">${s.dem?achEur(s.dem):'—'}</td>
+      <td class="num" style="${s.dispo!=null&&s.dispo<0?'color:var(--bad);font-weight:700':''}">${s.dispo==null?'—':achEur(s.dispo)}</td>
+      <td>${achBarre(s)}<span class="achpct">${s.pct==null?'':fmt(s.pct,0)+' %'}</span></td>
+      <td class="num">${s.n||'—'}</td>
+      <td><button class="delbtn" data-achnew="${esc(p.id)}" title="Ajouter une ligne d'achat sur ce projet" style="color:var(--accent)">+</button></td></tr>`;
+    }).join(''):`<tr><td colspan="10" class="empty">Aucun projet dans ce périmètre.</td></tr>`}</tbody>
+  <tfoot><tr><th colspan="3">Total · ${rows.length} projet${rows.length>1?'s':''}</th>
+    <th class="num">${achEur(tot.real)}</th><th class="num">${achEur(tot.eng)}</th><th class="num">${achEur(tot.dem)}</th>
+    <th colspan="4"></th></tr></tfoot></table></div>`;
+}
+function achVueLignes(lignes){
+  const sel=(id,k,opts,val)=>`<select class="achsel" data-achf="${esc(id)}|${k}">${opts.map(o=>`<option ${val===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  const txt=(id,k,v,cls)=>`<td class="${cls||''}" contenteditable data-achf="${esc(id)}|${k}">${esc(v==null?'':v)}</td>`;
+  const dat=(id,k,v)=>`<td><input type="date" class="achdate" data-achf="${esc(id)}|${k}" value="${esc(v||'')}"></td>`;
+  const projOpts=achProjets().map(p=>`<option value="${esc(p.id)}">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('');
+  const tot=achSomme(lignes);
+  return `<div class="tblwrap"><table class="achtbl lines"><thead><tr>
+    <th style="width:112px">Type</th><th style="width:186px">Projet</th><th style="width:132px">Statut</th>
+    <th style="width:120px">N° cmd / DA</th><th style="width:150px">Fournisseur</th><th>Objet</th>
+    <th style="width:112px">Montant HT</th><th style="width:112px">Réceptionné</th><th style="width:106px">Livraison</th>
+    <th style="width:92px">WBS | INV</th><th style="width:78px">Nature</th><th style="width:28px"></th></tr></thead>
+  <tbody>${lignes.length?lignes.map(l=>{
+    const c=achCalc(l), rt=achRetard(l);
+    return `<tr class="${c.mort?'achmort':''}">
+      <td><select class="achsel" data-achf="${esc(l.id)}|type" title="Une DA n'engage pas le budget ; une commande engage le reste à recevoir ; une imputation est déjà dépensée">${ACH_TYPES.map(t=>`<option value="${esc(t)}" ${l.type===t?'selected':''}>${ACH_TICON[t]} ${t}</option>`).join('')}</select></td>
+      <td><select class="achsel" data-achf="${esc(l.id)}|projId"><option value="">— non rattaché —</option>${projOpts.replace(`value="${esc(l.projId)}"`,`value="${esc(l.projId)}" selected`)}</select></td>
+      <td>${sel(l.id,'statut',ACH_ST[l.type]||[],l.statut)}</td>
+      ${txt(l.id, l.type==="Demande d'achat"?'numDA':'numCmd', l.type==="Demande d'achat"?l.numDA:l.numCmd,'code')}
+      ${txt(l.id,'fournisseur',l.fournisseur)}
+      ${txt(l.id,'objet',l.objet,'wrap')}
+      <td class="num" contenteditable data-achf="${esc(l.id)}|montant">${l.montant?fmt(achNum(l.montant),0):''}</td>
+      <td class="num" contenteditable data-achf="${esc(l.id)}|recu" title="${l.type==='Commande'?'Reste engagé : '+achEur(c.eng):'sans objet hors commande'}">${l.recu?fmt(achNum(l.recu),0):''}</td>
+      ${dat(l.id,'dateLiv',l.dateLiv)}${rt?`<span class="achwarn late" style="margin-left:-28px" title="Livraison dépassée de ${-achJours(l.dateLiv)} j">⏱</span>`:''}
+      ${txt(l.id,'wbs',l.wbs,'code')}
+      <td>${sel(l.id,'nature',ACH_NATURES,l.nature||'CAPEX')}</td>
+      <td><button class="delbtn" data-achdel="${esc(l.id)}">×</button></td></tr>`;
+    }).join(''):`<tr><td colspan="12" class="empty">Aucune ligne dans ce périmètre. « + Ligne d'achat » ou « ⤓ Importer ».</td></tr>`}</tbody>
+  <tfoot><tr><th colspan="6">Total · ${tot.n} ligne${tot.n>1?'s':''}</th>
+    <th class="num">${achEur(tot.cmd+tot.dem)}</th><th class="num">${achEur(tot.real)}</th><th colspan="4"></th></tr></tfoot></table></div>`;
+}
+function achVueFournisseurs(lignes){
+  const par={}; lignes.forEach(l=>{ const k=l.fournisseur||'— sans fournisseur —'; (par[k]=par[k]||[]).push(l); });
+  const rows=Object.entries(par).map(([f,ls])=>({f,s:achSomme(ls),ls})).sort((a,b)=>(b.s.real+b.s.eng)-(a.s.real+a.s.eng));
+  const tot=achSomme(lignes), maxi=rows.length?Math.max(...rows.map(r=>r.s.real+r.s.eng)):0;
+  return `<div class="tblwrap"><table class="achtbl"><thead><tr>
+    <th>Fournisseur</th><th style="width:74px">Lignes</th><th style="width:120px">Réalisé</th><th style="width:120px">Engagé</th>
+    <th style="width:106px">DA</th><th style="width:220px">Poids</th><th style="width:86px">Retards</th><th style="width:150px">Projets</th></tr></thead>
+  <tbody>${rows.length?rows.map(({f,s,ls})=>{
+    const w=maxi>0?(s.real+s.eng)/maxi*100:0;
+    const projs=[...new Set(ls.map(l=>l.projId))].map(id=>{const p=achProj(id);return p?(p.shine||p.nom):null;}).filter(Boolean);
+    return `<tr><td class="wrap"><b>${esc(f)}</b></td><td class="num">${s.n}</td>
+      <td class="num">${achEur(s.real)}</td><td class="num">${achEur(s.eng)}</td><td class="num">${s.dem?achEur(s.dem):'—'}</td>
+      <td><div class="achbar solo"><i class="r" style="width:${w}%"></i></div></td>
+      <td class="num">${s.retard?`<span class="achwarn late">⏱ ${s.retard}</span>`:'—'}</td>
+      <td class="wrap" style="font-size:11.5px;color:var(--muted)">${esc(projs.slice(0,4).join(', '))}${projs.length>4?' +'+(projs.length-4):''}</td></tr>`;
+    }).join(''):`<tr><td colspan="8" class="empty">Aucune ligne dans ce périmètre.</td></tr>`}</tbody>
+  <tfoot><tr><th>${rows.length} fournisseur${rows.length>1?'s':''}</th><th class="num">${tot.n}</th>
+    <th class="num">${achEur(tot.real)}</th><th class="num">${achEur(tot.eng)}</th><th class="num">${achEur(tot.dem)}</th><th colspan="3"></th></tr></tfoot></table></div>`;
+}
+function achVueMois(lignes){
+  /* Un achat se range au mois de l'événement qui l'engage : réception pour ce
+     qui est reçu, commande sinon, DA à défaut. */
+  const mois=l=>{ const d=l.dateRecep||l.dateCmd||l.dateDA||''; const m=String(d).match(/^(\d{4})-(\d{2})/); return m?m[1]+'-'+m[2]:''; };
+  const par={}; lignes.forEach(l=>{ const k=mois(l)||'—'; (par[k]=par[k]||[]).push(l); });
+  const cles=Object.keys(par).sort();
+  const tot=achSomme(lignes), maxi=cles.length?Math.max(...cles.map(k=>achSomme(par[k]).real+achSomme(par[k]).eng)):0;
+  let cum=0;
+  const nomMois=k=>{ const m=k.match(/^(\d{4})-(\d{2})$/); if(!m)return 'Sans date';
+    return new Date(+m[1],+m[2]-1,1).toLocaleDateString('fr-FR',{month:'long',year:'numeric'}); };
+  return `<div class="tblwrap"><table class="achtbl"><thead><tr>
+    <th style="width:170px">Mois</th><th style="width:74px">Lignes</th><th style="width:120px">Réalisé</th><th style="width:120px">Engagé</th>
+    <th style="width:106px">DA</th><th style="width:230px">Profil</th><th style="width:130px">Cumul réalisé</th></tr></thead>
+  <tbody>${cles.length?cles.map(k=>{
+    const s=achSomme(par[k]); cum+=s.real;
+    const w=maxi>0?(s.real+s.eng)/maxi*100:0;
+    return `<tr><td><b>${esc(nomMois(k))}</b></td><td class="num">${s.n}</td>
+      <td class="num">${achEur(s.real)}</td><td class="num">${achEur(s.eng)}</td><td class="num">${s.dem?achEur(s.dem):'—'}</td>
+      <td><div class="achbar solo"><i class="r" style="width:${w}%"></i></div></td>
+      <td class="num">${achEur(cum)}</td></tr>`;
+    }).join(''):`<tr><td colspan="7" class="empty">Aucune ligne dans ce périmètre.</td></tr>`}</tbody>
+  <tfoot><tr><th>${cles.length} mois</th><th class="num">${tot.n}</th>
+    <th class="num">${achEur(tot.real)}</th><th class="num">${achEur(tot.eng)}</th><th class="num">${achEur(tot.dem)}</th><th colspan="2"></th></tr></tfoot></table></div>`;
+}
+
+/* ---- Import : coller un export, les colonnes sont reconnues par leur nom ---- */
+const ACH_SYN={numCmd:['n° commande','no commande','n commande','numero de commande','commande','bon de commande','n° bc','bc','po','po number','purchase order','document achat'],
+  numDA:["n° da","no da","n da","demande d'achat","demande achat","da","pr","purchase requisition"],
+  fournisseur:['fournisseur','supplier','vendor','prestataire','nom fournisseur'],
+  objet:['objet','libelle','libellé','designation','désignation','description','intitule','intitulé','texte'],
+  montant:['montant','montant ht','montant net','valeur','net order value','prix','total ht','montant commande'],
+  recu:['receptionne','réceptionné','montant receptionne','montant réceptionné','recu','reçu','livre','livré','gr value','quantite receptionnee'],
+  facture:['facture','facturé','facture ht','montant facture','invoice','ir value'],
+  dateCmd:['date commande','date de commande','date bc','date po','date','date document'],
+  dateDA:['date da','date demande'],
+  dateLiv:['date livraison','livraison prevue','livraison prévue','date de livraison','delivery date','date livr'],
+  dateRecep:['date reception','date réception','date receptionne','date de réception','gr date'],
+  wbs:['wbs','inv','wbs inv','wbs | inv','imputation','element dotp','élément dotp','ordre'],
+  compte:['compte','nature comptable','compte general','compte général','gl account','poste'],
+  nature:['nature','capex','opex','capex opex','type budget'],
+  demandeur:['demandeur','requester','acheteur','createur','créateur'],
+  statut:['statut','status','etat','état'],
+  type:['type','categorie','catégorie'],
+  commentaire:['commentaire','remarque','note','observations']};
+function achDevine(entete){
+  const n=norm(entete).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(!n) return '';
+  for(const [k,syns] of Object.entries(ACH_SYN)){ if(syns.some(s=>n===norm(s))) return k; }
+  for(const [k,syns] of Object.entries(ACH_SYN)){ if(syns.some(s=>n.includes(norm(s)))) return k; }
+  return '';
+}
+function achDecoupe(txt){
+  const lignes=String(txt).replace(/\r/g,'').split('\n').filter(l=>l.trim()!=='');
+  if(!lignes.length) return [];
+  const sep=(lignes[0].match(/\t/g)||[]).length >= (lignes[0].match(/;/g)||[]).length
+    ? '\t' : ((lignes[0].match(/;/g)||[]).length >= (lignes[0].match(/,/g)||[]).length ? ';' : ',');
+  /* champs entre guillemets : un séparateur y perd son rôle */
+  return lignes.map(l=>{
+    const out=[]; let cur='', q=false;
+    for(let i=0;i<l.length;i++){ const c=l[i];
+      if(c==='"'){ if(q&&l[i+1]==='"'){cur+='"';i++;} else q=!q; }
+      else if(c===sep&&!q){ out.push(cur); cur=''; }
+      else cur+=c; }
+    out.push(cur); return out.map(x=>x.trim());
+  });
+}
+function achDateAuto(v){
+  if(v==null||v==='') return '';
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){ const y=+m[3]<100?2000+ +m[3]:+m[3]; return y+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[1]).padStart(2,'0'); }
+  const n=+s;                                     // numéro de série Excel
+  if(isFinite(n)&&n>20000&&n<80000){ const d=new Date(Math.round((n-25569)*864e5));
+    return d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0'); }
+  return '';
+}
+function achImportDlg(){
+  const ov=document.createElement('div'); ov.className='dmodal'; ov.id='achImpOv';
+  const projOpts=achProjets().map(p=>`<option value="${esc(p.id)}">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('');
+  ov.innerHTML=`<div class="dbox" style="width:min(980px,96vw)">
+    <div class="dhead"><span class="af-mk">P</span><h4>⤓ Importer des lignes d'achat</h4><button class="dclose" data-x>×</button></div>
+    <div class="dbody" style="padding:16px">
+      <p class="hint" style="margin:0 0 10px">Collez un export SAP / Excel / CSV <b>avec sa ligne d'en-tête</b>. Les colonnes sont
+        reconnues par leur nom (N° commande, Fournisseur, Montant, Date de livraison, WBS…) ; celles qui ne le sont pas
+        sont ignorées. Rien n'est envoyé : la lecture se fait dans ce navigateur.</p>
+      <div class="toolbar" style="margin-bottom:8px">
+        <label class="hint">Rattacher à</label>
+        <select id="achImpProj"><option value="">— le projet reconnu dans les colonnes, sinon aucun —</option>${projOpts}</select>
+        <label class="hint" style="margin-left:10px"><input type="checkbox" id="achImpType" checked> deviner le type (DA / commande / imputation)</label>
+      </div>
+      <textarea id="achImpTxt" spellcheck="false" placeholder="N° commande&#9;Fournisseur&#9;Objet&#9;Montant HT&#9;Livraison prévue&#10;4500123456&#9;SPIE&#9;Armoire TGBT&#9;48 500&#9;12/03/2026" style="width:100%;height:230px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--ink);font-family:IBM Plex Mono,monospace;font-size:12px;resize:vertical"></textarea>
+      <div id="achImpApercu" class="hint" style="margin-top:10px"></div>
+    </div>
+    <div class="dfoot"><button class="iconbtn" data-x>Annuler</button>
+      <button class="iconbtn" id="achImpGo" style="background:var(--accent);color:#fff;border-color:var(--accent)">Importer</button></div></div>`;
+  document.body.appendChild(ov);
+  const fermer=()=>ov.remove();
+  $$('[data-x]',ov).forEach(b=>b.onclick=fermer);
+  ov.onclick=e=>{ if(e.target===ov) fermer(); };
+  const ta=$('#achImpTxt',ov), ap=$('#achImpApercu',ov);
+  const lire=()=>{
+    const t=achDecoupe(ta.value); if(t.length<2){ ap.textContent=''; return null; }
+    const map=t[0].map(achDevine);
+    const connues=map.map((k,i)=>k?`<b>${esc(t[0][i]||'')}</b> → ${esc(ACH_FIELDS[k]||k)}`:null).filter(Boolean);
+    ap.innerHTML=`${t.length-1} ligne(s) lue(s) · ${connues.length} colonne(s) reconnue(s) sur ${map.length}<br>${connues.join(' · ')||'<span style="color:var(--bad)">aucune colonne reconnue — vérifiez la ligne d’en-tête</span>'}`;
+    return {t,map};
+  };
+  ta.addEventListener('input',lire);
+  $('#achImpGo',ov).onclick=()=>{
+    const r=lire(); if(!r){ alert("Collez au moins une ligne d'en-tête et une ligne de données."); return; }
+    const {t,map}=r;
+    if(!map.some(Boolean)){ alert("Aucune colonne n'a été reconnue : vérifiez que la première ligne collée est bien l'en-tête."); return; }
+    const forceProj=$('#achImpProj',ov).value, devType=$('#achImpType',ov).checked;
+    let n=0;
+    t.slice(1).forEach(cells=>{
+      const l=achNouvelle(forceProj); n++;
+      map.forEach((k,i)=>{ if(!k)return; const v=cells[i]; if(v==null||v==='')return;
+        if(['montant','recu','facture'].includes(k)) l[k]=achNum(v);
+        else if(k.startsWith('date')) l[k]=achDateAuto(v);
+        else if(k==='nature') l[k]=/opex/i.test(v)?'OPEX':'CAPEX';
+        else l[k]=String(v); });
+      if(devType){
+        if(l.numCmd) l.type='Commande';
+        else if(l.numDA) l.type="Demande d'achat";
+        else l.type='Imputation';
+      }
+      if(!(ACH_ST[l.type]||[]).includes(l.statut)) l.statut=ACH_ST_DEF[l.type];
+      if(l.type==='Commande'&&achNum(l.recu)>0&&achNum(l.recu)>=achNum(l.montant)) l.statut='Réceptionnée';
+      else if(l.type==='Commande'&&achNum(l.recu)>0) l.statut='Partiellement réceptionnée';
+      if(!l.objet&&l.fournisseur) l.objet=l.fournisseur;
+    });
+    logChange('Achats','import',''+n+' ligne(s)','');
+    fermer(); scheduleSave(); S.ach.view='lines'; renderAch();
+    alert(n+' ligne(s) importée(s).\n\nVérifiez le rattachement aux projets dans « Toutes les lignes », puis enregistrez.');
+  };
+  ta.focus();
+}
+
+/* ======================= Actions de suivi =======================
+   Reprise de l'« Action Tracker » de l'outil CSD, appliquée au registre déjà
+   tenu ici : voir → comprendre → agir → suivre → alerter → décider.
+
+   Le registre d'origine ne portait qu'une criticité et un statut libre. Il
+   gagne une priorité, un avancement, une phase, une dépendance bloquante et
+   une date de réalisation — sans rien perdre : la migration ci-dessous
+   convertit chaque ancienne fiche plutôt que d'ouvrir un second registre.
+
+   L'alerte n'est pas un simple « en retard » : elle suit des seuils
+   paramétrables (J-7 / J-3 / J-1 avant l'échéance, relance J+1 / J+3 / J+7
+   après, escalade au-delà), pour que la revue hebdomadaire parte d'un ordre
+   de priorité et non d'un tri par date. */
+const AT_STATUTS=['À faire','En cours','Bloqué','En attente','Fait'];
+const AT_ST_ICON={'À faire':'☐','En cours':'◐','Bloqué':'⛔','En attente':'⏸','Fait':'☑'};
+const AT_ST_CLS={'À faire':'todo','En cours':'doing','Bloqué':'blocked','En attente':'wait','Fait':'done'};
+const AT_PRIOS=['Basse','Normale','Haute','Critique'];
+const AT_PRIO_W={Basse:0,Normale:1,Haute:2,Critique:3};
+const AT_TYPES=['Action','Tâche','Décision','Livrable'];
+const AT_ORIG=['COPIL','COPROJ','Revue projet','Gate','CER','Audit','PVRT','CAPA','HSE','Chantier','Risque','Autre'];
+const AT_PHASES=['Ph 0 — Évaluation','Ph 1 — Lancement','Ph 2 — URS | CDO','Ph 3 — AR & qualification',
+  'Ph 4 — Construction & MES','Ph 5 — Démarrage & QP','Ph 6 — Clôture & bénéfices'];
+const AT_VUES=[['table','☰ Tableau'],['kanban','▦ Kanban'],['pilotes','👥 Pilotes'],
+  ['cal','📅 Calendrier'],['exec','🎯 Revue de direction']];
+
+function atCfg(){ const c=(S.atCfg&&typeof S.atCfg==='object')?S.atCfg:{};
+  const nums=(a,d)=>Array.isArray(a)&&a.length?a.map(Number).filter(n=>n>=0&&isFinite(n)):d;
+  return {pre:nums(c.pre,[7,3,1]), post:nums(c.post,[1,3,7]), esc:(isFinite(+c.esc)&&+c.esc>0)?+c.esc:7}; }
+function atToday(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function atD(iso){ const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
+function atFR(iso){ const d=atD(iso); return d?String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear():''; }
+function atJours(iso){ const d=atD(iso); if(!d)return null; const t=new Date();
+  return Math.round((d-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/864e5); }
+/* accepte ISO, jj/mm/aaaa et le numéro de série d'un export Excel */
+function atDateAuto(v){
+  if(v==null||v==='') return '';
+  const s=String(v).trim();
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');
+  m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})/);
+  if(m){ const y=+m[3]<100?2000+ +m[3]:+m[3]; return y+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[1]).padStart(2,'0'); }
+  return '';
+}
+function atUid(){ let m=0; (S.actions||[]).forEach(a=>{ const n=parseInt(String(a.id||'').replace(/\D/g,''),10); if(n>m)m=n; });
+  return 'A-'+String(m+1).padStart(4,'0'); }
+function atProjets(){ return S.projects.filter(p=>!p.deleted); }
+function atProjOf(a){ return a.projId?S.projects.find(p=>p.id===a.projId&&!p.deleted):null; }
+function atProjLbl(a){ const p=atProjOf(a); return p?((p.shine?p.shine+' — ':'')+p.nom):(a.projet||'—'); }
+function atFini(a){ return a.statut==='Fait'; }
+
+/* État d'une action : ce qu'il faut savoir avant d'ouvrir la fiche. */
+function atInfo(a){
+  const fini=atFini(a), j=fini?null:atJours(a.echeance);
+  const retard=!fini&&j!=null&&j<0, proche=!fini&&j!=null&&j>=0&&j<=7;
+  const crit=a.priorite==='Critique'&&!fini, bloque=a.statut==='Bloqué';
+  let sante='green';
+  if(fini) sante='grey';
+  else if((retard&&-j>7)||bloque||crit) sante='red';
+  else if(proche||retard) sante='orange';
+  return {fini,j,retard,proche,crit,bloque,sante};
+}
+function atAlerte(a,i){
+  i=i||atInfo(a); if(i.fini||i.j==null) return null; const c=atCfg();
+  if(i.j<0){ const r=-i.j;
+    if(r>=c.esc) return {lvl:'esc',txt:'Escalade · retard de '+r+' j (≥ J+'+c.esc+')'};
+    const pas=[...c.post].sort((x,y)=>y-x).find(p=>r>=p);
+    return {lvl:'late',txt:'Retard J+'+r+(pas?' · relance J+'+pas:'')}; }
+  if(i.j===0) return {lvl:'due',txt:"Échéance aujourd'hui"};
+  const pre=[...c.pre].sort((x,y)=>x-y).find(p=>i.j<=p);
+  return pre!=null?{lvl:'soon',txt:'J-'+i.j+' (seuil J-'+pre+')'}:null;
+}
+/* Score de priorisation : il ordonne la revue. Le détail est affiché en
+   infobulle, sinon un classement sans justification ne se discute pas. */
+function atScore(a){
+  const i=atInfo(a); if(i.fini) return null;
+  let s=0; const r=[];
+  if(a.priorite==='Critique'){ s+=40; r.push('Action critique'); }
+  else if(a.priorite==='Haute'){ s+=15; r.push('Priorité haute'); }
+  if(i.retard){ s+=Math.min(45,10+(-i.j)); r.push('Retard de '+(-i.j)+' j'); }
+  else if(i.proche){ s+=15-i.j; r.push(i.j===0?"Échéance aujourd'hui":'Échéance dans '+i.j+' j'); }
+  if(i.bloque){ s+=25; const d=a.dependance&&(S.actions||[]).find(x=>x.id===a.dependance);
+    r.push('Bloquée'+(d?' par '+d.id:'')); }
+  if(a.statut==='En attente'){ s+=5; r.push('En attente'); }
+  const av=+a.avancement||0;
+  if(av>0&&av<100&&i.retard){ s+=5; r.push('Avancement '+av+' % malgré le retard'); }
+  const p=atProjOf(a); if(p&&typeof projHealth==='function'){ const h=projHealth(p);
+    if(h&&h.band==='r'){ s+=10; r.push('Projet en rouge'); } }
+  return {s:Math.round(s), r};
+}
+function atBloquees(a){ return (S.actions||[]).filter(x=>x.dependance===a.id&&!atFini(x)); }
+
+function atFiltre(a){
+  const f=S.at.f;
+  const p=atProjOf(a);
+  if(f.pole && (!p||p.group!==f.pole)) return false;
+  if(f.projId && a.projId!==f.projId) return false;
+  if(f.pilote && norm(a.pilote||'')!==norm(f.pilote)) return false;
+  if(f.phase && a.phase!==f.phase) return false;
+  if(f.statut && a.statut!==f.statut) return false;
+  if(f.priorite && a.priorite!==f.priorite) return false;
+  if(f.origine && a.origine!==f.origine) return false;
+  const i=atInfo(a);
+  if(S.at.rapide==='ouvertes' && i.fini) return false;
+  if(S.at.rapide==='retard' && !i.retard) return false;
+  if(S.at.rapide==='semaine' && !(!i.fini&&i.j!=null&&i.j>=0&&i.j<=7)) return false;
+  if(S.at.rapide==='bloquees' && !i.bloque) return false;
+  if(S.at.rapide==='miennes' && norm(a.pilote||'')!==norm(S.user||'')) return false;
+  const q=norm(S.at.q||'').trim();
+  if(q.length>1){
+    const foin=norm([a.id,a.titre,a.desc,a.pilote,a.origine,a.ref,a.commentaire,atProjLbl(a),a.phase].join(' '));
+    if(!q.split(/\s+/).every(w=>foin.includes(w))) return false;
+  }
+  return true;
+}
+function atListe(){
+  const l=S.actions.filter(atFiltre);
+  const k=S.at.sort.k, d=S.at.sort.d;
+  const val=a=>{ const i=atInfo(a);
+    if(k==='score'){ const s=atScore(a); return s?s.s:-1; }
+    if(k==='jours') return i.j==null?99999:i.j;
+    if(k==='priorite') return AT_PRIO_W[a.priorite]||0;
+    if(k==='projet') return norm(atProjLbl(a));
+    if(k==='avancement') return +a.avancement||0;
+    return norm(a[k]||''); };
+  return l.sort((a,b)=>{ const x=val(a),y=val(b);
+    return (typeof x==='string'?x.localeCompare(y,'fr'):x-y)*d; });
+}
+function atNouvelle(projId){
+  const a={id:atUid(), projId:projId||S.at.f.projId||'', projet:'', phase:'', titre:'Nouvelle action', desc:'',
+    type:'Action', pilote:'', priorite:'Normale', debut:atToday(), echeance:'', faitLe:'', statut:'À faire',
+    avancement:0, dependance:'', origine:'COPROJ', ref:'', commentaire:'',
+    creeLe:atToday(), majLe:new Date().toISOString().slice(0,19).replace('T',' '), majPar:S.user||''};
+  S.actions.unshift(a); logChange('Actions','création','',a.titre); return a;
+}
+function atMaj(a,k,v){
+  const av=a[k]; if(String(av)===String(v)) return false;
+  a[k]=v;
+  if(k==='statut'){
+    if(v==='Fait'){ if(!a.faitLe)a.faitLe=atToday(); a.avancement=100; }
+    else if(av==='Fait'){ a.faitLe=''; if(+a.avancement>=100)a.avancement=90; }
+  }
+  if(k==='avancement'){ const n=Math.max(0,Math.min(100,+v||0)); a.avancement=n;
+    if(n>=100&&a.statut!=='Fait'){ a.statut='Fait'; a.faitLe=a.faitLe||atToday(); }
+    else if(n>0&&n<100&&a.statut==='À faire') a.statut='En cours'; }
+  a.majLe=new Date().toISOString().slice(0,19).replace('T',' '); a.majPar=S.user||'';
+  logChange('Action '+a.id, k, av, a[k]);
+  return true;
+}
+
+function renderActions(){
+  S.at=S.at||{vue:'table',rapide:'ouvertes',q:'',f:{pole:'',projId:'',pilote:'',phase:'',statut:'',priorite:'',origine:''},sort:{k:'score',d:-1}};
+  const tous=S.actions||[];
+  const ouvertes=tous.filter(a=>!atFini(a));
+  const retard=ouvertes.filter(a=>atInfo(a).retard);
+  const esc7=retard.filter(a=>{const al=atAlerte(a); return al&&al.lvl==='esc';});
+  const semaine=ouvertes.filter(a=>{const i=atInfo(a); return i.j!=null&&i.j>=0&&i.j<=7;});
+  const bloquees=ouvertes.filter(a=>a.statut==='Bloqué');
+  const liste=atListe();
+  const poles=[...new Set(atProjets().map(p=>p.group).filter(Boolean))].sort();
+  const pilotes=[...new Set(tous.map(a=>a.pilote).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
+  const avg=ouvertes.length?Math.round(ouvertes.reduce((s,a)=>s+(+a.avancement||0),0)/ouvertes.length):0;
+  const vue=S.at.vue;
+  const rap=(k,l,n,cls)=>`<button class="${S.at.rapide===k?'on':''}" data-atr="${k}">${l}${n!=null?` <b class="atn ${cls||''}">${n}</b>`:''}</button>`;
+
+  view.innerHTML=`
+  <div class="sec-title"><h2>Actions de suivi</h2><span class="hint">registre unique du portefeuille · relances J-${atCfg().pre.join('/J-')} · escalade à J+${atCfg().esc}</span></div>
+  <div class="kpis">
+    <div class="tile a click" data-atr="ouvertes"><div class="lab">Actions ouvertes</div><div class="big">${ouvertes.length}</div></div>
+    <div class="tile ${retard.length?'bad':'good'} click" data-atr="retard"><div class="lab">En retard</div><div class="big">${retard.length}</div></div>
+    <div class="tile ${esc7.length?'bad':''}"><div class="lab">À escalader <span class="bmini">≥ J+${atCfg().esc}</span></div><div class="big">${esc7.length}</div></div>
+    <div class="tile ${semaine.length?'warn':''} click" data-atr="semaine"><div class="lab">Échéance ≤ 7 j</div><div class="big">${semaine.length}</div></div>
+    <div class="tile ${bloquees.length?'warn':''} click" data-atr="bloquees"><div class="lab">Bloquées</div><div class="big">${bloquees.length}</div></div>
+    <div class="tile"><div class="lab">Avancement moyen <span class="bmini">actions ouvertes</span></div><div class="big">${avg} %</div></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h3>Registre des actions</h3>
+    <span class="meta">${liste.length} affichée${liste.length>1?'s':''} sur ${tous.length}</span>
+    <button class="iconbtn" id="atAdd">+ Action</button>
+    <button class="iconbtn" id="atSeed" title="Reprendre les risques et les étapes « Next Steps » des fiches projet qui ne sont pas encore au registre">↻ Reprendre des fiches</button>
+    <button class="iconbtn" id="atCfgB" title="Seuils de relance et d'escalade">⚙ Seuils</button></div>
+    <div class="panel-b">
+      <div class="toolbar">
+        <span class="ktabs" style="margin:0">${AT_VUES.map(([k,l])=>`<button class="${vue===k?'on':''}" data-atv="${k}">${l}</button>`).join('')}</span>
+        <span class="sp"></span>
+        <span class="ktabs sm" style="margin:0">${rap('all','Toutes')}${rap('ouvertes','Ouvertes',ouvertes.length)}${rap('retard','Retard',retard.length,'r')}${rap('semaine','≤ 7 j',semaine.length,'o')}${rap('bloquees','Bloquées',bloquees.length,'o')}${rap('miennes','Les miennes')}</span>
+      </div>
+      <div class="toolbar">
+        <select id="atPole"><option value="">Tous pôles</option>${poles.map(g=>`<option value="${esc(g)}" ${S.at.f.pole===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+        <select id="atProj"><option value="">Tous projets</option>${atProjets().filter(p=>!S.at.f.pole||p.group===S.at.f.pole).map(p=>`<option value="${esc(p.id)}" ${S.at.f.projId===p.id?'selected':''}>${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('')}</select>
+        <select id="atPil"><option value="">Tous pilotes</option>${pilotes.map(x=>`<option value="${esc(x)}" ${S.at.f.pilote===x?'selected':''}>${esc(x)}</option>`).join('')}</select>
+        <select id="atPh"><option value="">Toutes phases</option>${AT_PHASES.map(x=>`<option ${S.at.f.phase===x?'selected':''}>${x}</option>`).join('')}</select>
+        <select id="atSt"><option value="">Tous statuts</option>${AT_STATUTS.map(x=>`<option ${S.at.f.statut===x?'selected':''}>${x}</option>`).join('')}</select>
+        <select id="atPr"><option value="">Toutes priorités</option>${AT_PRIOS.map(x=>`<option ${S.at.f.priorite===x?'selected':''}>${x}</option>`).join('')}</select>
+        <select id="atOr"><option value="">Toutes origines</option>${AT_ORIG.map(x=>`<option ${S.at.f.origine===x?'selected':''}>${x}</option>`).join('')}</select>
+        <input id="atQ" placeholder="Rechercher une action…" value="${esc(S.at.q||'')}" style="min-width:190px">
+        <button class="iconbtn" id="atRaz">✕ Filtres</button>
+      </div>
+      ${vue==='table'?atVueTable(liste):vue==='kanban'?atVueKanban(liste):vue==='pilotes'?atVuePilotes(liste):vue==='cal'?atVueCal(liste):atVueExec(liste,ouvertes,retard,esc7)}
+    </div></div>
+  ${footHTML('actions',`Actions de suivi · le score de priorisation combine priorité, retard, blocage et santé du projet — survolez-le pour en voir le détail. Une action passée à 100 % se clôt d'elle-même, une action clôturée garde sa date de réalisation.`)}`;
+
+  const rr=()=>renderGardeFocus(()=>renderActions());
+  const lier=(sel,ev,fn)=>{const n=$(sel); if(n)n.addEventListener(ev,fn);};
+  $$('[data-atv]').forEach(b=>b.onclick=()=>{S.at.vue=b.dataset.atv;scheduleSave();rr();});
+  $$('[data-atr]').forEach(b=>b.onclick=()=>{S.at.rapide=(S.at.rapide===b.dataset.atr&&b.dataset.atr!=='all')?'all':b.dataset.atr;rr();});
+  lier('#atPole','change',e=>{S.at.f.pole=e.target.value;S.at.f.projId='';rr();});
+  lier('#atProj','change',e=>{S.at.f.projId=e.target.value;rr();});
+  lier('#atPil','change',e=>{S.at.f.pilote=e.target.value;rr();});
+  lier('#atPh','change',e=>{S.at.f.phase=e.target.value;rr();});
+  lier('#atSt','change',e=>{S.at.f.statut=e.target.value;rr();});
+  lier('#atPr','change',e=>{S.at.f.priorite=e.target.value;rr();});
+  lier('#atOr','change',e=>{S.at.f.origine=e.target.value;rr();});
+  lier('#atQ','input',e=>{S.at.q=e.target.value;rr();});
+  lier('#atRaz','click',()=>{S.at.q='';S.at.f={pole:'',projId:'',pilote:'',phase:'',statut:'',priorite:'',origine:''};S.at.rapide='all';rr();});
+  lier('#atAdd','click',()=>{atNouvelle();S.at.rapide='all';scheduleSave();rr();});
+  lier('#atSeed','click',()=>atReprendre());
+  lier('#atCfgB','click',()=>atSeuilsDlg());
+  $$('[data-atf]').forEach(el=>{
+    const maj=()=>{ const [id,k]=el.dataset.atf.split('|'); const a=S.actions.find(x=>x.id===id); if(!a)return;
+      let v = el.tagName==='SELECT'||el.tagName==='INPUT' ? el.value : el.textContent.trim();
+      if(k==='avancement') v=Math.max(0,Math.min(100,+v||0));
+      if(atMaj(a,k,v)){ scheduleSave(); rr(); } };
+    el.addEventListener(el.tagName==='SELECT'||el.type==='date'||el.type==='number'?'change':'blur',maj);
+  });
+  $$('[data-atdel]').forEach(b=>b.onclick=()=>{
+    const a=S.actions.find(x=>x.id===b.dataset.atdel); if(!a)return;
+    const bl=atBloquees(a);
+    if(!confirm('Supprimer l’action '+a.id+' ?\n\n'+(a.titre||'')+(bl.length?('\n\n⚠ '+bl.length+' action(s) la déclarent comme dépendance : elles resteront bloquées sans objet.'):'')))return;
+    S.actions=S.actions.filter(x=>x.id!==a.id); logChange('Actions','suppression',a.id+' — '+(a.titre||''),''); scheduleSave(); rr();
+  });
+  $$('[data-atk]').forEach(td=>{ td.ondragover=e=>{e.preventDefault();td.classList.add('over');};
+    td.ondragleave=()=>td.classList.remove('over');
+    td.ondrop=e=>{ e.preventDefault(); td.classList.remove('over');
+      const id=e.dataTransfer.getData('text/plain'); const a=S.actions.find(x=>x.id===id); if(!a)return;
+      if(atMaj(a,'statut',td.dataset.atk)){ scheduleSave(); rr(); } }; });
+  $$('[data-atdrag]').forEach(c=>{ c.draggable=true;
+    c.ondragstart=e=>{ e.dataTransfer.setData('text/plain',c.dataset.atdrag); e.dataTransfer.effectAllowed='move'; c.classList.add('drag'); };
+    c.ondragend=()=>c.classList.remove('drag'); });
+  $$('[data-ats]').forEach(th=>th.onclick=()=>{ const k=th.dataset.ats;
+    if(S.at.sort.k===k) S.at.sort.d*=-1; else { S.at.sort.k=k; S.at.sort.d=(k==='score'||k==='priorite'||k==='avancement')?-1:1; }
+    scheduleSave(); rr(); });
+  $$('[data-atgo]').forEach(b=>b.onclick=()=>{ S.currentProj=b.dataset.atgo; S.tab='pass'; S.kitTab='synthese'; S.navKey=''; scheduleSave(); render(); });
+}
+
+function atPuce(a){
+  const i=atInfo(a), al=atAlerte(a,i);
+  const cls=i.fini?'done':al?('al-'+al.lvl):'ok';
+  const t=i.fini?('Clôturée'+(a.faitLe?' le '+atFR(a.faitLe):'')):(al?al.txt:(i.j==null?'Sans échéance':'J-'+i.j));
+  return `<span class="atdot ${cls}" title="${esc(t)}"></span>`;
+}
+function atScoreHTML(a){
+  const s=atScore(a); if(!s) return '<span class="hint">—</span>';
+  const cls=s.s>=50?'r':s.s>=25?'o':'g';
+  return `<span class="atscore ${cls}" title="${esc(s.r.join(' · ')||'Aucun facteur aggravant')}">${s.s}</span>`;
+}
+function atVueTable(liste){
+  const projOpts=atProjets().map(p=>`<option value="${esc(p.id)}">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</option>`).join('');
+  const th=(k,l,w)=>`<th data-ats="${k}" style="cursor:pointer${w?';width:'+w:''}" title="Trier">${l}${S.at.sort.k===k?(S.at.sort.d>0?' ▲':' ▼'):''}</th>`;
+  const h=`<div class="tblwrap"><table class="attbl"><thead><tr>
+    <th style="width:26px"></th>${th('id','Réf.','78px')}${th('projet','Projet','190px')}<th>Action</th>
+    ${th('pilote','Pilote','130px')}${th('priorite','Priorité','104px')}${th('echeance','Échéance','118px')}
+    ${th('avancement','Avanc.','104px')}${th('statut','Statut','124px')}${th('score','Score','66px')}<th style="width:28px"></th></tr></thead>
+  <tbody>${liste.length?liste.map(a=>{
+    const i=atInfo(a), al=atAlerte(a,i), bl=atBloquees(a);
+    return `<tr class="${i.fini?'atfini':''}">
+      <td style="text-align:center">${atPuce(a)}</td>
+      <td class="code" title="${esc(a.origine||'')}${a.ref?' · '+esc(a.ref):''}">${esc(a.id)}</td>
+      <td><select class="achsel" data-atf="${esc(a.id)}|projId"><option value="">— hors projet —</option>${projOpts.replace(`value="${esc(a.projId)}"`,`value="${esc(a.projId)}" selected`)}</select></td>
+      <td class="wrap"><div contenteditable data-atf="${esc(a.id)}|titre" class="attitre">${esc(a.titre||'')}</div>
+        <div class="atsub">${a.phase?`<span class="pill n">${esc(a.phase)}</span> `:''}${al?`<span class="atal ${al.lvl}">${esc(al.txt)}</span>`:''}
+        ${i.bloque&&a.dependance?`<span class="atal blocked" title="Dépend de ${esc(a.dependance)}">⛔ dépend de ${esc(a.dependance)}</span>`:''}
+        ${bl.length?`<span class="atal blocked" title="${esc(bl.map(x=>x.id+' — '+(x.titre||'')).join(' ; '))}">bloque ${bl.length}</span>`:''}</div></td>
+      <td contenteditable data-atf="${esc(a.id)}|pilote">${esc(a.pilote||'')}</td>
+      <td><select class="achsel" data-atf="${esc(a.id)}|priorite">${AT_PRIOS.map(x=>`<option ${a.priorite===x?'selected':''}>${x}</option>`).join('')}</select></td>
+      <td><input type="date" class="achdate" data-atf="${esc(a.id)}|echeance" value="${esc(a.echeance||'')}"></td>
+      <td><div class="atprog" title="${+a.avancement||0} %"><i style="width:${Math.max(0,Math.min(100,+a.avancement||0))}%"></i></div>
+        <input type="number" min="0" max="100" step="5" class="achnum" data-atf="${esc(a.id)}|avancement" value="${+a.avancement||0}"></td>
+      <td><select class="achsel st-${AT_ST_CLS[a.statut]||'todo'}" data-atf="${esc(a.id)}|statut">${AT_STATUTS.map(x=>`<option value="${esc(x)}" ${a.statut===x?'selected':''}>${AT_ST_ICON[x]} ${x}</option>`).join('')}</select></td>
+      <td class="num">${atScoreHTML(a)}</td>
+      <td><button class="delbtn" data-atdel="${esc(a.id)}">×</button></td></tr>`;
+    }).join(''):`<tr><td colspan="11" class="empty">Aucune action dans ce périmètre. « + Action » ou « ↻ Reprendre des fiches ».</td></tr>`}</tbody></table></div>`;
+  return h;
+}
+function atVueKanban(liste){
+  return `<div class="atkan">${AT_STATUTS.map(st=>{
+    const l=liste.filter(a=>a.statut===st);
+    return `<div class="atcol" data-atk="${esc(st)}">
+      <div class="atcolh st-${AT_ST_CLS[st]}">${AT_ST_ICON[st]} ${esc(st)} <b>${l.length}</b></div>
+      <div class="atcolb">${l.length?l.map(a=>{
+        const i=atInfo(a), al=atAlerte(a,i);
+        return `<div class="atcard ${i.sante}" data-atdrag="${esc(a.id)}" title="Glissez la carte pour changer son statut">
+          <div class="atch"><span class="code">${esc(a.id)}</span>${atScoreHTML(a)}</div>
+          <div class="atct">${esc(a.titre||'')}</div>
+          <div class="atcm">${esc(atProjLbl(a))}</div>
+          <div class="atcf"><span>${esc(a.pilote||'—')}</span><span>${a.echeance?atFR(a.echeance):'—'}</span></div>
+          ${al?`<div class="atal ${al.lvl}">${esc(al.txt)}</div>`:''}
+          <div class="atprog"><i style="width:${Math.max(0,Math.min(100,+a.avancement||0))}%"></i></div></div>`;
+      }).join(''):'<div class="empty" style="padding:14px 6px">—</div>'}</div></div>`;
+  }).join('')}</div>
+  <div class="hint" style="margin-top:10px">Glissez une carte d'une colonne à l'autre pour changer son statut. Une carte amenée dans « Fait » est datée du jour.</div>`;
+}
+function atVuePilotes(liste){
+  const par={}; liste.forEach(a=>{ const k=a.pilote||'— sans pilote —'; (par[k]=par[k]||[]).push(a); });
+  const rows=Object.entries(par).map(([p,l])=>{
+    const ouv=l.filter(a=>!atFini(a)), ret=ouv.filter(a=>atInfo(a).retard);
+    const ch=ouv.reduce((s,a)=>{const sc=atScore(a); return s+(sc?sc.s:0);},0);
+    return {p,l,ouv,ret,ch,avg:ouv.length?Math.round(ouv.reduce((s,a)=>s+(+a.avancement||0),0)/ouv.length):0};
+  }).sort((a,b)=>b.ch-a.ch);
+  const maxi=rows.length?Math.max(...rows.map(r=>r.ch),1):1;
+  return `<div class="tblwrap"><table class="attbl"><thead><tr>
+    <th>Pilote</th><th style="width:84px">Total</th><th style="width:92px">Ouvertes</th><th style="width:92px">En retard</th>
+    <th style="width:104px">Avanc. moyen</th><th style="width:240px">Charge pondérée</th><th>Actions les plus urgentes</th></tr></thead>
+  <tbody>${rows.length?rows.map(r=>`<tr>
+    <td><b>${esc(r.p)}</b></td><td class="num">${r.l.length}</td><td class="num">${r.ouv.length}</td>
+    <td class="num" style="${r.ret.length?'color:var(--bad);font-weight:700':''}">${r.ret.length||'—'}</td>
+    <td class="num">${r.avg} %</td>
+    <td><div class="achbar solo" title="Somme des scores de priorisation : ${r.ch}"><i class="${r.ret.length?'d':'r'}" style="width:${r.ch/maxi*100}%"></i></div></td>
+    <td class="wrap" style="font-size:11.5px">${r.ouv.slice().sort((a,b)=>{const x=atScore(a),y=atScore(b);return (y?y.s:0)-(x?x.s:0);}).slice(0,3)
+      .map(a=>`<div>${atPuce(a)} <span class="code">${esc(a.id)}</span> ${esc((a.titre||'').slice(0,64))}</div>`).join('')||'<span class="hint">—</span>'}</td></tr>`).join('')
+    :`<tr><td colspan="7" class="empty">Aucune action dans ce périmètre.</td></tr>`}</tbody></table></div>`;
+}
+function atVueCal(liste){
+  /* Les six semaines à venir, plus ce qui traîne derrière : une revue
+     hebdomadaire se prépare sur un horizon, pas sur un mois calendaire. */
+  const ouv=liste.filter(a=>!atFini(a)&&a.echeance);
+  const sem=[]; const t=new Date(); const lundi=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7));
+  for(let i=0;i<6;i++){ const d=new Date(lundi); d.setDate(lundi.getDate()+i*7);
+    const f=new Date(d); f.setDate(d.getDate()+6); sem.push({d,f,l:[]}); }
+  const passe=[], loin=[];
+  ouv.forEach(a=>{ const j=atJours(a.echeance);
+    if(j<0){ passe.push(a); return; }
+    const k=Math.floor((atD(a.echeance)-lundi)/864e5/7);
+    if(k>=0&&k<6) sem[k].l.push(a); else loin.push(a); });
+  const sansDate=liste.filter(a=>!atFini(a)&&!a.echeance);
+  const carte=a=>{ const al=atAlerte(a);
+    return `<div class="atcal-i ${atInfo(a).sante}"><span class="code">${esc(a.id)}</span> ${esc(a.titre||'')}
+      <span class="atcal-m">${esc(a.pilote||'—')} · ${esc(atProjLbl(a))}${al?' · '+esc(al.txt):''}</span></div>`; };
+  const fmtJ=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  return `<div class="atcal">
+    ${passe.length?`<div class="atcal-c late"><div class="atcal-h">⏱ En retard <b>${passe.length}</b></div>
+      ${passe.sort((a,b)=>atJours(a.echeance)-atJours(b.echeance)).map(carte).join('')}</div>`:''}
+    ${sem.map((s,i)=>`<div class="atcal-c${i===0?' now':''}"><div class="atcal-h">${i===0?'Cette semaine':'Semaine du '+fmtJ(s.d)} <span class="hint">${fmtJ(s.d)} → ${fmtJ(s.f)}</span> <b>${s.l.length}</b></div>
+      ${s.l.length?s.l.sort((a,b)=>atJours(a.echeance)-atJours(b.echeance)).map(carte).join(''):'<div class="hint" style="padding:8px 2px">Rien à cette échéance.</div>'}</div>`).join('')}
+    ${loin.length?`<div class="atcal-c"><div class="atcal-h">Au-delà de 6 semaines <b>${loin.length}</b></div>
+      ${loin.sort((a,b)=>atJours(a.echeance)-atJours(b.echeance)).slice(0,20).map(carte).join('')}</div>`:''}
+    ${sansDate.length?`<div class="atcal-c"><div class="atcal-h">Sans échéance <b>${sansDate.length}</b></div>
+      ${sansDate.slice(0,20).map(carte).join('')}</div>`:''}
+  </div>`;
+}
+function atVueExec(liste,ouvertes,retard,esc7){
+  /* Ce que la direction demande : ce qui bloque, qui le porte, et depuis quand. */
+  const top=liste.filter(a=>!atFini(a)).slice().sort((a,b)=>{const x=atScore(a),y=atScore(b);return (y?y.s:0)-(x?x.s:0);}).slice(0,12);
+  const parProjet={}; liste.filter(a=>!atFini(a)).forEach(a=>{ const p=atProjOf(a); const k=p?p.id:'—';
+    (parProjet[k]=parProjet[k]||{p,l:[]}).l.push(a); });
+  const projs=Object.values(parProjet).map(o=>({...o, ret:o.l.filter(a=>atInfo(a).retard).length,
+    ch:o.l.reduce((s,a)=>{const sc=atScore(a);return s+(sc?sc.s:0);},0)})).sort((a,b)=>b.ch-a.ch).slice(0,10);
+  const maxi=projs.length?Math.max(...projs.map(p=>p.ch),1):1;
+  const fini=liste.filter(atFini).length;
+  const tx=liste.length?Math.round(fini/liste.length*100):0;
+  return `<div class="atexec">
+    <div class="panel"><div class="panel-h"><h3>Les douze actions à traiter en priorité</h3><span class="meta">score décroissant</span></div>
+      <div class="panel-b"><div class="tblwrap"><table class="attbl"><thead><tr>
+        <th style="width:26px"></th><th style="width:78px">Réf.</th><th style="width:66px">Score</th><th>Action</th>
+        <th style="width:170px">Projet</th><th style="width:130px">Pilote</th><th style="width:106px">Échéance</th><th style="width:150px">Pourquoi</th></tr></thead>
+      <tbody>${top.length?top.map(a=>{const s=atScore(a);
+        return `<tr><td style="text-align:center">${atPuce(a)}</td><td class="code">${esc(a.id)}</td>
+          <td class="num">${atScoreHTML(a)}</td><td class="wrap">${esc(a.titre||'')}</td>
+          <td class="wrap">${a.projId?`<button class="lnk" data-atgo="${esc(a.projId)}" title="Ouvrir la fiche de pilotage">${esc(atProjLbl(a))}</button>`:'<span class="hint">hors projet</span>'}</td>
+          <td>${esc(a.pilote||'—')}</td><td class="mono">${a.echeance?atFR(a.echeance):'—'}</td>
+          <td class="wrap" style="font-size:11.5px;color:var(--muted)">${esc((s?s.r:[]).slice(0,2).join(' · '))}</td></tr>`;
+        }).join(''):`<tr><td colspan="8" class="empty">Rien à escalader : aucune action ouverte dans ce périmètre.</td></tr>`}</tbody></table></div></div></div>
+    <div class="panel"><div class="panel-h"><h3>Projets les plus chargés</h3><span class="meta">somme des scores des actions ouvertes</span></div>
+      <div class="panel-b"><div class="tblwrap"><table class="attbl"><thead><tr>
+        <th>Projet</th><th style="width:92px">Ouvertes</th><th style="width:92px">Retard</th><th style="width:260px">Charge</th></tr></thead>
+      <tbody>${projs.length?projs.map(o=>`<tr>
+        <td class="wrap">${o.p?`<button class="lnk" data-atgo="${esc(o.p.id)}">${esc(o.p.shine?o.p.shine+' — ':'')}${esc(o.p.nom)}</button>`:'<span class="hint">hors projet</span>'}</td>
+        <td class="num">${o.l.length}</td><td class="num" style="${o.ret?'color:var(--bad);font-weight:700':''}">${o.ret||'—'}</td>
+        <td><div class="achbar solo"><i class="${o.ret?'d':'r'}" style="width:${o.ch/maxi*100}%"></i></div></td></tr>`).join('')
+        :`<tr><td colspan="4" class="empty">Aucune action ouverte.</td></tr>`}</tbody></table></div>
+      <div class="hint" style="margin-top:12px">Taux de clôture sur le périmètre affiché : <b>${tx} %</b> (${fini} clôturée${fini>1?'s':''} sur ${liste.length}) ·
+        ${retard.length} en retard dont ${esc7.length} à escalader · ${ouvertes.length} ouverte${ouvertes.length>1?'s':''} au total.</div></div></div>
+  </div>`;
+}
+
+/* ---- Reprendre ce qui est déjà saisi ailleurs dans la plateforme ----
+   Les risques et les étapes « Next Steps » des fiches projet sont des actions
+   qui s'ignorent. On les verse au registre, une fois, sans doublon. */
+function atReprendre(){
+  const vu=new Set(S.actions.map(a=>(a.projId||'')+'|'+norm(a.titre||'')));
+  let n=0;
+  S.projects.filter(p=>!p.deleted).forEach(p=>{
+    const pp=S.passports&&(S.passports[p.id]||S.passports[p.shine]); if(!pp)return;
+    (pp.risks||[]).forEach(r=>{
+      const t=String(r.desc||'').trim(); if(!t)return;
+      const k=p.id+'|'+norm(t); if(vu.has(k))return; vu.add(k);
+      const a=atNouvelle(p.id);
+      a.titre=t; a.desc=r.mit?('Mitigation : '+r.mit):''; a.pilote=r.owner||p.pl||p.pm||'';
+      a.echeance=atDateAuto(r.date)||''; a.priorite='Haute'; a.origine='Risque'; a.type='Action';
+      a.statut='En cours'; a.avancement=0; n++;
+    });
+    (pp.nextSteps||[]).forEach(x=>{
+      const s=nsNorm(x), t=s.t.trim(); if(!t)return;
+      const k=p.id+'|'+norm(t); if(vu.has(k))return; vu.add(k);
+      const st=s.st||'';
+      const a=atNouvelle(p.id);
+      a.titre=t; a.pilote=p.pl||p.pm||''; a.origine='COPROJ'; a.type='Tâche';
+      a.statut=/fait/i.test(st)?'Fait':/report|décal|decal/i.test(st)?'En attente':'À faire';
+      if(a.statut==='Fait'){ a.avancement=100; a.faitLe=atToday(); }
+      n++;
+    });
+  });
+  if(n){ scheduleSave(); renderActions();
+    alert(n+' action(s) reprise(s) des fiches projet (risques et « Next Steps »).\n\nElles sont au registre, à compléter : pilote, échéance, priorité.'); }
+  else alert('Rien à reprendre : les risques et les étapes « Next Steps » des fiches sont déjà au registre.');
+}
+function atSeuilsDlg(){
+  const c=atCfg();
+  const ov=document.createElement('div'); ov.className='dmodal';
+  ov.innerHTML=`<div class="dbox" style="width:min(560px,96vw)">
+    <div class="dhead"><span class="af-mk">P</span><h4>⚙ Seuils de relance et d'escalade</h4><button class="dclose" data-x>×</button></div>
+    <div class="dbody">
+      <p class="lead">Ces seuils ne changent pas les dates : ils décident du moment où une action
+        remonte d'elle-même dans la revue. Exprimés en jours, séparés par des virgules.</p>
+      <div class="xrow"><label style="flex:1">Avant l'échéance (J-)<br>
+        <input id="atsPre" value="${esc(c.pre.join(', '))}" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label></div>
+      <div class="xrow"><label style="flex:1">Relances après l'échéance (J+)<br>
+        <input id="atsPost" value="${esc(c.post.join(', '))}" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label></div>
+      <div class="xrow"><label style="flex:1">Escalade à partir de (J+)<br>
+        <input id="atsEsc" type="number" min="1" value="${c.esc}" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label></div>
+    </div>
+    <div class="dfoot"><button class="iconbtn" data-x>Annuler</button>
+      <button class="iconbtn" id="atsOk" style="background:var(--accent);color:#fff;border-color:var(--accent)">Enregistrer</button></div></div>`;
+  document.body.appendChild(ov);
+  const fermer=()=>ov.remove();
+  $$('[data-x]',ov).forEach(b=>b.onclick=fermer);
+  ov.onclick=e=>{ if(e.target===ov) fermer(); };
+  $('#atsOk',ov).onclick=()=>{
+    const lst=s=>String(s).split(/[,; ]+/).map(Number).filter(n=>isFinite(n)&&n>=0);
+    const pre=lst($('#atsPre',ov).value), post=lst($('#atsPost',ov).value), e=+$('#atsEsc',ov).value;
+    S.atCfg={pre:pre.length?pre:[7,3,1], post:post.length?post:[1,3,7], esc:(isFinite(e)&&e>0)?e:7};
+    logChange('Actions','seuils','', 'J-'+S.atCfg.pre.join('/')+' · J+'+S.atCfg.post.join('/')+' · escalade J+'+S.atCfg.esc);
+    fermer(); scheduleSave(); renderActions();
+  };
+}
+
+/* ======================= Macroplanning portefeuille =======================
+   Reprise du macroplanning de l'outil CSD : une frise hebdomadaire ISO
+   (S1…S52/53) où chaque ligne est un projet du portefeuille, les barres des
+   activités et les losanges des jalons.
+
+   Rien n'y est stocké en propre. Les barres sont les activités du kit projet
+   (kitOf(id).tasks) et les losanges ses jalons : ce qui est planifié ici
+   apparaît dans le macroplanning du projet, et réciproquement. L'outil
+   d'origine tenait un second planning par semaine, qu'il fallait ressaisir ;
+   la semaine n'est plus qu'une façon de regarder les mêmes dates.
+
+   Glisser dans la grille crée une activité · glisser une barre la déplace ·
+   les poignées en changent la durée · double-clic ouvre l'éditeur. */
+const MP_W=24;                 /* largeur d'une semaine, en pixels */
+const MP_LANE=22;              /* hauteur d'une ligne d'activité */
+const MP_COLORS=['#2f6f9f','#1d7a52','#bd8413','#c0392b','#7d4f9e','#5a6b78'];
+const MP_MOIS=['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
+const MP_SEM=[[1,'1er semestre','janv. → juin'],[2,'2e semestre','juil. → déc.']];
+const MP_KIND={activity:'Activité',coordination:'Coordination',gate:'Gate'};
+
+function mpAn(){ const a=+(S.mp&&S.mp.an); return (a>=2000&&a<=2100)?a:(new Date().getFullYear()); }
+function mpLundi(w,an){ an=an||mpAn(); const j4=new Date(an,0,4); const d=(j4.getDay()+6)%7;
+  return new Date(an,0,4-d+(w-1)*7); }
+function mpNbSem(an){ an=an||mpAn();
+  const d=new Date(an,11,28), t=new Date(d); t.setDate(d.getDate()+3-((d.getDay()+6)%7));
+  const j4=new Date(t.getFullYear(),0,4);
+  return 1+Math.round(((t-j4)/864e5-3+((j4.getDay()+6)%7))/7); }
+/* mois d'une semaine = mois de son jeudi (convention ISO) */
+function mpMoisDe(w,an){ const m=mpLundi(w,an); m.setDate(m.getDate()+3); return m.getMonth(); }
+function mpPhases(an){ an=an||mpAn(); const n=mpNbSem(an), a=[], b=[];
+  for(let w=1;w<=n;w++)(mpMoisDe(w,an)<=5?a:b).push(w);
+  return {1:{from:a[0],to:a[a.length-1]}, 2:{from:b[0],to:b[b.length-1]}}; }
+function mpSemaineDe(iso,an){ an=an||mpAn();
+  const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})/); if(!m) return null;
+  const d=new Date(+m[1],+m[2]-1,+m[3]);
+  const j=new Date(d); j.setDate(d.getDate()+3-((d.getDay()+6)%7));
+  if(j.getFullYear()!==an) return (j.getFullYear()<an)?0:999;   // avant / après l'exercice
+  const j4=new Date(an,0,4);
+  return 1+Math.round(((j-j4)/864e5-3+((j4.getDay()+6)%7))/7); }
+function mpISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function mpDebutSem(w,an){ return mpISO(mpLundi(w,an)); }
+function mpFinSem(w,an){ const d=mpLundi(w,an); d.setDate(d.getDate()+4); return mpISO(d); }   // vendredi
+function mpClamp(w,an){ return Math.max(1,Math.min(mpNbSem(an),w)); }
+function mpJJMM(d){ return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
+function mpPlage(w,an){ const m=mpLundi(w,an), f=new Date(m); f.setDate(m.getDate()+6); return mpJJMM(m)+' → '+mpJJMM(f); }
+function mpSemCourante(an){ an=an||mpAn();
+  const n=new Date(), d=new Date(n.getFullYear(),n.getMonth(),n.getDate());
+  d.setDate(d.getDate()+3-((d.getDay()+6)%7));
+  if(d.getFullYear()!==an) return null;
+  const j4=new Date(an,0,4); return 1+Math.round(((d-j4)/864e5-3+((j4.getDay()+6)%7))/7); }
+
+/* Les activités d'un projet, ramenées à des semaines de l'exercice affiché.
+   Une activité sans dates, ou hors de l'exercice, n'a pas de barre. */
+function mpTaches(p){
+  const an=mpAn(), k=kitOf(p.id), n=mpNbSem(an);
+  return (k.tasks||[]).map((t,i)=>{
+    if(!t.start||!t.end) return null;
+    let s=mpSemaineDe(t.start,an), e=mpSemaineDe(t.end,an);
+    if(s==null||e==null) return null;
+    if(s===999||e===0) return null;                  // entièrement hors exercice
+    const coupeG=(s===0), coupeD=(e===999);
+    s=coupeG?1:s; e=coupeD?n:e;
+    if(e<s) e=s;
+    return {t,i,s,e,coupeG,coupeD,id:t.id||('t'+i)};
+  }).filter(Boolean);
+}
+function mpJalons(p){
+  const an=mpAn(), k=kitOf(p.id);
+  return (k.milestones||[]).map((m,i)=>{
+    if(!m.date) return null;
+    const w=mpSemaineDe(m.date,an);
+    if(w==null||w===0||w===999) return null;
+    return {m,i,w,id:m.id||('m'+i)};
+  }).filter(Boolean);
+}
+function mpCouleur(t,i){ return MP_COLORS.includes(t.color)?t.color
+  : (t.kind==='gate'?MP_COLORS[4]:t.kind==='coordination'?MP_COLORS[2]:MP_COLORS[i%2?1:0]); }
+function mpProjets(){
+  let l=S.projects.filter(p=>!p.deleted);
+  if(S.mp.pole) l=l.filter(p=>p.group===S.mp.pole);
+  if(S.mp.q){ const q=norm(S.mp.q);
+    l=l.filter(p=>norm([p.nom,p.shine,p.pm,p.pl,p.group].join(' ')).includes(q)); }
+  if(S.mp.avecSeuls) l=l.filter(p=>mpTaches(p).length||mpJalons(p).length);
+  return l;
+}
+function mpProjOf(id){ return S.projects.find(p=>p.id===id&&!p.deleted); }
+
+function renderMacro(){
+  S.mp=S.mp||{an:new Date().getFullYear(),phase:1,pole:'',q:'',avecSeuls:false};
+  if(!MP_SEM.some(x=>x[0]===S.mp.phase)) S.mp.phase=1;
+  const an=mpAn(), ph=mpPhases(an)[S.mp.phase], nW=ph.to-ph.from+1;
+  const projets=mpProjets();
+  const poles=[...new Set(S.projects.filter(p=>!p.deleted).map(p=>p.group).filter(Boolean))].sort();
+  const nT=projets.reduce((s,p)=>s+mpTaches(p).length,0);
+  const nJ=projets.reduce((s,p)=>s+mpJalons(p).length,0);
+  const cw=mpSemCourante(an);
+
+  /* en-tête : les mois au-dessus, les semaines en dessous */
+  let mois='', sems='', m=-1, cnt=0;
+  const vider=()=>{ if(m>=0) mois+=`<div class="mp-m" style="width:${cnt*MP_W}px">${MP_MOIS[m]}</div>`; };
+  for(let w=ph.from;w<=ph.to;w++){ const wm=mpMoisDe(w,an); if(wm!==m){ vider(); m=wm; cnt=0; } cnt++;
+    sems+=`<div class="mp-w${w===cw?' cur':''}" style="width:${MP_W}px" title="S${w} · ${mpPlage(w,an)}">S${w}</div>`; }
+  vider();
+
+  view.innerHTML=`
+  <div class="sec-title"><h2>Macroplanning portefeuille</h2><span class="hint">frise hebdomadaire ISO ${an} · les barres sont les activités du kit projet, les losanges ses jalons</span></div>
+  <div class="panel"><div class="panel-h"><h3>${esc((MP_SEM.find(x=>x[0]===S.mp.phase)||[])[1]||'')} ${an} <span class="meta">${esc((MP_SEM.find(x=>x[0]===S.mp.phase)||[])[2]||'')}</span></h3>
+    <span class="meta">${projets.length} projet${projets.length>1?'s':''} · ${nT} activité${nT>1?'s':''} · ${nJ} jalon${nJ>1?'s':''}</span>
+    <button class="iconbtn" id="mpAuj" title="Revenir au semestre de la semaine en cours">◎ Aujourd&rsquo;hui</button></div>
+    <div class="panel-b">
+      <div class="toolbar">
+        <span class="ktabs" style="margin:0">${MP_SEM.map(([k,l])=>`<button class="${S.mp.phase===k?'on':''}" data-mpph="${k}">${l}</button>`).join('')}</span>
+        <button class="iconbtn" id="mpPrev" title="Exercice précédent">‹</button>
+        <span class="hint" style="min-width:48px;text-align:center"><b>${an}</b></span>
+        <button class="iconbtn" id="mpNext" title="Exercice suivant">›</button>
+        <span class="sp"></span>
+        <select id="mpPole"><option value="">Tous pôles</option>${poles.map(g=>`<option value="${esc(g)}" ${S.mp.pole===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+        <input id="mpQ" placeholder="Filtrer les projets…" value="${esc(S.mp.q||'')}" style="min-width:170px">
+        <label class="hint" style="display:inline-flex;align-items:center;gap:5px"><input type="checkbox" id="mpAvec" ${S.mp.avecSeuls?'checked':''}> planifiés seulement</label>
+      </div>
+      <div class="mpwrap"><div class="mptbl" style="--mpw:${nW*MP_W}px">
+        <div class="mp-hd">
+          <div class="mp-nom">Projet</div>
+          <div class="mp-ax"><div class="mp-row">${mois}</div><div class="mp-row">${sems}</div></div>
+          <div class="mp-tot">Période</div>
+        </div>
+        ${projets.length?projets.map(p=>mpLigne(p,ph,an,cw)).join(''):`<div class="empty" style="padding:26px">Aucun projet dans ce périmètre.</div>`}
+      </div></div>
+      <div class="mplegend">
+        <span><i style="background:${MP_COLORS[0]}"></i>Activité</span>
+        <span><i style="background:${MP_COLORS[2]}"></i>Coordination</span>
+        <span><i style="background:${MP_COLORS[4]}"></i>Gate</span>
+        <span><i class="dia"></i>Jalon</span>
+        <span class="hint">Glissez dans une ligne vide pour créer une activité · glissez une barre pour la décaler · les poignées changent la durée · double-clic pour l'éditer.</span>
+      </div>
+    </div></div>
+  ${footHTML('macro',`Macroplanning portefeuille · une semaine ISO va du lundi au dimanche ; une activité créée ici est datée du lundi au vendredi et rejoint le macroplanning du projet. Les jalons se déplacent depuis la fiche projet, onglet Macroplanning.`)}`;
+
+  const rr=()=>renderGardeFocus(()=>renderMacro());
+  const lier=(sel,ev,fn)=>{const n=$(sel); if(n)n.addEventListener(ev,fn);};
+  $$('[data-mpph]').forEach(b=>b.onclick=()=>{S.mp.phase=+b.dataset.mpph;scheduleSave();rr();});
+  lier('#mpPrev','click',()=>{S.mp.an=an-1;scheduleSave();rr();});
+  lier('#mpNext','click',()=>{S.mp.an=an+1;scheduleSave();rr();});
+  lier('#mpAuj','click',()=>{ const n=new Date(); S.mp.an=n.getFullYear(); S.mp.phase=n.getMonth()<=5?1:2; scheduleSave(); rr(); });
+  lier('#mpPole','change',e=>{S.mp.pole=e.target.value;scheduleSave();rr();});
+  lier('#mpQ','input',e=>{S.mp.q=e.target.value;rr();});
+  lier('#mpAvec','change',e=>{S.mp.avecSeuls=e.target.checked;scheduleSave();rr();});
+  $$('[data-mpgo]').forEach(b=>b.onclick=()=>{ S.currentProj=b.dataset.mpgo; S.tab='pass'; S.kitTab='macro'; S.navKey=''; scheduleSave(); render(); });
+  mpArmer();
+}
+function mpLigne(p,ph,an,cw){
+  const nW=ph.to-ph.from+1, taches=mpTaches(p), jalons=mpJalons(p);
+  const voies=[];                                    /* empilement : une barre par voie libre */
+  taches.forEach(o=>{ let v=0; while(voies[v]!=null&&voies[v]>=o.s) v++; voies[v]=o.e; o.voie=v; });
+  const nV=Math.max(1,voies.length);
+  const h=nV*MP_LANE+(jalons.length?20:0)+8;
+  let reperes='';
+  for(let w=ph.from+1;w<=ph.to;w++) if(mpMoisDe(w,an)!==mpMoisDe(w-1,an))
+    reperes+=`<i class="mp-ml" style="left:${(w-ph.from)*MP_W}px"></i>`;
+  if(cw&&cw>=ph.from&&cw<=ph.to) reperes+=`<i class="mp-now" style="left:${(cw-ph.from)*MP_W+MP_W/2}px" title="Semaine en cours · S${cw}"></i>`;
+  let barres='';
+  taches.forEach(o=>{
+    const s=Math.max(o.s,ph.from), e=Math.min(o.e,ph.to);
+    if(s>e) return;
+    const cg=o.coupeG||o.s<ph.from, cd=o.coupeD||o.e>ph.to;
+    const col=mpCouleur(o.t,o.i), av=Math.max(0,Math.min(100,+o.t.progress||0));
+    const bulle=`${o.t.name||'Activité'} — S${o.s} → S${o.e} (${mpPlage(o.s,an)} … ${mpPlage(o.e,an)}) · ${MP_KIND[o.t.kind]||'Activité'} · ${av} %${o.t.owner?' · '+o.t.owner:''}`;
+    barres+=`<div class="mp-bar${cg?' cg':''}${cd?' cd':''}" data-mpt="${esc(p.id)}|${o.i}"
+      style="left:${(s-ph.from)*MP_W+1}px;width:${(e-s+1)*MP_W-2}px;top:${4+o.voie*MP_LANE}px;background:${col}" title="${esc(bulle)}">
+      ${cg?'':'<span class="mp-h l" data-mph="l"></span>'}<i class="mp-av" style="width:${av}%"></i>
+      <span class="mp-lb">${esc(o.t.name||'Activité')}</span>${cd?'':'<span class="mp-h r" data-mph="r"></span>'}</div>`;
+  });
+  let dias='';
+  jalons.forEach(o=>{ if(o.w<ph.from||o.w>ph.to) return;
+    dias+=`<i class="mp-dia" style="left:${(o.w-ph.from)*MP_W+MP_W/2}px;top:${nV*MP_LANE+8}px"
+      title="${esc((o.m.name||'Jalon')+' · '+(o.m.date||'')+(o.m.owner?' · '+o.m.owner:''))}"></i>`; });
+  /* période couverte, lue sur l'exercice entier et non sur le semestre affiché */
+  const toutes=mpTaches(p);
+  const per=toutes.length?('S'+Math.min(...toutes.map(o=>o.s))+' → S'+Math.max(...toutes.map(o=>o.e))):'—';
+  return `<div class="mp-ln">
+    <div class="mp-nom"><button class="lnk" data-mpgo="${esc(p.id)}" title="Ouvrir le macroplanning de ce projet">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)}</button>
+      <span class="mp-sub">${esc(p.group||'')}${p.pl?' · '+esc(p.pl):''}</span></div>
+    <div class="mp-ax"><div class="mp-grid" data-mprow="${esc(p.id)}" data-mpph="${S.mp.phase}" style="width:${nW*MP_W}px;height:${h}px">
+      ${reperes}${taches.length||jalons.length?'':'<span class="mp-vide">glissez pour planifier une activité</span>'}${barres}${dias}</div></div>
+    <div class="mp-tot">${per}<span class="mp-sub">${toutes.length} act.${jalons.length?' · '+jalons.length+' jal.':''}</span></div></div>`;
+}
+
+/* ---- Créer, déplacer, redimensionner ---- */
+let _mpD=null;
+function mpSemAt(grid,x){ const ph=mpPhases()[+grid.dataset.mpph], r=grid.getBoundingClientRect();
+  return mpClamp(ph.from+Math.floor((x-r.left)/MP_W)); }
+function mpPoser(el,grid,s,e,voie){
+  const ph=mpPhases()[+grid.dataset.mpph], a=Math.max(s,ph.from), b=Math.min(e,ph.to);
+  if(a>b){ el.style.display='none'; return; }
+  el.style.display=''; el.style.left=((a-ph.from)*MP_W+1)+'px'; el.style.width=((b-a+1)*MP_W-2)+'px';
+  if(voie!=null) el.style.top=(4+voie*MP_LANE)+'px';
+}
+function mpArmer(){
+  const zone=$('.mptbl'); if(!zone||zone._mpOn) return; zone._mpOn=true;
+  zone.addEventListener('mousedown',e=>{ if(e.target.closest('.mp-grid')) e.preventDefault(); },true);
+  zone.addEventListener('pointerdown',e=>{
+    if(e.button!==0) return;
+    const grid=e.target.closest&&e.target.closest('.mp-grid'); if(!grid) return;
+    const p=mpProjOf(grid.dataset.mprow); if(!p) return;
+    const bar=e.target.closest('.mp-bar');
+    if(bar){
+      const [pid,idx]=bar.dataset.mpt.split('|'); const t=(kitOf(pid).tasks||[])[+idx]; if(!t) return;
+      const o=mpTaches(p).find(x=>x.i===+idx); if(!o) return;
+      const poi=e.target.closest('.mp-h');
+      _mpD={mode:poi?(poi.dataset.mph==='l'?'g':'d'):'move', grid, p, t, el:bar, x0:e.clientX, s0:o.s, e0:o.e, bouge:false};
+    } else {
+      const w=mpSemAt(grid,e.clientX);
+      const g=document.createElement('div'); g.className='mp-bar fant';
+      /* la voie du fantôme : sous les barres déjà posées dans ce semestre */
+      const nV=grid.querySelectorAll('.mp-bar').length
+        ? Math.max(...[...grid.querySelectorAll('.mp-bar')].map(b=>Math.round(((parseFloat(b.style.top)||0)-4)/MP_LANE)))+1 : 0;
+      g.style.top=(4+nV*MP_LANE)+'px'; grid.appendChild(g);
+      const besoin=(nV+1)*MP_LANE+8; if(grid.offsetHeight<besoin) grid.style.height=besoin+'px';
+      mpPoser(g,grid,w,w);
+      _mpD={mode:'trace', grid, p, el:g, x0:e.clientX, w0:w, s:w, e:w, bouge:false, h0:grid.style.height};
+    }
+    _mpD.pid=e.pointerId;
+  });
+  zone.addEventListener('pointermove',e=>{
+    const d=_mpD; if(!d) return;
+    if(!d.bouge&&Math.abs(e.clientX-d.x0)>3){ d.bouge=true; document.body.classList.add('mp-drag');
+      try{ d.grid.setPointerCapture(d.pid); }catch(_){} }
+    if(!d.bouge) return;
+    if(d.mode==='trace'){ const w=mpSemAt(d.grid,e.clientX);
+      d.s=Math.min(d.w0,w); d.e=Math.max(d.w0,w); mpPoser(d.el,d.grid,d.s,d.e); return; }
+    const dw=Math.round((e.clientX-d.x0)/MP_W); let s=d.s0, f=d.e0, n=mpNbSem();
+    if(d.mode==='move'){ const len=d.e0-d.s0; s=mpClamp(d.s0+dw); if(s+len>n) s=n-len; f=s+len; }
+    else if(d.mode==='g') s=Math.min(mpClamp(d.s0+dw),d.e0);
+    else f=Math.max(mpClamp(d.e0+dw),d.s0);
+    d.ns=s; d.ne=f; mpPoser(d.el,d.grid,s,f);
+    d.el.title=`${d.t.name||'Activité'} — S${s} → S${f}`;
+  });
+  const fin=()=>{
+    const d=_mpD; if(!d) return; _mpD=null; document.body.classList.remove('mp-drag');
+    const an=mpAn();
+    if(d.mode==='trace'){
+      d.el.remove();
+      if(!d.bouge){ d.grid.style.height=d.h0; return; }
+      const k=kitOf(d.p.id);
+      const t={id:kuid(), name:'', start:mpDebutSem(d.s,an), end:mpFinSem(d.e,an), kind:'activity', progress:0, owner:d.p.pl||d.p.pm||''};
+      k.tasks.push(t);
+      logChange('Macroplanning — '+(d.p.shine||d.p.nom),'activité créée','', 'S'+d.s+' → S'+d.e);
+      scheduleSave(); renderMacro(); mpEditeur(d.p.id, k.tasks.length-1, true);
+      return;
+    }
+    if(!d.bouge) return;
+    if(d.ns!=null&&(d.ns!==d.s0||d.ne!==d.e0)){
+      const av=(d.t.start||'')+' → '+(d.t.end||'');
+      d.t.start=mpDebutSem(d.ns,an); d.t.end=mpFinSem(d.ne,an);
+      logChange('Macroplanning — '+(d.p.shine||d.p.nom),(d.t.name||'activité')+' · dates', av, d.t.start+' → '+d.t.end);
+      scheduleSave();
+    }
+    renderMacro();
+  };
+  zone.addEventListener('pointerup',fin);
+  zone.addEventListener('pointercancel',fin);
+  zone.addEventListener('dblclick',e=>{
+    const grid=e.target.closest&&e.target.closest('.mp-grid'); if(!grid) return;
+    const p=mpProjOf(grid.dataset.mprow); if(!p) return;
+    const cible=document.elementFromPoint(e.clientX,e.clientY);
+    const bar=(cible&&cible.closest&&cible.closest('.mp-bar'))||e.target.closest('.mp-bar');
+    if(bar&&bar.dataset.mpt){ const [pid,idx]=bar.dataset.mpt.split('|'); mpEditeur(pid,+idx,false); return; }
+    const an=mpAn(), w=mpSemAt(grid,e.clientX), k=kitOf(p.id);
+    k.tasks.push({id:kuid(), name:'', start:mpDebutSem(w,an), end:mpFinSem(mpClamp(w+1),an), kind:'activity', progress:0, owner:p.pl||p.pm||''});
+    logChange('Macroplanning — '+(p.shine||p.nom),'activité créée','','S'+w);
+    scheduleSave(); renderMacro(); mpEditeur(p.id, k.tasks.length-1, true);
+  });
+}
+
+function mpEditeur(pid,idx,neuf){
+  const p=mpProjOf(pid); if(!p) return;
+  const k=kitOf(pid), t=(k.tasks||[])[idx]; if(!t) return;
+  const an=mpAn(), n=mpNbSem(an);
+  const ws=mpSemaineDe(t.start,an), we=mpSemaineDe(t.end,an);
+  const opts=v=>{ let o=''; for(let w=1;w<=n;w++) o+=`<option value="${w}"${w===v?' selected':''}>S${w} · ${mpPlage(w,an)}</option>`; return o; };
+  const sw=MP_COLORS.map(c=>`<label class="mp-sw" style="background:${c}"><input type="radio" name="mpc" value="${c}" ${((t.color||mpCouleur(t,idx))===c)?'checked':''}></label>`).join('');
+  const ov=document.createElement('div'); ov.className='dmodal';
+  ov.innerHTML=`<div class="dbox" style="width:min(620px,96vw)">
+    <div class="dhead"><span class="af-mk">P</span><h4>📅 ${neuf?'Nouvelle activité':'Activité'} — macroplanning ${an}</h4><button class="dclose" data-x>×</button></div>
+    <div class="dbody">
+      <p class="lead">${esc(p.shine?p.shine+' — ':'')}${esc(p.nom)} · cette activité est celle du kit projet : la modifier ici la modifie dans la fiche.</p>
+      <div class="xrow"><label style="flex:1">Libellé<br>
+        <input id="mpL" value="${esc(t.name||'')}" placeholder="ex. Études, Consultation, Travaux, Réception…" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label></div>
+      <div class="xrow"><label style="flex:1">Début<br><select id="mpS" style="width:100%">${opts(ws)}</select></label>
+        <label style="flex:1">Fin<br><select id="mpE" style="width:100%">${opts(we)}</select></label></div>
+      <div class="xrow"><label style="flex:1">Type<br><select id="mpK" style="width:100%">${Object.entries(MP_KIND).map(([v,l])=>`<option value="${v}" ${(t.kind||'activity')===v?'selected':''}>${l}</option>`).join('')}</select></label>
+        <label style="flex:1">Avancement %<br><input id="mpA" type="number" min="0" max="100" step="5" value="${+t.progress||0}" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label>
+        <label style="flex:1">Pilote<br><input id="mpO" value="${esc(t.owner||'')}" style="width:100%;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink);font:inherit"></label></div>
+      <div class="xrow"><label>Couleur</label><div style="display:flex;gap:8px">${sw}</div></div>
+      <p class="hint" style="margin:6px 0 0">Les dates réelles vont du lundi de la semaine de début au vendredi de la semaine de fin.</p>
+    </div>
+    <div class="dfoot"><button class="iconbtn" id="mpDel" style="margin-right:auto;color:var(--bad);border-color:var(--bad)">🗑 Supprimer</button>
+      <button class="iconbtn" data-x>Fermer</button>
+      <button class="iconbtn" id="mpOk" style="background:var(--accent);color:#fff;border-color:var(--accent)">✓ Enregistrer</button></div></div>`;
+  document.body.appendChild(ov);
+  const fermer=()=>ov.remove();
+  $$('[data-x]',ov).forEach(b=>b.onclick=fermer);
+  ov.onclick=e=>{ if(e.target===ov) fermer(); };
+  const enreg=()=>{
+    let s=+$('#mpS',ov).value, e=+$('#mpE',ov).value; if(e<s){ const x=s; s=e; e=x; }
+    const av=(t.name||'')+' · '+(t.start||'')+' → '+(t.end||'');
+    t.name=$('#mpL',ov).value.trim();
+    t.start=mpDebutSem(s,an); t.end=mpFinSem(e,an);
+    t.kind=$('#mpK',ov).value;
+    t.progress=Math.max(0,Math.min(100,+$('#mpA',ov).value||0));
+    t.owner=$('#mpO',ov).value.trim();
+    const c=(ov.querySelector('input[name="mpc"]:checked')||{}).value; if(c) t.color=c;
+    logChange('Macroplanning — '+(p.shine||p.nom),'activité', av, (t.name||'')+' · '+t.start+' → '+t.end);
+    fermer(); scheduleSave(); renderMacro();
+  };
+  $('#mpOk',ov).onclick=enreg;
+  $('#mpDel',ov).onclick=()=>{
+    if(!confirm('Supprimer cette activité du macroplanning ?\n\n'+(t.name||'(sans libellé)')+'\n\nElle disparaît aussi du macroplanning de la fiche projet.')) return;
+    k.tasks.splice(idx,1);
+    logChange('Macroplanning — '+(p.shine||p.nom),'activité supprimée',(t.name||''),'');
+    fermer(); scheduleSave(); renderMacro();
+  };
+  const l=$('#mpL',ov); if(l){ l.focus(); l.select();
+    l.addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); enreg(); } if(ev.key==='Escape') fermer(); }); }
+}
+
 /* ======================= TAB 2 — Passeport ======================= */
 function renderPass(){
   /* Revue par pôle : le sélecteur ne propose que les projets du pôle retenu,
@@ -3642,55 +5038,11 @@ function renderGates(){
   $$('[data-gd]').forEach(el=>el.addEventListener('blur',()=>{ensureGate(p.id).gates[+el.dataset.gd].date=el.textContent.trim();scheduleSave();}));
 }
 
-/* ---------- Actions ---------- */
-function renderActions(){
-  const f=S.actFilter||{proj:'',statut:'',crit:''};
-  S.actFilter=f;
-  let list=S.actions.map((a,i)=>({a,i}));
-  if(f.proj) list=list.filter(x=>x.a.projet===f.proj);
-  if(f.statut) list=list.filter(x=>x.a.statut===f.statut);
-  if(f.crit) list=list.filter(x=>x.a.crit===f.crit);
-  const openA=S.actions.filter(a=>a.statut!=='Clôturée');
-  const late=S.actions.filter(a=>a.statut!=='Clôturée'&&isOverdue(a.echeance));
-  const crit=openA.filter(a=>a.crit==='Haute');
-  const projOpts=[...new Set(S.actions.map(a=>a.projet).filter(Boolean))];
-
-  view.innerHTML=`
-  <div class="sec-title"><h2>Action tracker</h2><span class="hint">registre unique · COPIL / COPROJ / Gate / chantier / PVRT</span></div>
-  <div class="kpis">
-    <div class="tile a"><div class="lab">Actions ouvertes</div><div class="big">${openA.length}</div></div>
-    <div class="tile ${late.length?'bad':'good'}"><div class="lab">En retard (escalade)</div><div class="big">${late.length}</div></div>
-    <div class="tile ${crit.length?'warn':''}"><div class="lab">Critiques ouvertes</div><div class="big">${crit.length}</div></div>
-    <div class="tile"><div class="lab">Clôturées</div><div class="big">${S.actions.length-openA.length}</div></div>
-  </div>
-  <div class="panel"><div class="panel-h"><h3>Registre des actions</h3><button class="iconbtn" id="addAct">+ Ajouter une action</button></div>
-    <div class="panel-b">
-      <div class="toolbar">
-        <select id="afProj"><option value="">Tous projets</option>${projOpts.map(pr=>`<option value="${esc(pr)}" ${f.proj===pr?'selected':''}>${esc(pr)}</option>`).join('')}</select>
-        <select id="afSt"><option value="">Tous statuts</option>${ACTION_ST.map(s=>`<option ${f.statut===s?'selected':''}>${s}</option>`).join('')}</select>
-        <select id="afCr"><option value="">Toutes criticités</option>${CRITS.map(s=>`<option ${f.crit===s?'selected':''}>${s}</option>`).join('')}</select>
-        <span class="sp"></span><span class="hint">${list.length} / ${S.actions.length}</span>
-      </div>
-      <div class="tblwrap"><table><thead><tr><th style="width:90px">Origine</th><th style="width:110px">Projet</th><th>Description</th><th style="width:90px">Pilote</th><th style="width:96px">Échéance</th><th style="width:90px">Criticité</th><th style="width:104px">Statut</th><th style="width:24px"></th></tr></thead>
-      <tbody>${list.length?list.map(({a,i})=>{const od=a.statut!=='Clôturée'&&isOverdue(a.echeance);return `<tr>
-        <td><select data-af="${i}|origine" style="padding:2px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:12px">${ACTION_ORIG.map(o=>`<option ${a.origine===o?'selected':''}>${o}</option>`).join('')}</select></td>
-        <td class="code" contenteditable data-af="${i}|projet">${esc(a.projet||'')}</td>
-        <td class="wrap" contenteditable data-af="${i}|desc">${esc(a.desc||'')}</td>
-        <td contenteditable data-af="${i}|pilote">${esc(a.pilote||'')}</td>
-        <td class="mono" contenteditable data-af="${i}|echeance" style="color:${od?'var(--bad)':'inherit'};font-weight:${od?'600':'400'}">${esc(a.echeance||'')}${od?' ⚠':''}</td>
-        <td><select data-af="${i}|crit" style="padding:2px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:12px">${CRITS.map(o=>`<option ${a.crit===o?'selected':''}>${o}</option>`).join('')}</select></td>
-        <td><select data-af="${i}|statut" style="padding:2px 5px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit;font-size:12px">${ACTION_ST.map(o=>`<option ${a.statut===o?'selected':''}>${o}</option>`).join('')}</select></td>
-        <td><button class="delbtn" data-delact="${i}">×</button></td></tr>`;}).join(''):`<tr><td colspan="8" class="empty">Aucune action. « Ajouter une action ».</td></tr>`}</tbody></table></div>
-    </div></div>
-  ${footHTML('actions',`Actions · escalade automatique des échéances dépassées (⚠) · vue chef de projet (filtre) &amp; portefeuille.`)}`;
-
-  $('#addAct').addEventListener('click',()=>{S.actions.unshift({origine:'COPROJ',projet:'',desc:'Nouvelle action',pilote:'',echeance:'',crit:'Moyenne',statut:'À faire'});renderActions();scheduleSave();});
-  $('#afProj').addEventListener('change',e=>{f.proj=e.target.value;renderActions();});
-  $('#afSt').addEventListener('change',e=>{f.statut=e.target.value;renderActions();});
-  $('#afCr').addEventListener('change',e=>{f.crit=e.target.value;renderActions();});
-  $$('[data-af]').forEach(el=>{const h2=()=>{const[i,k]=el.dataset.af.split('|');S.actions[+i][k]=(el.tagName==='SELECT')?el.value:el.textContent.trim();if(el.tagName==='SELECT')renderActions();scheduleSave();};el.addEventListener(el.tagName==='SELECT'?'change':'blur',h2);});
-  $$('[data-delact]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();S.actions.splice(+b.dataset.delact,1);renderActions();scheduleSave();}));
-}
+/* ---------- Actions ----------
+   Le registre a rejoint le module « Actions de suivi » (priorités, avancement,
+   dépendances, seuils de relance et d'escalade, vues Kanban / Pilotes /
+   Calendrier / Revue de direction). renderActions() y est défini ; l'ancienne
+   table à sept colonnes a été retirée pour ne pas le masquer. ---------- */
 
 /* ---------- HSE & Réception ---------- */
 function ensureHSE(id){
@@ -4627,9 +5979,29 @@ $('#exportBtn').addEventListener('click',()=>{
     S.projects.forEach(p=>{const c=S.cers&&S.cers[p.id]; if(!c)return; rows.push([p.shine,p.nom,c.approuvee,c.avenants,c.engage,c.facture,c.depense,Math.round(cerConso(c)),c.lots.length,c.da.length]);});
   } else if(S.tab==='gates'){ name='gates';
     rows.push(['Code','Projet','Phase_courante']); S.projects.forEach(p=>rows.push([p.shine,p.nom,PHASES[derivePhase(p)][1]]));
-  } else if(S.tab==='actions'){ name='actions';
-    rows.push(['Origine','Projet','Description','Pilote','Echeance','Criticite','Statut']);
-    S.actions.forEach(a=>rows.push([a.origine,a.projet,a.desc,a.pilote,a.echeance,a.crit,a.statut]));
+  } else if(S.tab==='actions'){ name='actions_de_suivi';
+    rows.push(['Ref','Projet','Phase','Action','Description','Type','Pilote','Priorite','Debut','Echeance',
+               'Statut','Avancement','Fait le','Dependance','Origine','Reference','Score','Alerte','Commentaire']);
+    atListe().forEach(a=>{ const s=atScore(a), al=atAlerte(a);
+      rows.push([a.id,atProjLbl(a),a.phase,a.titre,a.desc,a.type,a.pilote,a.priorite,a.debut,a.echeance,
+                 a.statut,(+a.avancement||0)+' %',a.faitLe,a.dependance,a.origine,a.ref,(s?s.s:''),(al?al.txt:''),a.commentaire]); });
+  } else if(S.tab==='ach'){ name='achats';
+    rows.push(['Type','Projet','Pole','Statut','N DA','N commande','Fournisseur','Objet','Montant HT','Receptionne',
+               'Facture','Engage','Date DA','Date commande','Livraison prevue','Date reception','WBS INV','Compte','Nature','Demandeur','Commentaire']);
+    achLignes().forEach(l=>{ const c=achCalc(l), p=achProj(l.projId);
+      rows.push([l.type,achLibelle(l),(p?p.group:''),l.statut,l.numDA,l.numCmd,l.fournisseur,l.objet,
+                 achNum(l.montant),achNum(l.recu),achNum(l.facture),c.eng,l.dateDA,l.dateCmd,l.dateLiv,l.dateRecep,
+                 l.wbs,l.compte,l.nature,l.demandeur,l.commentaire]); });
+  } else if(S.tab==='macro'){ name='macroplanning';
+    const an=mpAn();
+    rows.push(['Projet','Pole','Activite','Type','Semaine debut','Semaine fin','Date debut','Date fin','Avancement','Pilote']);
+    mpProjets().forEach(p=>mpTaches(p).forEach(o=>rows.push([
+      (p.shine?p.shine+' — ':'')+p.nom, p.group, o.t.name||'Activite', (MP_KIND[o.t.kind]||'Activite'),
+      'S'+o.s, 'S'+o.e, o.t.start, o.t.end, (+o.t.progress||0)+' %', o.t.owner||''])));
+    rows.push([]); rows.push(['Jalons de l\'exercice '+an]);
+    rows.push(['Projet','Jalon','Semaine','Date','Pilote']);
+    mpProjets().forEach(p=>mpJalons(p).forEach(o=>rows.push([
+      (p.shine?p.shine+' — ':'')+p.nom, o.m.name||'Jalon', 'S'+o.w, o.m.date, o.m.owner||''])));
   } else if(S.tab==='kpi'){ name='audit';
     rows.push(['Horodatage','Utilisateur','Objet','Champ','Ancien','Nouveau']);
     (S.audit||[]).forEach(a=>rows.push([a.ts,a.user,a.objet,a.champ,a.old,a.neu]));
@@ -5071,10 +6443,10 @@ try{ const st=JSON.parse(localStorage.getItem('ppm_nav_groups')||'{}'); document
 try{ const ss=JSON.parse(localStorage.getItem('ppm_nav_sec')||'{}'); document.querySelectorAll('[data-secwrap]').forEach(w=>{ const id=w.dataset.secwrap; if(ss[id]===false){ w.classList.add('collapsed'); const s=document.querySelector('.sb-sec[data-sec=\"'+id+'\"]'); if(s){const c=s.querySelector('.sb-chev'); if(c)c.classList.add('rot');} } }); }catch(_){}
 
 const NAV_ICONS={
- key:{ppole:'🏭',pkpi:'📊',pscn:'🔀',pcap:'👥',pphas:'📈',p1a:'🏢',p1b:'⚡',p1c:'🧪',p1d:'🔬',p1e:'💻',p1f:'🖥',p2a:'🧭',p2b:'🗒',p3a:'🎚',p3b:'🗂',p4a:'🗃',p4b:'👔',p4c:'👤',p4d:'📐',p5a:'📉',p5b:'🔔',k1a:'📦',k1b:'👥',k2a:'📝',k2b:'🧩',k3a:'🪪',k3b:'🏢',k4a:'🎯',k5a:'🚦',k6a:'📅',k6b:'📆',k7a:'🚀',k7b:'🦺',k8a:'📡',k8b:'💶',k9a:'📄',k9b:'🔄',k10a:'✅',k11a:'🏁',k11b:'♻',ged:'🗄'},
+ key:{ppole:'🏭',pkpi:'📊',pscn:'🔀',pcap:'👥',pphas:'📈',p1a:'🏢',p1b:'⚡',p1c:'🧪',p1d:'🔬',p1e:'💻',p1f:'🖥',p2a:'🧭',p2b:'🗒',p3a:'🎚',p3b:'🗂',p4a:'🗃',p4b:'👔',p4c:'👤',p4d:'📐',p5a:'📉',p5b:'🔔',k1a:'📦',k1b:'👥',k2a:'📝',k2b:'🧩',k3a:'🪪',k3b:'🏢',k4a:'🎯',k5a:'🚦',k6a:'📅',k6b:'📆',k7a:'🚀',k7b:'🦺',k8a:'📡',k8b:'💶',k9a:'📄',k9b:'🔄',k10a:'✅',k11a:'🏁',k11b:'♻',ged:'🗄',pach:'🛒',pact:'✔',pmac:'📅'},
  grp:{g1:'📚',g2:'📋',g3:'👷',g4:'🎯',g5:'🚦',g6:'📅',g7:'🔧',g8:'📡',g9:'📄',g10:'✅',g11:'🏁'},
  sub:{'Chiffrage':'💶','Études':'📐','Achats':'🛒','Appros':'🚚','Travaux':'🔧','Réception':'📥','HSE | CSSCT':'🦺','Transfert':'🔁','Divers':'📁'},
- tab:{dash:'🏭',kpi:'📊',scenario:'🔀',res:'👥',phasing:'📈',pass:'🪪',cdc:'📝',uo:'📦',cer:'💶',gates:'🚦',actions:'✔',hse:'🦺',fin:'💶',ged:'🗄'},
+ tab:{ach:'🛒',macro:'📅',dash:'🏭',kpi:'📊',scenario:'🔀',res:'👥',phasing:'📈',pass:'🪪',cdc:'📝',uo:'📦',cer:'💶',gates:'🚦',actions:'✔',hse:'🦺',fin:'💶',ged:'🗄'},
  sec:{pf:'🗂',lc:'🔄',doc:'📚'}
 };
 function navIcon(b){ const d=b.dataset; if(d.key&&NAV_ICONS.key[d.key])return NAV_ICONS.key[d.key]; if(d.sub&&NAV_ICONS.sub[d.sub])return NAV_ICONS.sub[d.sub]; if(d.grp&&NAV_ICONS.grp[d.grp])return NAV_ICONS.grp[d.grp]; if(d.tab&&NAV_ICONS.tab[d.tab])return NAV_ICONS.tab[d.tab]; return '•'; }
