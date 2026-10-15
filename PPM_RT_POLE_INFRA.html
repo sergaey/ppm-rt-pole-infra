@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.4 -->
+<!-- PPM_BUILD:2026-10-15.5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -526,6 +526,66 @@
   .csd-f label{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:700}
   .csd-f .kin{border:1px solid var(--line);background:var(--panel)}
   .csd-f.wide{grid-column:1/-1}
+  /* ===== Organigramme projet : un arbre, pas une grille ===== */
+  .orgc{--n1:#0b4658;--n2:#115e75;--n3:#b0651f;--n4:#1d7a52;padding:6px 2px 10px}
+  .orgc .orgtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .orgc .orgkpi{display:flex;gap:8px;flex-wrap:wrap}
+  .orgc .orgk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 11px;box-shadow:var(--shadow)}
+  .orgc .orgk b{font-family:Archivo;font-size:16px;font-weight:800;color:var(--accent-ink);margin-right:5px}
+  .orgc .orgk span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .orgl{position:relative}
+  .orgl+.orgl{margin-top:4px}
+  /* le tronc entre deux niveaux */
+  .orgl+.orgl::before{content:"";display:block;width:2px;height:20px;margin:0 auto;
+    background:linear-gradient(var(--line-2),var(--line-2))}
+  .orgh{display:flex;align-items:center;gap:9px;justify-content:center;margin:8px 0 4px}
+  .orgh .tag{font-family:Archivo;font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+    color:#fff;border-radius:999px;padding:3px 10px}
+  .orgl.l1 .orgh .tag{background:var(--n1)}.orgl.l2 .orgh .tag{background:var(--n2)}
+  .orgl.l3 .orgh .tag{background:var(--n3)}.orgl.l4 .orgh .tag{background:var(--n4)}
+  .orgh .lb{font-size:12px;color:var(--ink-2);font-weight:600}
+  .orgh .cnt{font-size:10.5px;color:var(--faint)}
+  /* la rangée de cartes et sa barre de liaison */
+  /* Une grille plutôt qu'un flux : les cartes reportées à la ligne s'alignent
+     sous les colonnes du dessus, au lieu de flotter seules au centre. */
+  .orgr{display:grid;grid-template-columns:repeat(auto-fit,196px);justify-content:center;
+    gap:24px 10px;position:relative;padding-top:20px;border-radius:12px;transition:background .15s}
+  .orgr.over{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:4px}
+  .orgl.l1 .orgr{padding-top:4px}
+  .orgr::before{content:"";position:absolute;top:0;left:12%;right:12%;height:2px;background:var(--line-2);border-radius:2px}
+  .orgl.l1 .orgr::before,.orgr.solo::before{display:none}
+  .orgcard{position:relative;width:auto;background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:11px 12px 10px;box-shadow:var(--shadow);cursor:grab;transition:transform .12s,box-shadow .18s,border-color .18s}
+  .orgcard::before{content:"";position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--line-2)}
+  .orgl.l1 .orgcard::before,.orgcard.nostub::before{display:none}
+  /* carte reportée à la ligne : un simple liseré de rattachement, pas un
+     trait qui monterait dans le vide. */
+  .orgcard.nostub{box-shadow:var(--shadow),inset 3px 0 0 var(--line-2)}
+  .orgcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(16,42,67,.16);border-color:var(--accent)}
+  .orgcard.dragging{opacity:.5;cursor:grabbing}
+  .orgcard .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;
+    font-family:Archivo;font-weight:800;font-size:14.5px;letter-spacing:.02em;box-shadow:0 3px 9px rgba(0,0,0,.18)}
+  .orgcard.l1 .av{background:linear-gradient(135deg,var(--n1),#06303d)}
+  .orgcard.l2 .av{background:linear-gradient(135deg,var(--n2),var(--n1))}
+  .orgcard.l3 .av{background:linear-gradient(135deg,var(--n3),#8a4e18)}
+  .orgcard.l4 .av{background:linear-gradient(135deg,var(--n4),#145a3c)}
+  .orgcard.vide{border-style:dashed;background:var(--panel-2)}
+  .orgcard.vide .av{background:var(--panel-3);color:var(--faint);box-shadow:none}
+  .orgcard .hd{display:flex;gap:10px;align-items:center}
+  .orgcard .ro{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+    line-height:1.25;border:1px solid transparent;border-radius:5px;padding:1px 3px;margin:0 -3px}
+  .orgcard .na{font-size:13px;font-weight:700;line-height:1.3;color:var(--ink);
+    border:1px solid transparent;border-radius:5px;padding:1px 3px;margin:1px -3px 0}
+  .orgcard.vide .na{color:var(--faint);font-style:italic;font-weight:500}
+  .orgcard .ro:hover,.orgcard .na:hover{border-color:var(--line)}
+  .orgcard .ro:focus,.orgcard .na:focus{border-color:var(--accent);background:var(--panel);outline:none}
+  .orgcard .ft{display:flex;align-items:center;gap:6px;margin-top:9px;opacity:0;transition:opacity .15s}
+  .orgcard:hover .ft,.orgcard:focus-within .ft{opacity:1}
+  .orgcard .ft select{flex:1;padding:2px 5px;border:1px solid var(--line);border-radius:7px;
+    background:var(--panel-2);color:var(--ink-2);font-size:10.5px;font-weight:700}
+  .orgempty{border:1px dashed var(--line-2);border-radius:11px;padding:9px 14px;color:var(--faint);
+    font-size:11.5px;font-style:italic;background:var(--panel-2)}
+  @media(max-width:860px){.orgr{grid-template-columns:repeat(auto-fit,164px)}}
   /* ===== GEDT : recherche de projet ===== */
   .pickov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:56px 20px}
   .pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -657,6 +717,7 @@
   .rkmeta{padding-top:8px;font-size:12px;white-space:pre-wrap}
   .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
   .rkcell:empty:before,.rkmeta:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
+  .orgcard .na:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
   /* Plein écran : l'espace gagné va au contenu, pas aux marges. */
   :root.plein .view{padding-top:10px}
@@ -849,7 +910,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.4';
+const APP_BUILD='2026-10-15.5';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1980,23 +2041,83 @@ function kitChecklist(k){
   if(!k.phases.length) h+=`<tr><td colspan="5" class="empty">Aucune phase.</td></tr>`;
   return h+'</tbody></table>';
 }
-/* ---- Organigramme ---- */
+/* ---- Organigramme ----
+   Un arbre, et non une grille : le sponsor en tête, puis les niveaux reliés
+   par un tronc et une barre de liaison. Chaque fonction est une carte, avec
+   ses initiales ; une fonction sans titulaire se voit du premier coup d'œil
+   et se compte. Les cartes se déplacent d'un niveau à l'autre à la souris. */
+const ORG_INI=n=>{
+  const m=String(n||'').trim().split(/[\s'’-]+/).filter(Boolean);
+  if(!m.length) return '—';
+  return ((m[0][0]||'')+(m.length>1?(m[m.length-1][0]||''):'')).toUpperCase();
+};
 function kitOrga(k){
-  let h=`<div class="kbar-tools">${kbtn('addPerson','+ Fonction')}<span style="margin-left:auto">Quatre niveaux, du sponsor à l'exécution</span></div>`;
+  const pourvues=k.people.filter(p=>String(p.name||'').trim()).length;
+  const manquantes=k.people.length-pourvues;
+  let h=`<div class="orgc">
+    <div class="orgtop">
+      <div class="orgkpi">
+        <div class="orgk"><b>${k.people.length}</b><span>Fonctions</span></div>
+        <div class="orgk"><b>${pourvues}</b><span>Pourvues</span></div>
+        <div class="orgk"><b>${manquantes}</b><span>À pourvoir</span></div>
+        <div class="orgk"><b>${KIT_LEVELS.length}</b><span>Niveaux</span></div>
+      </div>
+      <span class="sp" style="margin-left:auto"></span>
+      ${kbtn('addPerson','+ Fonction')}
+      <span class="hint">Glissez une carte sur un autre niveau pour la rattacher</span>
+    </div>`;
   KIT_LEVELS.forEach((lab,li)=>{
     const lv=li+1, mem=k.people.map((p,i)=>({p,i})).filter(x=>+x.p.level===lv);
-    h+=`<div class="ktier n${lv}"><h4>${lv}. ${esc(lab)} — ${mem.length} fonction(s)</h4>
-      <div class="kgrid" style="grid-template-columns:repeat(auto-fill,minmax(190px,1fr))">`;
-    mem.forEach(({p,i})=>{ h+=`<div class="kperson">
-      <div class="kph"><small>Fonction</small><button class="kdel" data-ka="delPerson|${i}">✕</button></div>
-      <div class="krole">${kta(`people.${i}.role`)}</div>
-      <div class="kph" style="margin-top:4px"><small>Responsable</small>
-        <select class="kin" style="width:58px" data-kp="people.${i}.level" data-kt="number" data-kr="orga">${KIT_LEVELS.map((_,j)=>`<option value="${j+1}" ${j+1===lv?'selected':''}>N${j+1}</option>`).join('')}</select></div>
-      ${kinp(`people.${i}.name`)}</div>`; });
-    if(!mem.length) h+=`<div class="hint" style="padding:4px 2px">Aucune fonction à ce niveau.</div>`;
+    h+=`<div class="orgl l${lv}">
+      <div class="orgh"><span class="tag">N${lv}</span><span class="lb">${esc(lab)}</span>
+        <span class="cnt">${mem.length} fonction${mem.length>1?'s':''}</span></div>
+      <div class="orgr${mem.length<2?' solo':''}" data-orglvl="${lv}">`;
+    mem.forEach(({p,i})=>{
+      const vide=!String(p.name||'').trim();
+      h+=`<div class="orgcard l${lv}${vide?' vide':''}" draggable="true" data-orgi="${i}">
+        <div class="hd"><div class="av">${esc(ORG_INI(p.name))}</div>
+          <div style="flex:1;min-width:0">
+            <div class="ro" contenteditable data-kp="people.${i}.role">${esc(p.role||'')}</div>
+            <div class="na" contenteditable data-kp="people.${i}.name" data-vide="Fonction à pourvoir">${esc(p.name||'')}</div>
+          </div></div>
+        <div class="ft">
+          <select data-kp="people.${i}.level" data-kt="number" data-kr="orga" title="Rattacher à un autre niveau">
+            ${KIT_LEVELS.map((x,j)=>`<option value="${j+1}" ${j+1===lv?'selected':''}>N${j+1} · ${esc(x)}</option>`).join('')}
+          </select>
+          <button class="kdel" data-ka="delPerson|${i}" title="Supprimer la fonction">✕</button>
+        </div></div>`;
+    });
+    if(!mem.length) h+=`<div class="orgempty">Aucune fonction à ce niveau — déposez-y une carte ou ajoutez-en une.</div>`;
     h+='</div></div>';
   });
-  return h;
+  return h+'</div>';
+}
+/* Rattacher une fonction à un autre niveau en déplaçant sa carte. */
+function kitArmerOrga(){
+  // Les cartes reportées à la ligne ne doivent pas garder un trait de liaison
+  // pointant vers le vide : seule la première ligne est reliée à la barre.
+  $$('#kitPane .orgr').forEach(r=>{
+    const c=[...r.querySelectorAll('.orgcard')]; if(!c.length) return;
+    const y0=c[0].offsetTop;
+    c.forEach(x=>x.classList.toggle('nostub', x.offsetTop>y0+4));
+  });
+  let src=null;
+  $$('#kitPane .orgcard').forEach(c=>{
+    c.addEventListener('dragstart',e=>{ src=+c.dataset.orgi; c.classList.add('dragging');
+      try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',String(src)); }catch(_){} });
+    c.addEventListener('dragend',()=>{ src=null; c.classList.remove('dragging');
+      $$('#kitPane .orgr').forEach(r=>r.classList.remove('over')); });
+  });
+  $$('#kitPane .orgr').forEach(r=>{
+    r.addEventListener('dragover',e=>{ if(src==null) return; e.preventDefault(); r.classList.add('over'); });
+    r.addEventListener('dragleave',()=>r.classList.remove('over'));
+    r.addEventListener('drop',e=>{
+      if(src==null) return; e.preventDefault(); r.classList.remove('over');
+      const k=kitOf(S.currentProj), p=k.people[src], lv=+r.dataset.orglvl;
+      if(p && +p.level!==lv){ logChange('Organigramme — '+(p.role||''),'niveau','N'+p.level,'N'+lv); p.level=lv; scheduleSave(); }
+      src=null; renderKit();
+    });
+  });
 }
 /* ---- Chiffrage ---- */
 function kitDnd(k,key){ return Math.round(ksum(k.budgetGroups.filter(g=>g.section==='Travaux'||g.section===KIT_BOTH).flatMap(g=>g.rows.map(r=>+r[key]||0)))*(+k.dnd||0)); }
@@ -2164,6 +2285,7 @@ function renderKit(){
   h.innerHTML = t==='onepage'?opPage() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   if(t==='macro') kitArmerJalons();
+  if(t==='orga') kitArmerOrga();
   if(t==='onepage'){ opArmer(); bindEditables(); }
 }
 function kitTabsHTML(){
@@ -2195,8 +2317,14 @@ function kitArmerJalons(){
 }
 /* Saisie et actions du kit : écoutes posées une seule fois, le volet étant
    redessiné à chaque frappe utile. */
+document.addEventListener('blur',e=>{
+  const t=e.target, p=t.dataset&&t.dataset.kp;
+  if(!p || !t.isContentEditable) return;
+  kSet(p, t.innerText.replace(/\u00a0/g,' ').trim()); scheduleSave();
+  if(t.dataset.kr) renderKit();
+},true);
 document.addEventListener('input',e=>{
-  const p=e.target.dataset&&e.target.dataset.kp; if(!p) return;
+  const p=e.target.dataset&&e.target.dataset.kp; if(!p || e.target.isContentEditable) return;
   let v=e.target.value;
   if(e.target.dataset.kt==='number') v=parseFloat(String(v).replace(',','.'))||0;
   kSet(p,v); scheduleSave();
