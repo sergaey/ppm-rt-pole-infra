@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.2 -->
+<!-- PPM_BUILD:2026-10-15.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -412,6 +412,76 @@
   .knodate{padding:6px 10px;font-size:11.5px;color:var(--faint);font-style:italic}
   .klegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}
   .klegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  /* ===== One Page projet : reprise de l'outil « One Page — CSD » ===== */
+  .op{--q1:#dbeafe;--q2:#dcfce7;--q3:#fef9c3;--q4:#fce7f3;--opg:#16a34a;--opp:#8b5cf6;
+      --opo:#f59e0b;--opr:#ef4444;--opb:#3b82f6;font-size:12.5px}
+  :root[data-theme="dark"] .op{--q1:#1e3a5f;--q2:#14361f;--q3:#3a3410;--q4:#3d1c30}
+  .op .ophead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border:1px solid var(--line);
+    border-radius:11px;background:var(--panel);margin-bottom:10px;font-family:Archivo}
+  .op .ophead .pid{font-weight:800;color:var(--accent-ink)}
+  .op .ophead .pname{font-weight:800;font-size:15px}
+  .op .ophead .pcode{font-weight:700;color:var(--copper)}
+  .op .ophead .opdate{margin-left:auto;font-family:'IBM Plex Sans';font-size:11.5px;color:var(--muted)}
+  .op .opgrid{display:grid;grid-template-columns:1fr 268px;gap:10px;align-items:start}
+  .op .oprow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .op .oprow3{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:10px;margin-top:10px}
+  .op .oppan{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+  .op .oph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 11px;
+    color:#fff;font-family:Archivo;font-weight:800;font-size:11.5px;letter-spacing:.05em}
+  .op .oph .add{border:0;background:rgba(255,255,255,.22);color:#fff;border-radius:6px;width:21px;height:21px;
+    font-size:14px;line-height:1;cursor:pointer}
+  .op .h-green{background:var(--opg)}.op .h-purple{background:var(--opp)}.op .h-orange{background:var(--opo)}
+  .op .h-red{background:var(--opr)}.op .h-blue{background:var(--opb)}
+  .op table{width:100%;border-collapse:collapse;font-size:11.5px}
+  .op th{background:var(--panel-2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.04em;
+    padding:5px 7px;text-align:left;border-bottom:1px solid var(--line)}
+  .op td{padding:4px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+  .op .num{text-align:right;font-variant-numeric:tabular-nums}
+  .op .opbody{padding:7px 9px;display:flex;flex-direction:column;gap:5px}
+  .op .opitem{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;line-height:1.45}
+  .op .opitem .b{color:var(--opg);font-weight:800}
+  .op .opitem.ns .b{color:var(--opb)}
+  /* frise */
+  .op .gq{display:grid}
+  .op .gq div{text-align:center;font-size:9.5px;font-weight:700;color:#334155;padding:2px 0;border-right:1px solid var(--line)}
+  .op .gm{display:grid;border-top:1px solid var(--line)}
+  .op .gm div{text-align:center;font-size:9px;color:var(--muted);padding:2px 0;border-right:1px solid var(--line)}
+  .op .garea{position:relative;height:26px}
+  .op .garea.ms{height:52px;overflow:visible}
+  .op .gbg{position:absolute;inset:0;display:grid}
+  .op .gbg div{border-right:1px solid var(--line)}
+  .op .gbar{position:absolute;top:4px;height:18px;border-radius:4px;color:#fff;font-size:10px;
+    display:flex;align-items:center;justify-content:center;cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,.25);white-space:nowrap;overflow:hidden}
+  .op .gbar:active,.op .gbar.dragging{cursor:grabbing;filter:brightness(1.08)}
+  .op .gdia{position:absolute;width:12px;height:12px;transform:translateX(-50%) rotate(45deg);border-radius:2px;
+    cursor:grab;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .op .gdia:active{cursor:grabbing}
+  .op .gdl{position:absolute;transform:translateX(-50%);font-size:9px;white-space:nowrap;color:var(--ink-2);pointer-events:none}
+  .op .gdl.sub{color:var(--muted);font-size:8.5px}
+  .op .gmk{position:absolute;top:0;bottom:0;width:2px;background:var(--bad);opacity:.85}
+  .op .gmk.end{background:var(--accent)}
+  .op .gmk .lab{position:absolute;top:-1px;left:3px;font-size:8.5px;color:var(--bad);white-space:nowrap}
+  .op .gmk.end .lab{color:var(--accent)}
+  .op .oplegend{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:6px 10px;font-size:10px;color:var(--muted);border-top:1px solid var(--line)}
+  .op .sw{display:inline-block;width:13px;height:9px;border-radius:2px}
+  /* pastilles de statut */
+  .op .pill{border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:10px;font-weight:700;background:var(--panel)}
+  .op select.pill{cursor:pointer}
+  .op .p-done{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+  .op .p-wip{background:var(--blue-soft,#dbeafe);color:#1d4ed8;border-color:#93c5fd}
+  .op .p-late{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+  .op .p-ns{background:var(--panel-2);color:var(--muted)}
+  /* statut projet */
+  .op .pstat{padding:9px;display:flex;flex-direction:column;gap:7px}
+  .op .tile{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:7px 9px;cursor:pointer;background:var(--panel-2)}
+  .op .tile .dot{width:13px;height:13px;border-radius:50%}
+  .op .tile.ok .dot{background:var(--opg)}.op .tile.att .dot{background:var(--opo)}.op .tile.risk .dot{background:var(--opr)}
+  .op .tile .lbl{font-size:10.5px;line-height:1.3;color:var(--ink-2)}
+  .op .tile.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);background:var(--panel)}
+  .op .opcom{border:1px dashed var(--line-2);border-radius:9px;padding:7px 9px;font-size:11.5px;line-height:1.5;white-space:pre-wrap;min-height:46px}
+  .op .opcom:focus{outline:2px solid var(--accent);outline-offset:-2px}
+  .op [contenteditable]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-radius:3px}
+  @media(max-width:1180px){.op .opgrid,.op .oprow,.op .oprow3{grid-template-columns:1fr}}
   /* ===== GEDT : recherche de projet ===== */
   .pickov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:56px 20px}
   .pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -734,7 +804,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.2';
+const APP_BUILD='2026-10-15.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1788,7 +1858,7 @@ const KIT_STAT=['Fait','En cours','A faire','NA'];
 const KIT_LEVELS=['Sponsor','Pilotage & correspondants','Expertises techniques','Exécution & qualification'];
 const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
-const KIT_TABS=[['synthese','Synthèse'],['checklist','Check-list'],['orga','Organigramme'],
+const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['checklist','Check-list'],['orga','Organigramme'],
                 ['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
 const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards Sanofi STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
 const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
@@ -2017,11 +2087,13 @@ function kitSynthese(k){
 /* Redessiner le volet sans perdre la frappe : les champs du kit n'ont pas
    d'identifiant, on les retrouve par leur chemin. */
 function renderKitGarde(){
-  const a=document.activeElement, kp=a&&a.dataset&&a.dataset.kp;
+  const a=document.activeElement;
+  const attr=(a&&a.dataset&&a.dataset.kp)?'kp':(a&&a.dataset&&a.dataset.opd)?'opd':null;
+  const kp=attr?a.dataset[attr]:null;
   let deb=null,fin=null; try{ deb=a.selectionStart; fin=a.selectionEnd; }catch(_){}
   renderKit();
   if(!kp) return;
-  const n=document.querySelector('#kitPane [data-kp="'+kp+'"]');
+  const n=document.querySelector('#kitPane [data-'+attr+'="'+kp+'"]');
   if(!n || n===document.activeElement) return;
   try{ n.focus({preventScroll:true}); }catch(_){ n.focus(); }
   try{ if(deb!=null && n.setSelectionRange) n.setSelectionRange(deb,fin); }catch(_){}
@@ -2037,14 +2109,16 @@ function kitResumeHTML(){
     ${tuile(r.equipe+'/'+k.people.length,'Organigramme renseigné','orga')}
     ${tuile(keur(r.bud),'Chiffrage HT (D.N.D. incluse)','budget')}
     ${tuile(kfmt(r.fte)+' FTE',kfmt(r.jours)+' jours de charge','load')}
-    ${tuile(r.jal+'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)','macro')}</div>`;
+    ${tuile(r.jal+'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)','macro')}
+    ${tuile('⎙','Vue One Page — revue de projet','onepage')}</div>`;
 }
 function renderKit(){
   const h=document.getElementById('kitPane'); if(!h) return;
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
-  h.innerHTML = t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+  h.innerHTML = t==='onepage'?opPage() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   if(t==='macro') kitArmerJalons();
+  if(t==='onepage'){ opArmer(); bindEditables(); }
 }
 function kitTabsHTML(){
   const t=S.kitTab||'synthese';
@@ -2113,6 +2187,271 @@ document.addEventListener('click',e=>{
      delTask:()=>k.tasks.splice(n[0],1),
      addMs:()=>k.milestones.push({id:kuid(),name:'Nouveau jalon',date:'',owner:'',notes:'',colorIndex:k.milestones.length}),
      delMs:()=>k.milestones.splice(n[0],1)
+  }[a]||(()=>{}))();
+  scheduleSave(); renderKit();
+});
+
+/* ======================= One Page projet =======================
+   Reprise de l'outil « One Page Projet — CSD » : la page unique de revue,
+   avec sa frise WBS, son statut projet, ses jalons, son budget par exercice,
+   ses réalisations, ses risques et ses prochaines étapes.
+
+   Harmonisation plutôt que duplication : les jalons, les risques, les
+   prochaines étapes et le commentaire de statut sont ceux de la fiche projet —
+   saisis ici, ils s'affichent là, et inversement. Le statut projet pilote le
+   forçage de santé du portefeuille. Seuls la frise WBS, le budget par exercice
+   et les réalisations sont propres à cette vue. */
+const OP_BARC=["#16a34a","#f59e0b","#14b8a6","#ec4899","#3b82f6","#8b5cf6","#a78bfa","#eab308","#ef4444","#64748b"];
+const OP_MSC =["#8b5cf6","#ef4444","#f59e0b","#16a34a","#14b8a6","#3b82f6","#eab308","#64748b"];
+const OP_ST=["Done","WIP","Not started","Late"];
+const OP_PROG=["Done","In progress","Late","Not started"];
+const OP_STATUSES=[{k:'ok',c:'ok',l:'On Track',h:'g'},
+                   {k:'att',c:'att',l:"Attention point\nadditional actions required",h:'a'},
+                   {k:'risk',c:'risk',l:'At Risk, strong action required',h:'r'}];
+const opISO=d=>{const z=new Date(d);return isNaN(z)?'':z.toISOString().slice(0,10);};
+const opD=s=>{const t=Date.parse(String(s||'')+'T00:00:00Z');return Number.isFinite(t)?t:null;};
+const opFR=s=>{const t=opD(s);return t==null?'':new Date(t).toLocaleDateString('fr-FR',{timeZone:'UTC'});};
+/* Le volet One Page d'un projet, créé à la première ouverture. Le budget part
+   des montants déjà connus du portefeuille : les ressaisir n'aurait aucun sens. */
+function opOf(id){
+  const k=kitOf(id); const p=S.projects.find(x=>x.id===id)||{};
+  if(!k.op){
+    const an='Capex '+new Date().getFullYear();
+    k.op={ wbs:[{id:kuid(),type:'milestones',name:'RT Process Ingénierie',milestones:[],status:''},
+                {id:kuid(),type:'bar',name:'Études',start:'',end:'',label:'',color:OP_BARC[4],status:'WIP'}],
+      budget:{years:[an],rows:[
+        {id:kuid(),label:'Budget',values:[+p.c1||0]},
+        {id:kuid(),label:'YTD Commit.',values:[+p.commit||0]},
+        {id:kuid(),label:'Spent',values:[+p.act||0]},
+        {id:kuid(),label:'Final Cost',values:[Math.round(atterrissage(p))],total:true}]},
+      ach:[], endMarker:'', todayMarker:'' };
+  }
+  const o=k.op;
+  o.wbs=Array.isArray(o.wbs)?o.wbs:[]; o.ach=Array.isArray(o.ach)?o.ach:[];
+  o.budget=o.budget||{years:[],rows:[]};
+  o.budget.years=Array.isArray(o.budget.years)?o.budget.years:[];
+  o.budget.rows=Array.isArray(o.budget.rows)?o.budget.rows:[];
+  o.budget.rows.forEach(r=>{ r.values=Array.isArray(r.values)?r.values:[];
+    while(r.values.length<o.budget.years.length) r.values.push(0); r.values.length=o.budget.years.length; });
+  o.wbs.forEach(r=>{ if(r.type==='milestones') r.milestones=Array.isArray(r.milestones)?r.milestones:[]; });
+  return o;
+}
+/* Fenêtre de la frise : toutes les dates du WBS, arrondies au mois. */
+function opRange(o){
+  const ds=[];
+  o.wbs.forEach(r=>{ if(r.type==='bar'){ [r.start,r.end].forEach(x=>{const t=opD(x); if(t!=null)ds.push(t);}); }
+    else (r.milestones||[]).forEach(m=>{const t=opD(m.date); if(t!=null)ds.push(t);}); });
+  [o.endMarker,o.todayMarker].forEach(x=>{const t=opD(x); if(t!=null)ds.push(t);});
+  let lo,hi;
+  if(ds.length){ lo=Math.min(...ds); hi=Math.max(...ds); }
+  else { const n=new Date(); lo=Date.UTC(n.getFullYear(),n.getMonth(),1); hi=lo+864e5*180; }
+  const s=new Date(lo), e=new Date(hi);
+  // Une fenêtre collée aux dates ne laisse rien glisser : la barre occuperait
+  // toute la largeur. On respire d'un mois de part et d'autre, et la fenêtre
+  // se fixe à la main quand la revue demande un cadre précis.
+  s.setUTCDate(1); s.setUTCMonth(s.getUTCMonth()-1);
+  e.setUTCMonth(e.getUTCMonth()+2,1);
+  const d1=opD(o.ganttStart), d2=opD(o.ganttEnd);
+  const S1=(d1!=null)?new Date(Date.UTC(new Date(d1).getUTCFullYear(),new Date(d1).getUTCMonth(),1)):s;
+  const S2=(d2!=null)?new Date(Date.UTC(new Date(d2).getUTCFullYear(),new Date(d2).getUTCMonth()+1,1)):e;
+  const a=+S1, b=(+S2>+S1)?+S2:(+S1+864e5*30);
+  return {s:a,e:b,span:b-a};
+}
+const opPct=(v,r)=>{const t=opD(v); return t==null?null:((t-r.s)/r.span*100);};
+function opMonths(r){
+  const out=[]; for(let m=new Date(r.s); +m<r.e; m.setUTCMonth(m.getUTCMonth()+1))
+    out.push({m:m.getUTCMonth(),y:m.getUTCFullYear(),q:Math.floor(m.getUTCMonth()/3)+1});
+  return out;
+}
+const OP_MOIS=['J','F','M','A','M','J','J','A','S','O','N','D'];
+function opPill(val,scope,id){
+  const c=val==='Done'?'p-done':val==='WIP'?'p-wip':val==='Late'?'p-late':'p-ns';
+  return `<select class="pill ${c}" data-ops="${scope}|${id}">${OP_ST.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;
+}
+function opPage(){
+  const id=S.currentProj, p=S.projects.find(x=>x.id===id); if(!p) return '<div class="hint">Aucun projet.</div>';
+  const o=opOf(id), pp=ensurePP(id), r=opRange(o), MS=opMonths(r);
+  const colTpl=`grid-template-columns:repeat(${MS.length},1fr)`;
+  const qg=[]; MS.forEach(mo=>{ const k='Q'+mo.q+' '+String(mo.y).slice(2), l=qg[qg.length-1];
+    if(l&&l.k===k) l.n++; else qg.push({k,q:mo.q,n:1}); });
+  const tod=opPct(o.todayMarker||opISO(new Date()),r), fin=o.endMarker?opPct(o.endMarker,r):null;
+  const marq=(h)=>`${tod!=null?`<div class="gmk" style="left:${tod}%">${h?'<span class="lab">Aujourd&rsquo;hui</span>':''}</div>`:''}
+    ${fin!=null?`<div class="gmk end" style="left:${fin}%">${h?'<span class="lab">Fin projet</span>':''}</div>`:''}`;
+  const fond=`<div class="gbg" style="${colTpl}">${Array(MS.length).fill('<div></div>').join('')}</div>`;
+  const lignes=o.wbs.map((w,i)=>{
+    if(w.type==='milestones'){
+      const dia=(w.milestones||[]).map((m,j)=>{ const x=opPct(m.date,r); if(x==null) return '';
+        const top=Math.round(((m.topPct!=null)?m.topPct:15)/100*52);
+        return `<div class="gdia" style="left:${x}%;top:${top}px;background:${esc(m.color||OP_MSC[j%8])}" data-opdia="${i}|${j}" title="${esc(m.label||'')} — ${opFR(m.date)}"></div>
+          <div class="gdl" style="left:${x}%;top:${top+15}px">${esc(m.label||'')}</div>
+          <div class="gdl sub" style="left:${x}%;top:${top+25}px">${esc(m.sub||opFR(m.date))}</div>`; }).join('');
+      return `<tr><td style="width:24%"><span contenteditable data-opb="wbs.${i}.name">${esc(w.name)}</span>
+          <button class="kdel" data-opa="delWbs|${i}">✕</button></td>
+        <td style="padding:2px 0"><div class="garea ms">${fond}${dia}${marq(true)}</div></td>
+        <td style="width:104px;text-align:center"><button class="pill" data-opa="addDia|${i}">+ jalon</button></td></tr>`;
+    }
+    const x1=opPct(w.start,r), x2=opPct(w.end,r);
+    const bar=(x1!=null&&x2!=null&&x2>x1)
+      ? `<div class="gbar" style="left:${x1}%;width:${x2-x1}%;background:${esc(w.color||OP_BARC[4])}" data-opbar="${i}" title="${esc(w.name)} · ${opFR(w.start)} → ${opFR(w.end)} — glissez pour décaler">${esc(w.label||'')}</div>`
+      : `<div class="gdl" style="left:6px;top:7px;transform:none;color:var(--faint)">dates à renseigner</div>`;
+    return `<tr><td><span contenteditable data-opb="wbs.${i}.name">${esc(w.name)}</span>
+        <button class="kdel" data-opa="delWbs|${i}">✕</button>
+        <div style="display:flex;gap:4px;margin-top:2px">
+          <input class="kin" type="date" value="${esc(w.start||'')}" data-opd="wbs.${i}.start" style="font-size:10px">
+          <input class="kin" type="date" value="${esc(w.end||'')}" data-opd="wbs.${i}.end" style="font-size:10px">
+          <input class="kin" type="color" value="${esc(w.color||OP_BARC[4])}" data-opd="wbs.${i}.color" style="width:26px;padding:0">
+        </div></td>
+      <td style="padding:0"><div class="garea">${fond}${bar}${marq(false)}</div></td>
+      <td style="text-align:center">${opPill(w.status,'wbs',i)}</td></tr>`;
+  }).join('');
+  const bud=o.budget, tot=r2=>ksum(r2.values);
+  const ach=o.ach.map((t,i)=>`<div class="opitem"><span class="b">✓</span><span style="flex:1" contenteditable data-opb="ach.${i}">${esc(t)}</span><button class="kdel" data-opa="delAch|${i}">✕</button></div>`).join('')||'<div class="hint">Aucune réalisation.</div>';
+  const ns=(pp.nextSteps||[]).map((x,i)=>{const s2=nsNorm(x);
+    return `<div class="opitem ns"><span class="b">→</span><span style="flex:1" contenteditable data-ns="${esc(id)}|${i}">${esc(s2.t)}</span><span class="pill p-ns">${esc(s2.st)}</span></div>`;}).join('')||'<div class="hint">Aucune étape.</div>';
+  const km=(pp.milestones||[]).map((m,i)=>{
+    const c=m.st==='Done'?'p-done':/progress/i.test(m.st||'')?'p-wip':m.st==='Late'?'p-late':'p-ns';
+    return `<tr><td><span contenteditable data-km="${esc(id)}|${i}|name">${esc(m.name)}</span></td>
+      <td><span contenteditable data-km="${esc(id)}|${i}|ini">${esc(m.ini||'')}</span></td>
+      <td><span contenteditable data-km="${esc(id)}|${i}|neu">${esc(m.neu||'')}</span></td>
+      <td><select class="pill ${c}" data-ops="km|${i}">${OP_PROG.map(x=>`<option ${x===m.st?'selected':''}>${x}</option>`).join('')}</select></td></tr>`;
+  }).join('')||'<tr><td colspan="4" class="empty">Aucun jalon.</td></tr>';
+  const risk=(pp.risks||[]).map((x,i)=>`<tr>
+      <td><span contenteditable data-rk="${esc(id)}|${i}|desc" class="rkcell" style="padding:0">${esc(x.desc||'')}</span></td>
+      <td><span contenteditable data-rk="${esc(id)}|${i}|mit" class="rkcell" style="padding:0">${esc(x.mit||'')}</span></td>
+      <td><span contenteditable data-rk="${esc(id)}|${i}|owner">${esc(x.owner||'')}</span></td>
+      <td><span contenteditable data-rk="${esc(id)}|${i}|date">${esc(x.date||'')}</span></td></tr>`).join('')
+    ||'<tr><td colspan="4" class="empty">Aucun risque.</td></tr>';
+  const cur=(p.hoverride==='g'?'ok':p.hoverride==='a'?'att':p.hoverride==='r'?'risk':
+             (projHealth(p).band==='g'?'ok':projHealth(p).band==='a'?'att':'risk'));
+  return `<div class="op">
+    <div class="ophead"><span class="pid">${esc(p.shine||p.id)}</span><span>—</span>
+      <span class="pname">${esc(p.nom)}</span>${p.ishift?`<span>-</span><span class="pcode">${esc(p.ishift)}</span>`:''}
+      <span class="opdate">Auteur : ${esc(S.user||'—')} &nbsp;|&nbsp; ${new Date().toLocaleDateString('fr-FR')}</span></div>
+    <div class="opgrid">
+      <div class="oppan">
+        <div class="oph h-green"><span>WBS TASK</span><span><button class="add" data-opa="addBar" title="Ajouter une activité">+</button> <button class="add" data-opa="addMsRow" title="Ajouter une ligne de jalons">◇</button></span></div>
+        <table><thead><tr><th style="width:24%">Task &amp; Activités Projets</th>
+          <th style="padding:0"><div class="gq" style="grid-template-columns:${qg.map(g=>g.n+'fr').join(' ')}">${qg.map(g=>`<div style="background:var(--q${g.q})">${esc(g.k)}</div>`).join('')}</div>
+            <div class="gm" style="${colTpl}">${MS.map(mo=>`<div>${OP_MOIS[mo.m]}</div>`).join('')}</div></th>
+          <th style="width:104px;text-align:center">Status</th></tr></thead>
+          <tbody>${lignes||'<tr><td colspan="3" class="empty">Aucune ligne.</td></tr>'}</tbody></table>
+        <div class="oplegend"><b>Légende :</b>
+          <span class="sw" style="background:var(--q1)"></span>Q1<span class="sw" style="background:var(--q2)"></span>Q2
+          <span class="sw" style="background:var(--q3)"></span>Q3<span class="sw" style="background:var(--q4)"></span>Q4
+          <span style="margin-left:auto">Barres et jalons se déplacent à la souris · Fenêtre
+          <input class="kin" type="date" value="${esc(o.ganttStart||'')}" data-opd="ganttStart" style="width:116px;font-size:10px" title="Début de la frise — vide : calé sur les dates">
+          <input class="kin" type="date" value="${esc(o.ganttEnd||'')}" data-opd="ganttEnd" style="width:116px;font-size:10px" title="Fin de la frise">
+          · Fin projet <input class="kin" type="date" value="${esc(o.endMarker||'')}" data-opd="endMarker" style="width:116px;font-size:10px"></span></div>
+      </div>
+      <div class="oppan">
+        <div class="oph h-red"><span>PROJECT STATUS</span></div>
+        <div class="pstat">${OP_STATUSES.map(st=>`<div class="tile ${st.c} ${cur===st.k?'sel':''}" data-opst="${st.h}"><div class="dot"></div><div class="lbl">${esc(st.l).replace(/\n/g,'<br>')}</div></div>`).join('')}
+          <div class="opcom" contenteditable data-opb="statusTxt">${esc(pp.statusTxt||'')}</div></div>
+      </div>
+    </div>
+    <div class="oprow">
+      <div class="oppan"><div class="oph h-purple"><span>KEY MILESTONES</span><button class="add" data-opa="addKm">+</button></div>
+        <table><thead><tr><th>Key Milestone</th><th style="width:88px">Initial</th><th style="width:88px">New</th><th style="width:118px">Progress</th></tr></thead><tbody>${km}</tbody></table></div>
+      <div class="oppan"><div class="oph h-orange"><span>BUDGET K€</span><button class="add" data-opa="addYear">+</button></div>
+        <table><thead><tr><th></th>${bud.years.map((y,i)=>`<th class="num"><span contenteditable data-opb="budget.years.${i}">${esc(y)}</span></th>`).join('')}<th class="num">TOTAL</th><th style="width:22px"></th></tr></thead>
+        <tbody>${bud.rows.map((rw,i)=>`<tr${rw.total?' style="font-weight:800;background:var(--panel-2)"':''}>
+          <td><span contenteditable data-opb="budget.rows.${i}.label">${esc(rw.label)}</span></td>
+          ${rw.values.map((v,j)=>`<td class="num"><input class="kin num" type="number" step="any" value="${esc(v)}" data-opd="budget.rows.${i}.values.${j}" data-opr="1"></td>`).join('')}
+          <td class="num">${fmt(tot(rw))}</td><td><button class="kdel" data-opa="delBudRow|${i}">✕</button></td></tr>`).join('')}
+        </tbody></table></div>
+    </div>
+    <div class="oprow3">
+      <div class="oppan"><div class="oph h-green"><span>KEY ACHIEVEMENT</span><button class="add" data-opa="addAch">+</button></div>
+        <div class="opbody">${ach}</div></div>
+      <div class="oppan"><div class="oph h-red"><span>RISK(S) / PROBLEM(S)</span><button class="add" data-opa="addRisk">+</button></div>
+        <table><thead><tr><th>Description</th><th>Mitigation</th><th style="width:84px">Owner</th><th style="width:84px">Date</th></tr></thead><tbody>${risk}</tbody></table></div>
+      <div class="oppan"><div class="oph h-blue"><span>NEXT STEP</span><button class="add" data-opa="addNs">+</button></div>
+        <div class="opbody">${ns}</div></div>
+    </div></div>`;
+}
+/* Glisser une barre ou un jalon : le geste de l'outil d'origine, conservé. */
+function opArmer(){
+  const id=S.currentProj, o=opOf(id), r=opRange(o);
+  $$('#kitPane [data-opbar]').forEach(bar=>{
+    bar.addEventListener('pointerdown',e=>{
+      e.preventDefault(); e.stopPropagation();
+      const i=+bar.dataset.opbar, w=o.wbs[i], zone=bar.parentElement;
+      const x0=e.clientX, l0=parseFloat(bar.style.left), lg=parseFloat(bar.style.width);
+      let bouge=false;
+      const mv=ev=>{ const rr=zone.getBoundingClientRect();
+        const d=(ev.clientX-x0)/rr.width*100;
+        if(Math.abs(ev.clientX-x0)>3) bouge=true;
+        bar.style.left=Math.max(0,Math.min(100-lg,l0+d))+'%'; };
+      const up=ev=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up);
+        if(!bouge) return;
+        const nl=parseFloat(bar.style.left);
+        w.start=opISO(new Date(r.s+nl/100*r.span)); w.end=opISO(new Date(r.s+(nl+lg)/100*r.span));
+        logChange('WBS '+(w.name||''),'dates','',w.start+' → '+w.end);
+        scheduleSave(); renderKit(); };
+      document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+    });
+  });
+  $$('#kitPane [data-opdia]').forEach(d=>{
+    d.addEventListener('pointerdown',e=>{
+      e.preventDefault(); e.stopPropagation();
+      const [i,j]=d.dataset.opdia.split('|').map(Number), m=o.wbs[i].milestones[j], zone=d.parentElement;
+      const mv=ev=>{ const rr=zone.getBoundingClientRect();
+        const x=Math.min(1,Math.max(0,(ev.clientX-rr.left)/rr.width));
+        const y=Math.min(1,Math.max(0,(ev.clientY-rr.top)/rr.height));
+        d.style.left=(x*100)+'%'; d.style.top=Math.round(y*52)+'px';
+        d.dataset.d=opISO(new Date(r.s+x*r.span)); d.dataset.t=Math.round(y*100); };
+      const up=()=>{ document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up);
+        if(d.dataset.d){ m.date=d.dataset.d; m.topPct=+d.dataset.t; scheduleSave(); renderKit(); } };
+      document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+    });
+  });
+}
+/* Saisie du volet One Page : textes au blur, dates et nombres à la volée. */
+document.addEventListener('blur',e=>{
+  const t=e.target, b=t.dataset&&t.dataset.opb; if(!b) return;
+  const id=S.currentProj, o=opOf(id), pp=ensurePP(id), v=t.innerText.replace(/ /g,' ').trim();
+  if(b==='statusTxt'){ pp.statusTxt=v; }
+  else { const c=b.split('.'), last=c.pop();
+    const racine=c.length?c.reduce((x,k)=>x&&x[k],o):o;
+    if(racine) racine[last]=(/values|y[12]/.test(last)? (+v||0) : v); }
+  scheduleSave();
+},true);
+document.addEventListener('input',e=>{
+  const t=e.target, p=t.dataset&&t.dataset.opd; if(!p) return;
+  const o=opOf(S.currentProj), c=p.split('.'), last=c.pop();
+  const racine=c.length?c.reduce((x,k)=>x&&x[k],o):o;
+  if(!racine) return;
+  racine[last]= t.type==='number' ? (parseFloat(String(t.value).replace(',','.'))||0) : t.value;
+  scheduleSave();
+  if(t.dataset.opr) renderKitGarde(); else if(t.type!=='number') renderKit();
+});
+document.addEventListener('change',e=>{
+  const t=e.target, s2=t.dataset&&t.dataset.ops; if(!s2) return;
+  const [scope,i]=s2.split('|'), id=S.currentProj;
+  if(scope==='wbs'){ const o=opOf(id); o.wbs[+i].status=t.value; }
+  else if(scope==='km'){ const pp=ensurePP(id); if(pp.milestones[+i]) pp.milestones[+i].st=t.value; }
+  scheduleSave(); renderKit();
+});
+document.addEventListener('click',e=>{
+  const st=e.target.closest&&e.target.closest('[data-opst]');
+  if(st){ const p=S.projects.find(x=>x.id===S.currentProj);
+    if(p){ p.hoverride=st.dataset.opst; logChange('Projet '+(p.shine||p.nom),'statut One Page','',st.dataset.opst); scheduleSave(); renderKit(); } return; }
+  const b=e.target.closest&&e.target.closest('[data-opa]'); if(!b) return;
+  const [a,...args]=b.dataset.opa.split('|'), n=args.map(Number);
+  const id=S.currentProj, o=opOf(id), pp=ensurePP(id);
+  ({ addBar:()=>o.wbs.push({id:kuid(),type:'bar',name:'Nouvelle activité',start:'',end:'',label:'',color:OP_BARC[o.wbs.length%10],status:'Not started'}),
+     addMsRow:()=>o.wbs.push({id:kuid(),type:'milestones',name:'Jalons',milestones:[],status:''}),
+     delWbs:()=>o.wbs.splice(n[0],1),
+     addDia:()=>{ const w=o.wbs[n[0]]; const r=opRange(o);
+       w.milestones.push({id:kuid(),date:opISO(new Date(r.s+r.span/2)),label:'Jalon',sub:'',color:OP_MSC[w.milestones.length%8],topPct:15}); },
+     addYear:()=>{ o.budget.years.push('Capex '+(new Date().getFullYear()+o.budget.years.length));
+       o.budget.rows.forEach(r=>r.values.push(0)); },
+     delBudRow:()=>o.budget.rows.splice(n[0],1),
+     addAch:()=>o.ach.push('Nouvelle réalisation'),
+     delAch:()=>o.ach.splice(n[0],1),
+     addKm:()=>pp.milestones.push({name:'Nouveau jalon',ini:'',neu:'',st:'Not started'}),
+     addRisk:()=>pp.risks.push({desc:'Nouveau risque',mit:'',owner:'',date:''}),
+     addNs:()=>pp.nextSteps.push({t:'Nouvelle étape',st:'À faire'})
   }[a]||(()=>{}))();
   scheduleSave(); renderKit();
 });
