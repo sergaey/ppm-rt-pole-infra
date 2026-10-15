@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.3 -->
+<!-- PPM_BUILD:2026-10-15.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -482,6 +482,50 @@
   .op .opcom:focus{outline:2px solid var(--accent);outline-offset:-2px}
   .op [contenteditable]:focus{outline:2px solid var(--accent);outline-offset:-1px;border-radius:3px}
   @media(max-width:1180px){.op .opgrid,.op .oprow,.op .oprow3{grid-template-columns:1fr}}
+  /* ===== CSD — Comité Schéma Directeur ===== */
+  .csd-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:14px}
+  .csd-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px;box-shadow:var(--shadow)}
+  .csd-card .h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .csd-card .t{font-size:11px;color:var(--muted);font-weight:600}
+  .csd-card .ic{width:27px;height:27px;border-radius:8px;display:grid;place-items:center;font-size:14px}
+  .csd-card .v{font-family:Archivo;font-size:25px;font-weight:800;line-height:1.1;margin-top:5px}
+  .csd-alerts{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+  .csd-alerts .ah{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--warn-soft);
+    color:var(--warn);font-family:Archivo;font-weight:800;font-size:12px;border-bottom:1px solid var(--line)}
+  .csd-alerts .badge{background:var(--bad);color:#fff;border-radius:999px;padding:0 7px;font-size:10.5px}
+  .csd-alert{display:flex;gap:9px;align-items:flex-start;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+  .csd-alert:last-child{border-bottom:0}
+  .csd-alert:hover{background:var(--panel-2)}
+  .csd-alert .dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex:0 0 auto}
+  .csd-alert .n{font-size:12px;font-weight:600;line-height:1.35}
+  .csd-alert .s{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .csd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(296px,1fr));gap:10px}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:11px;
+    padding:10px 12px;cursor:pointer;box-shadow:var(--shadow);transition:transform .08s,box-shadow .14s}
+  .pcard:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(16,42,67,.14)}
+  .pcard .tr{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+  .pcard .ti{font-size:12.5px;font-weight:700;line-height:1.3}
+  .pcard .dot{width:21px;height:21px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:11px;flex:0 0 auto}
+  .pcard .bd{margin-top:7px;font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+  .pcard .rw{display:flex;justify-content:space-between;gap:8px}
+  .pcard .bg2{background:var(--panel-2);border-radius:5px;padding:0 6px;font-size:10px;color:var(--muted)}
+  .pcard .dl{border-radius:6px;padding:2px 7px;font-size:10px;align-self:flex-start}
+  .csd-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel)}
+  .plist{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+  .plist:last-child{border-bottom:0}
+  .plist:hover{background:var(--panel-2)}
+  .plist .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .plist .n{font-size:12px;font-weight:600}
+  .plist .s{font-size:10.5px;color:var(--muted)}
+  .csd-sec{margin-bottom:20px}
+  .csd-sech{display:flex;align-items:center;gap:10px;margin-bottom:9px;padding-bottom:7px;border-bottom:2px solid var(--line)}
+  .csd-sech .ti{font-family:Archivo;font-weight:800;font-size:13.5px}
+  .csd-sech .su{font-size:11px;color:var(--muted)}
+  .csd-det{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:9px;padding:12px}
+  .csd-f{display:flex;flex-direction:column;gap:2px}
+  .csd-f label{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);font-weight:700}
+  .csd-f .kin{border:1px solid var(--line);background:var(--panel)}
+  .csd-f.wide{grid-column:1/-1}
   /* ===== GEDT : recherche de projet ===== */
   .pickov{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:220;display:flex;align-items:flex-start;justify-content:center;padding:56px 20px}
   .pickbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;width:min(640px,100%);max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -651,6 +695,7 @@
     <nav class="sb-nav" id="tabs">
       <div class="sb-sec" data-sec="pf">Project Portfolio<span class="sb-chev">▾</span></div>
       <div class="sb-secwrap" data-secwrap="pf">
+      <button class="sb-par nav" data-tab="csd" data-key="csd">CSD — Comité Schéma Directeur</button>
       <button class="sb-par nav" data-grp="p1" data-tab="dash" data-key="ppole">Pôle RT Ingénierie<span class="sb-chev">▾</span></button>
       <div class="sb-subwrap" data-grpwrap="p1">
         <button class="sb-sub" data-tab="dash" data-pole="INFRA" data-key="p1a">INFRA</button>
@@ -804,7 +849,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.3';
+const APP_BUILD='2026-10-15.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1428,6 +1473,7 @@ function render(){
   else if(S.tab==='scenario') renderScenario();
   else if(S.tab==='kpi') renderKPIAudit();
   else if(S.tab==='uo') renderUO();
+  else if(S.tab==='csd') renderCSD();
   else if(S.tab==='ged') renderGED();
   else if(S.tab==='cdc') renderCDC();
 }
@@ -2455,6 +2501,246 @@ document.addEventListener('click',e=>{
   }[a]||(()=>{}))();
   scheduleSave(); renderKit();
 });
+
+/* ======================= CSD — Comité Schéma Directeur =======================
+   Reprise de l'outil « Comité Schéma Directeur » : la revue de portefeuille
+   telle qu'elle se tient en comité — cartes de synthèse, alertes, fiches ou
+   liste, par pôle, avec les champs de suivi propres au comité (CDO, SPE, CER,
+   process ingénierie, étape, délais, sujets, responsables).
+
+   Le portefeuille est celui de la plateforme : un projet y est un projet, et
+   non une ligne recopiée. Les champs du comité vivent dans S.csd[idProjet] ;
+   les montants, le pôle et l'intitulé restent ceux du projet. */
+const CSD_ST=["On Track","Risque","Focus","Bloquant","En évaluation","En attente","Terminé","Clôturé","Dépriorisé","Migré en projet","En cours","Retard","OK"];
+const CSD_ROUGE=["bloquant","focus"], CSD_RISQUE=["bloquant","focus","risque","retard","en attente"];
+const CSD_OK=["on track","ok","vert","en cours"], CSD_FIN=["termine","termine","cloture","clôturé","terminé"];
+const CSD_CHAMPS=[["etu","ETU"],["wbsInv","WBS | INV"],["localisation","Localisation"],["engineering","Engineering"],
+  ["initiateur","Initiateur"],["etape","Étape"],["cdo","CDO"],["spe","SPE"],["cer","CER"],["rtProcess","RT Process Ingénierie"],
+  ["responsables","Responsables"],["delais","Délais"],["dateDebut","Date de début"],["dateFin","Date de fin"]];
+const CSD_LONGS=[["sujets","Sujets"],["actionSuivi","Action de suivi"],["remarques","Remarques"],["commentaires","Commentaires"]];
+function csdOf(id){ S.csd=S.csd||{}; if(!S.csd[id]) S.csd[id]={}; return S.csd[id]; }
+function csdStatut(p){ const c=csdOf(p.id); return c.statut||p.statut||''; }
+function csdConf(st){
+  const s=norm(st);
+  if(CSD_ROUGE.includes(s)) return {b:'var(--bad)',i:'⛔',bg:'var(--bad)'};
+  if(CSD_RISQUE.includes(s)) return {b:'var(--warn)',i:'⚠',bg:'var(--warn)'};
+  if(CSD_FIN.includes(s)) return {b:'var(--muted)',i:'✓',bg:'var(--muted)'};
+  if(CSD_OK.includes(s)) return {b:'var(--good)',i:'✓',bg:'var(--good)'};
+  return {b:'var(--line-2)',i:'•',bg:'var(--faint)'};
+}
+/* « Délais » porte une date : on en tire le retard, comme en comité. */
+function csdDelai(p){
+  const c=csdOf(p.id), t=String(c.delais||'');
+  const m=t.match(/(\d{1,2})[\/.](\d{1,2})[\/.](\d{2,4})/);
+  if(!m) return null;
+  const an=+m[3]<100?2000+ +m[3]:+m[3];
+  const d=Date.UTC(an,+m[2]-1,+m[1]);
+  const j=Math.round((d-Date.now())/864e5);
+  if(j<0) return {lb:Math.abs(j)+' j de retard',c:'var(--bad)',bg:'var(--bad-soft)',urgent:true};
+  if(j<=15) return {lb:'échéance dans '+j+' j',c:'var(--warn)',bg:'var(--warn-soft)',urgent:true};
+  return {lb:'échéance dans '+j+' j',c:'var(--good)',bg:'var(--good-soft)',urgent:false};
+}
+function csdFiltres(){ S.csdF=S.csdF||{q:'',st:'all',vue:'grid',pole:''}; return S.csdF; }
+function csdListe(){
+  const f=csdFiltres(), q=norm(f.q);
+  return PROJ().filter(p=>{
+    const c=csdOf(p.id);
+    if(f.pole && p.group!==f.pole) return false;
+    if(f.st!=='all' && norm(csdStatut(p))!==norm(f.st)) return false;
+    if(!q) return true;
+    return norm([p.shine,p.nom,p.pm,p.pl,c.etu,c.localisation,c.initiateur,c.etape,c.responsables,c.sujets].join(' ')).includes(q);
+  });
+}
+function csdCarte(p){
+  const c=csdOf(p.id), cf=csdConf(csdStatut(p)), d=csdDelai(p);
+  const dates=(c.dateDebut||c.dateFin)?`<div class="rw"><span>📅 ${esc(c.dateDebut||'—')} → ${esc(c.dateFin||'—')}</span></div>`:'';
+  const del=d?`<div class="dl" style="background:${d.bg};color:${d.c}">⏱ ${d.lb}${d.urgent?' ⚠':''}</div>`
+            :(c.delais?`<div class="rw" style="color:var(--muted)">🕐 ${esc(c.delais)}</div>`:'');
+  return `<div class="pcard" style="border-left-color:${cf.b}" data-csdp="${esc(p.id)}">
+    <div class="tr"><div class="ti">${esc(c.etu||p.shine||'—')} – ${esc(p.nom)}</div>
+      <div class="dot" style="background:${cf.bg}" title="${esc(csdStatut(p)||'—')}">${cf.i}</div></div>
+    <div class="bd">
+      <div class="rw"><span>📍 ${esc(c.localisation||p.secteur||'—')}</span><span class="bg2">${esc(c.engineering||p.group||'—')}</span></div>
+      <div class="rw"><span>💰 ${p.c1?fmt(p.c1)+' k€':'—'}</span><span style="font-weight:600">${esc(c.etape||p.statut||'—')}</span></div>
+      <div>👤 ${esc(c.initiateur||p.pm||'—')}</div>${dates}${del}
+    </div></div>`;
+}
+function csdLigne(p){
+  const c=csdOf(p.id), cf=csdConf(csdStatut(p)), d=csdDelai(p);
+  return `<div class="plist" data-csdp="${esc(p.id)}">
+    <div class="dot" style="background:${cf.b}"></div>
+    <div style="flex:1;min-width:0"><div class="n">${esc(c.etu||p.shine||'—')} – ${esc(p.nom)}</div>
+      <div class="s">${esc(c.localisation||p.secteur||'—')} • ${esc(c.etape||p.statut||'—')}</div></div>
+    <span class="s">${p.c1?fmt(p.c1)+' k€':'—'}</span>
+    ${d?`<span class="dl" style="background:${d.bg};color:${d.c}">${d.lb}</span>`:''}
+    <span class="bg2">${esc(csdStatut(p)||'—')}</span></div>`;
+}
+function renderCSD(){
+  const f=csdFiltres(), tous=csdListe();
+  const nb=s=>tous.filter(p=>s.includes(norm(csdStatut(p)))).length;
+  const alertes=tous.filter(p=>CSD_RISQUE.includes(norm(csdStatut(p)))).slice(0,6);
+  const poles=[...new Set(PROJ().map(p=>p.group).filter(Boolean))].sort();
+  const sections=f.pole?[f.pole]:poles;
+  const cartes=[['Total projets',tous.length,'💼','var(--accent-soft)','var(--accent-ink)'],
+                ['On Track',nb(CSD_OK),'🕐','var(--good-soft)','var(--good)'],
+                ['À risque',nb(CSD_RISQUE),'⚠️','var(--bad-soft)','var(--bad)'],
+                ['Terminés',nb(CSD_FIN),'✅','var(--panel-3)','var(--muted)']];
+  view.innerHTML=`
+  <div class="sec-title"><h2>CSD — Comité Schéma Directeur</h2><span class="hint">revue de portefeuille · fiches, alertes et suivi par pôle</span></div>
+  <div class="csd-cards">${cartes.map(([t,v,i,bg,cl])=>`<div class="csd-card">
+    <div class="h"><span class="t">${t}</span><div class="ic" style="background:${bg}">${i}</div></div>
+    <div class="v" style="color:${cl}">${v}</div></div>`).join('')}</div>
+  <div class="toolbar">
+    <input class="search" id="csdQ" placeholder="Rechercher — ETU, projet, localisation, initiateur, responsable…" value="${esc(f.q)}">
+    <select id="csdSt"><option value="all">Tous statuts</option>${CSD_ST.map(s=>`<option ${norm(f.st)===norm(s)?'selected':''}>${s}</option>`).join('')}</select>
+    <select id="csdPole"><option value="">Tous pôles</option>${poles.map(g=>`<option ${f.pole===g?'selected':''}>${esc(g)}</option>`).join('')}</select>
+    <button class="iconbtn" id="csdVue">${f.vue==='grid'?'▤ Liste':'▦ Fiches'}</button>
+    <span class="sp"></span>
+    <button class="iconbtn" id="csdImp" title="Importer un fichier CSD (HTML ou JSON) : les projets et leurs champs de comité rejoignent le portefeuille">⇱ Importer un CSD</button>
+    <span class="hint">${tous.length} / ${PROJ().length}</span>
+  </div>
+  <div class="cols-dash" style="align-items:start">
+    <div>${sections.map(g=>{
+      const l=tous.filter(p=>p.group===g);
+      return `<div class="csd-sec"><div class="csd-sech"><span style="font-size:17px">🏗</span>
+        <div><div class="ti">${esc(g)}</div><div class="su">${l.length} projet(s)</div></div></div>
+        ${l.length?(f.vue==='grid'?`<div class="csd-grid">${l.map(csdCarte).join('')}</div>`
+                                  :`<div class="csd-list">${l.map(csdLigne).join('')}</div>`)
+                 :'<div class="empty" style="padding:14px">Aucun projet pour ces filtres.</div>'}</div>`;}).join('')}
+    </div>
+    <div class="csd-alerts"><div class="ah">⚠️ Alertes projets ${alertes.length?`<span class="badge">${alertes.length}</span>`:''}</div>
+      ${alertes.length?alertes.map(p=>{const c=csdOf(p.id), d=csdDelai(p);
+        return `<div class="csd-alert" data-csdp="${esc(p.id)}">
+          <div class="dot" style="background:${CSD_ROUGE.includes(norm(csdStatut(p)))?'var(--bad)':'var(--warn)'}"></div>
+          <div><div class="n">${esc(c.etu||p.shine||'')} – ${esc(p.nom)}</div>
+            <div class="s">🕐 ${esc(c.etape||p.statut||'—')}${d?' • '+d.lb:(c.delais?' • '+esc(c.delais):'')}</div></div></div>`;}).join('')
+        :'<div class="empty" style="padding:16px">✅ Aucune alerte en cours</div>'}
+    </div>
+  </div>
+  ${footHTML('csd','CSD · revue de portefeuille en comité · les champs de suivi complètent la fiche projet, les montants et les pôles restent ceux du portefeuille.')}`;
+  $('#csdQ').addEventListener('input',e=>{f.q=e.target.value; renderGardeFocus(renderCSD);});
+  $('#csdSt').addEventListener('change',e=>{f.st=e.target.value; renderCSD();});
+  $('#csdPole').addEventListener('change',e=>{f.pole=e.target.value; renderCSD();});
+  $('#csdVue').addEventListener('click',()=>{f.vue=f.vue==='grid'?'list':'grid'; scheduleSave(); renderCSD();});
+  $('#csdImp').addEventListener('click',csdImporter);
+  $$('[data-csdp]').forEach(el=>el.addEventListener('click',()=>csdFiche(el.dataset.csdp)));
+}
+/* Fiche de comité : les champs de suivi, à côté de ce que porte déjà le projet. */
+function csdFiche(id){
+  const p=S.projects.find(x=>x.id===id); if(!p) return;
+  const c=csdOf(id);
+  const ov=document.createElement('div'); ov.className='dmodal'; ov.id='csdBox';
+  ov.innerHTML=`<div class="dbox" style="width:min(880px,96vw)">
+    <div class="dhead"><span class="af-mk">🏗</span><h4>${esc(c.etu||p.shine||'')} — ${esc(p.nom)}</h4>
+      <button class="dclose" data-cdc title="Fermer">×</button></div>
+    <div class="dbody" style="overflow:auto">
+      <div class="csd-det">
+        <div class="csd-f"><label>Statut comité</label>
+          <select class="kin" data-cdf="statut">${['',...CSD_ST].map(s=>`<option ${s===csdStatut(p)?'selected':''}>${s}</option>`).join('')}</select></div>
+        ${CSD_CHAMPS.map(([k,l])=>`<div class="csd-f"><label>${l}</label><input class="kin" value="${esc(c[k]||'')}" data-cdf="${k}"></div>`).join('')}
+        ${CSD_LONGS.map(([k,l])=>`<div class="csd-f wide"><label>${l}</label><textarea class="kin" rows="3" data-cdf="${k}">${esc(c[k]||'')}</textarea></div>`).join('')}
+      </div>
+      <div class="onepage-note" style="margin:0 12px 12px">Budget, pôle, PM et intitulé se modifient dans le portefeuille ou la fiche de pilotage : ils ne sont pas recopiés ici.
+        <b>C1</b> ${p.c1?fmt(p.c1)+' k€':'—'} · <b>C2</b> ${p.c2!=null?fmt(p.c2)+' k€':'—'} · <b>Réalisé</b> ${p.act?fmt(p.act)+' k€':'—'} · <b>Pôle</b> ${esc(p.group||'—')}</div>
+    </div>
+    <div style="padding:0 16px 16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="iconbtn" data-cdo-open="${esc(id)}">Ouvrir la fiche de pilotage →</button>
+      <button class="iconbtn" data-cdc>Fermer</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelectorAll('[data-cdc]').forEach(b=>b.onclick=()=>ov.remove());
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  ov.addEventListener('keydown',e=>{ if(e.key==='Escape') ov.remove(); });
+  ov.querySelectorAll('[data-cdf]').forEach(el=>{
+    const maj=()=>{ const k=el.dataset.cdf; const v=el.value;
+      if(k==='statut'){ c.statut=v; logChange('CSD '+(c.etu||p.shine||p.nom),'statut',csdStatut(p),v); }
+      else c[k]=v;
+      scheduleSave(); };
+    el.addEventListener('change',maj); el.addEventListener('blur',maj);
+  });
+  const go=ov.querySelector('[data-cdo-open]');
+  if(go) go.onclick=()=>{ ov.remove(); S.currentProj=id; S.tab='pass'; S.kitTab='synthese'; render(); };
+}
+/* Import d'un fichier CSD : les tableaux de données y sont des littéraux
+   JavaScript (INFRA_RAW, EE_RAW…). On les lit sans exécuter le fichier. */
+function csdImporter(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='.html,.htm,.json';
+  inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{
+      let lots=[];
+      const t=String(rd.result||'');
+      try{
+        const j=JSON.parse(t);
+        lots=Array.isArray(j)?[j]:Object.values(j).filter(Array.isArray);
+      }catch(_){ lots=csdTableaux(t); }
+      const lignes=lots.flat().filter(x=>x&&typeof x==='object');
+      if(!lignes.length){ alert("Aucun tableau de projets reconnu dans ce fichier.\n\nAttendu : un export CSD (HTML contenant INFRA_RAW, EE_RAW…) ou un JSON de projets."); return; }
+      csdAppliquer(lignes, f.name);
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+/* Les tableaux du CSD sont des littéraux JavaScript, parfois tenus sur une
+   seule ligne de 80 Ko : une expression régulière s'y perd d'un tableau à
+   l'autre. On suit les crochets, en ignorant ceux qui sont dans une chaîne. */
+function csdTableaux(t){
+  const out=[], re=/const\s+[A-Za-z0-9_]*RAW\s*=\s*\[/g; let m;
+  while((m=re.exec(t))){
+    const deb=m.index+m[0].length-1;
+    let i=deb, prof=0, chaine=false, ech=false;
+    for(; i<t.length; i++){
+      const c=t[i];
+      if(chaine){ if(ech) ech=false; else if(c==='\\') ech=true; else if(c==='"') chaine=false; continue; }
+      if(c==='"') chaine=true;
+      else if(c==='[') prof++;
+      else if(c===']'){ prof--; if(prof===0){ i++; break; } }
+    }
+    try{ const a=JSON.parse(t.slice(deb,i)); if(Array.isArray(a)&&a.length) out.push(a); }catch(e){}
+    re.lastIndex=i;
+  }
+  return out;
+}
+function csdNombre(v){
+  const t=String(v==null?'':v).replace(/[^\d,.-]/g,'').replace(/\s/g,'').replace(',','.');
+  const x=parseFloat(t); if(!Number.isFinite(x)) return null;
+  return Math.round(x>=10000? x/1000 : x);     // les montants du CSD sont en euros, le portefeuille en k€
+}
+function csdAppliquer(lignes,nom){
+  const cle=s=>norm(s).replace(/[^a-z0-9]/g,'');
+  let crees=0, maj=0;
+  lignes.forEach(r=>{
+    const etu=String(r.etu||'').trim(), shine=String(r.shine||'').trim(), titre=String(r.projets||r.nom||'').trim();
+    if(!etu && !shine && !titre) return;
+    let p=S.projects.find(x=>!x.deleted && ((shine && cle(x.shine)===cle(shine)) ||
+        (etu && cle((csdOf(x.id).etu)||x.ishift||'')===cle(etu)) || (titre && cle(x.nom)===cle(titre))));
+    if(!p){
+      const pole=String(r.entite||'').split('|')[0].trim()||'INFRA';
+      p={id:shine||etu||uid(), shine:shine, nom:titre||etu||shine, pole:pole, group:poleGroup(pole),
+         secteur:String(r.localisation||''), pm:String(r.responsables||'').trim(), pl:'', sponsor:String(r.initiateur||'').trim(),
+         statut:String(r.statut||'En cours'), actif:true, hoverride:null, ishift:etu,
+         c1:csdNombre(r.budget)||0, c2:csdNombre(r.budgetC2), b27:0,
+         act:csdNombre(r.actuals)||0, commit:csdNombre(r.commitments)};
+      S.projects.push(p); crees++;
+    } else {
+      maj++;
+      if(!p.shine && shine) p.shine=shine;
+      if(!p.ishift && etu) p.ishift=etu;
+      const n=(v,cur)=>{ const x=csdNombre(v); return x==null?cur:x; };
+      p.c1=n(r.budget,p.c1); p.c2=n(r.budgetC2,p.c2); p.act=n(r.actuals,p.act); p.commit=n(r.commitments,p.commit);
+    }
+    const c=csdOf(p.id);
+    [['etu',r.etu],['wbsInv',r.wbsInv],['localisation',r.localisation],['engineering',r.engineering],
+     ['initiateur',r.initiateur],['etape',r.etape],['cdo',r.cdo],['spe',r.spe],['cer',r.cer],
+     ['rtProcess',r.rtProcessCer],['responsables',r.responsables],['delais',r.delais],
+     ['dateDebut',r.dateDebut],['dateFin',r.dateFin],['sujets',r.sujets],['actionSuivi',r.actionSuivi],
+     ['remarques',r.remarques],['commentaires',r.actions],['statut',r.statut]
+    ].forEach(([k,v])=>{ if(v!=null && String(v).trim()!=='') c[k]=String(v); });
+  });
+  logChange('CSD '+(nom||''),'import',' ',crees+' créés, '+maj+' mis à jour');
+  scheduleSave(); renderCSD();
+  alert('Import CSD terminé.\n\n'+crees+' projet(s) créé(s), '+maj+' mis à jour.\n\nLes montants en euros ont été convertis en k€. Vérifiez le portefeuille, puis enregistrez.');
+}
 
 /* ======================= TAB 2 — Passeport ======================= */
 function renderPass(){
