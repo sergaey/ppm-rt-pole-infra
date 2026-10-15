@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-14.11 -->
+<!-- PPM_BUILD:2026-10-15 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -472,6 +472,9 @@
   .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
   .rkcell:empty:before,.rkmeta:empty:before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .bmini{display:block;font-size:10px;font-weight:400;color:var(--muted);margin-top:1px}
+  /* Plein écran : l'espace gagné va au contenu, pas aux marges. */
+  :root.plein .view{padding-top:10px}
+  :root.plein #fsBtn{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
   /* Poignée de déplacement : discrète, visible à l'approche de la ligne. */
   #projTbl td.pgrab{width:26px;text-align:center;cursor:grab;user-select:none;padding:0}
   #projTbl td.pgrab .grabdot{color:var(--line-2);font-size:14px;letter-spacing:-1px}
@@ -614,6 +617,7 @@
     <div class="sb-foot">
       <label class="iconbtn" style="justify-content:center;gap:6px" title="Afficher seulement les projets actifs"><input type="checkbox" id="activeTgl" checked> Projets actifs</label>
       <div class="row"><button class="iconbtn" id="themeBtn" title="Thème clair/sombre">◐ Thème</button><button class="iconbtn" id="exportBtn" title="Exporter la vue en CSV">⭳ CSV</button></div>
+      <button class="iconbtn" id="fsBtn" style="justify-content:center" title="Plein écran : la barre du navigateur disparaît — utile en projection et sur l'écran d'un portable">⛶ Plein écran</button>
       <div class="row"><button class="iconbtn" id="dataBtn" title="Importer / exporter les données (JSON, Excel)">⇄ Données</button><button class="iconbtn" id="majBtn" title="Recharger l'application : prend en compte un fichier HTML remplacé et les données enregistrées depuis un autre poste">⟳ MAJ</button></div>
       <button class="savebtn" id="saveBtn" title="Enregistrer maintenant (Ctrl+S)">💾 Enregistrer</button>
       <div class="savestate" id="saveState"><span class="d"></span><span class="t">Prêt</span></div>
@@ -658,7 +662,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-14.11';
+const APP_BUILD='2026-10-15';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1301,6 +1305,7 @@ function footHTML(key, inner){
     </div>
     <div class="af-right">
       <span class="af-meta" title="Version du fichier HTML ouvert — à comparer avec celle annoncée au lancement">${nAll} projets · exercice 2026 · version ${APP_BUILD_FR} · ${d}</span>
+      <button class="af-act" data-foot-act="fs" title="${pleinEcranActif()?'Revenir à l\'affichage normal (Échap)':'Plein écran : la barre du navigateur disparaît — projection, petit écran (F11)'}">${pleinEcranActif()?'⛶ Quitter':'⛶ Plein écran'}</button>
       <button class="af-act" data-foot-act="theme" title="Basculer le thème clair / sombre">◐ Thème</button>
       <button class="af-act" data-foot-act="csv" title="Exporter la vue courante en CSV">⭳ CSV</button>
       <button class="af-act" data-foot-act="reset" data-footkey="${key}" title="Rétablir le libellé par défaut">↻</button>
@@ -1318,6 +1323,7 @@ document.addEventListener('click', e=>{
   else if(act==='csv'){ const b=document.getElementById('exportBtn'); if(b)b.click(); }
   else if(act==='top'){ const v=document.getElementById('view'); if(v)v.scrollTo({top:0,behavior:'smooth'}); }
   else if(act==='save'){ saveNow(); }
+  else if(act==='fs'){ basculerPleinEcran(); }
   else if(act==='reset'){ const k=a.dataset.footkey; if(S.footNotes){ delete S.footNotes[k]; } scheduleSave(); render(); }
 });
 document.addEventListener('keydown', e=>{
@@ -3855,6 +3861,7 @@ try{$('#activeTgl').checked=S.activeOnly;}catch(_){}
 $('#saveBtn').addEventListener('click',()=>{ saveNow(); });
 try{ $('#dataBtn').addEventListener('click',()=>openDataHub('json')); }catch(_){}
 try{ $('#majBtn').addEventListener('click',majApp); }catch(_){}
+try{ $('#fsBtn').addEventListener('click',basculerPleinEcran); majPleinEcran(); }catch(_){}
 try{ $('#logoutBtn').addEventListener('click',()=>{ if(confirm('Fermer la session ?')) logout(); }); }catch(_){}
 window.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&(e.key==='s'||e.key==='S')){ e.preventDefault(); saveNow(); } });
 $('#themeBtn').addEventListener('click',()=>{
@@ -3950,6 +3957,42 @@ async function majApp(){
     alert('Mise à jour impossible : '+(e&&e.message||e));
   }
 }
+/* Plein écran. Sur l'écran d'un portable, la barre du navigateur coûte deux
+   lignes de tableau ; en projection, elle n'a rien à y faire. On peut en
+   sortir par Échap ou F11 sans passer par le bouton : l'état affiché suit donc
+   l'état réel, et non ce que le bouton croit avoir fait. */
+function pleinEcranActif(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+}
+function majPleinEcran(){
+  const on=pleinEcranActif();
+  const b=document.getElementById('fsBtn');
+  if(b){ b.textContent = on?'⛶ Quitter le plein écran':'⛶ Plein écran';
+         b.title = on?"Revenir à l'affichage normal (Échap)":"Plein écran : la barre du navigateur disparaît — utile en projection et sur l'écran d'un portable"; }
+  const f=document.querySelector('[data-foot-act="fs"]');
+  if(f){ f.textContent = on?'⛶ Quitter':'⛶ Plein écran';
+         f.title = on?"Revenir à l'affichage normal (Échap)":'Plein écran : la barre du navigateur disparaît — projection, petit écran (F11)'; }
+  document.documentElement.classList.toggle('plein', on);
+}
+async function basculerPleinEcran(){
+  try{
+    if(pleinEcranActif()){
+      const sortie = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+      await sortie.call(document);
+    } else {
+      const e=document.documentElement;
+      const entree = e.requestFullscreen || e.webkitRequestFullscreen || e.msRequestFullscreen;
+      if(!entree) throw new Error('non pris en charge par ce navigateur');
+      await entree.call(e, {navigationUI:'hide'});
+    }
+  }catch(err){
+    alert("Le plein écran n'a pas pu être activé : "+((err&&err.message)||err)
+      +"\n\nLa touche F11 fait la même chose, et n'est jamais bloquée.");
+  }
+  majPleinEcran();
+}
+['fullscreenchange','webkitfullscreenchange','msfullscreenchange']
+  .forEach(ev=>document.addEventListener(ev,majPleinEcran));
 function fileModeWarning(){
   if(location.protocol!=='file:') return;                    // servi par le serveur : rien à signaler
   const url='http://127.0.0.1:8765/';                        // port de Lancer_PPM.bat
