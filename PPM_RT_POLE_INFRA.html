@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.8 -->
+<!-- PPM_BUILD:2026-10-15.9 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -447,7 +447,7 @@
   .op .gm{display:grid;border-top:1px solid var(--line)}
   .op .gm div{text-align:center;font-size:9px;color:var(--muted);padding:2px 0;border-right:1px solid var(--line)}
   .op .garea{position:relative;height:26px}
-  .op .garea.ms{height:52px;overflow:visible}
+  .op .garea.ms{height:78px;overflow:visible}
   .op .gbg{position:absolute;inset:0;display:grid}
   .op .gbg div{border-right:1px solid var(--line)}
   .op .gbar{position:absolute;top:4px;height:18px;border-radius:4px;color:#fff;font-size:10px;
@@ -1039,6 +1039,13 @@ const SEED_PHASING = {};
 
 /* ---- Passeports détaillés amorcés (données réelles) ---- */
 const SEED_PASSPORTS = {"P40203":{"code":"P40203","phase":"Travaux","gate":"G3","sponsor":"Énergie & Utilités","org":[["Sponsor","Énergie & Utilités"],["Chef de projet","Basile Ferrandier"],["Ingénieur procédé","Salomé Perrin-Roux"],["PMO","Anaïs Bourgelat"]],"statusTxt":"Génie civil terminé. Livraison transformateur décalée de 6 semaines par le fournisseur ; raccordement provisoire à l'étude.","health":{"override":"r"},"milestones":[{"name":"Étude d'exécution validée","ini":"12/01/2026","neu":"12/01/2026","st":"Done"},{"name":"Commande transformateur","ini":"02/03/2026","neu":"02/03/2026","st":"Done"},{"name":"Livraison sur site","ini":"15/06/2026","neu":"28/07/2026","st":"En retard"},{"name":"Mise sous tension","ini":"30/09/2026","neu":"15/11/2026","st":"À venir"}],"risks":[{"desc":"Retard fournisseur sur le transformateur HT","mit":"Relance hebdomadaire + recherche d'une source alternative","owner":"Basile Ferrandier","date":"30/06/2026"},{"desc":"Coupure d'alimentation nécessaire en période de production","mit":"Créneau négocié sur l'arrêt technique d'août","owner":"Salomé Perrin-Roux","date":"15/07/2026"}],"nextSteps":["Confirmer le créneau d'arrêt technique avec les Opérations","Chiffrer le raccordement provisoire","Revue de risque en comité de pilotage du 12/06"]},"P40311":{"code":"P40311","phase":"Travaux","gate":"G3","sponsor":"Opérations","org":[["Sponsor","Opérations"],["Chef de projet","Iris Delacourt"],["Superviseur travaux","Malo Trévidic"],["AQ Projet","Margaux Fontenoy"]],"statusTxt":"Montage mécanique achevé, essais à blanc en cours. Qualification prévue au quatrième trimestre.","health":{"override":"g"},"milestones":[{"name":"Réception usine (FAT)","ini":"20/02/2026","neu":"20/02/2026","st":"Done"},{"name":"Montage sur site","ini":"30/05/2026","neu":"24/05/2026","st":"Done"},{"name":"Essais à blanc","ini":"15/07/2026","neu":"15/07/2026","st":"En cours"},{"name":"Qualification opérationnelle","ini":"30/10/2026","neu":"30/10/2026","st":"À venir"}],"risks":[{"desc":"Disponibilité des opérateurs pour la qualification","mit":"Planning de formation calé avec la production","owner":"Iris Delacourt","date":"01/09/2026"}],"nextSteps":["Clôturer les réserves d'essais à blanc","Préparer le dossier de qualification"]},"P40156":{"code":"P40156","phase":"Travaux","gate":"G3","sponsor":"Supply Chain","org":[["Sponsor","Supply Chain"],["Chef de projet","Antoine Vaugirard"],["Projeteur DAO","Hugo Sainte-Maure"],["PMO","Anaïs Bourgelat"]],"statusTxt":"Terrassement terminé. Révision budgétaire de 14 % liée aux fondations, découverte d'un réseau enterré non répertorié.","milestones":[{"name":"Permis de construire obtenu","ini":"10/11/2025","neu":"10/11/2025","st":"Done"},{"name":"Terrassement","ini":"28/02/2026","neu":"20/03/2026","st":"Done"},{"name":"Gros œuvre","ini":"30/06/2026","neu":"30/07/2026","st":"En cours"},{"name":"Mise en service du quai","ini":"15/12/2026","neu":"15/12/2026","st":"À venir"}],"risks":[{"desc":"Réseau enterré non répertorié sous l'emprise","mit":"Sondages complémentaires avant reprise des fouilles","owner":"Antoine Vaugirard","date":"20/05/2026"},{"desc":"Co-activité avec la circulation des camions","mit":"Plan de circulation temporaire et balisage","owner":"Hugo Sainte-Maure","date":"30/06/2026"}],"nextSteps":["Valider l'avenant de fondations en comité d'engagement","Mettre à jour le plan de circulation"]},"P40615":{"code":"P40615","phase":"Travaux","gate":"G3","sponsor":"HSE","org":[["Sponsor","HSE"],["Chef de projet","Clémence Vaillant"],["Coordinateur travaux","Antoine Vaugirard"]],"statusTxt":"Reprise des zonages ATEX validée. Matériel non conforme remplacé à 70 %.","health":{"override":"g"},"milestones":[{"name":"Étude de zonage","ini":"15/01/2026","neu":"15/01/2026","st":"Done"},{"name":"Remplacement matériel zone 1","ini":"30/06/2026","neu":"30/06/2026","st":"En cours"},{"name":"Visite de conformité","ini":"30/09/2026","neu":"30/09/2026","st":"À venir"}],"risks":[{"desc":"Indisponibilité de la zone solvants pendant les travaux","mit":"Travaux séquencés hors campagne de production","owner":"Clémence Vaillant","date":"31/07/2026"}],"nextSteps":["Commander le matériel de zone 2","Programmer la visite de conformité"]},"P40402":{"code":"P40402","phase":"APD","gate":"G2","sponsor":"Digital & Data","org":[["Sponsor","Digital & Data"],["Chef de projet","Noémie Chastelard"],["Automaticien","Gaspard Melun"]],"statusTxt":"Architecture retenue. Déploiement pilote sur deux ateliers avant généralisation.","health":{"override":"a"},"milestones":[{"name":"Choix de la solution","ini":"20/03/2026","neu":"20/03/2026","st":"Done"},{"name":"Pilote deux ateliers","ini":"30/09/2026","neu":"30/09/2026","st":"En cours"},{"name":"Généralisation","ini":"31/03/2027","neu":"31/03/2027","st":"À venir"}],"risks":[{"desc":"Couverture réseau insuffisante dans les zones techniques","mit":"Relevé de couverture et ajout de points d'accès","owner":"Gaspard Melun","date":"31/08/2026"}],"nextSteps":["Terminer le relevé de couverture réseau","Cadrer l'intégration avec la GMAO"]}};
+/* ---- One Pages fournis pour certains projets ----
+   Deux projets arrivent avec leur One Page deja rempli (frise, jalons,
+   budget, realisations, risques, etapes). Cette amorce les installe sur le
+   projet correspondant du portefeuille, une seule fois et seulement si sa
+   page est encore vierge : une saisie faite depuis n'est jamais ecrasee.
+   Les autres projets gardent la structure de base. */
+const SEED_OP = {"demo":{"cles":{"codes":["P40156"],"nom":[]},"etiquette":"Extension quai de réception matières","sante":"a","statusTxt":"Attente du retour du charpentier sur le chiffrage de la couverture.\n\nBudget à piloter : l'atterrissage dépasse le C1 de 440 k€.","op":{"ganttStart":"2025-10-01","ganttEnd":"2026-09-01","endMarker":"2026-07-31","wbs":[{"type":"milestones","name":"Jalons Projet","milestones":[{"label":"CDO","date":"2025-10-14","color":"#f59e0b","topPct":0},{"label":"CER","date":"2025-11-20","color":"#db2777","topPct":50},{"label":"Gate 3","date":"2026-01-15","color":"#4f46e5","topPct":100},{"label":"Gate 5","date":"2026-07-31","color":"#16a34a","topPct":0}]},{"type":"bar","name":"1. Terrassement et fondations du quai","start":"2025-11-03","end":"2026-01-30","label":"3 mois →","color":"#16a34a","status":"Done"},{"type":"bar","name":"2. Charpente métallique et couverture","start":"2026-02-02","end":"2026-04-30","label":"3 mois →","color":"#2563eb","status":"Done"},{"type":"bar","name":"3. Quai niveleur, portes sectionnelles et abri","start":"2026-05-04","end":"2026-06-30","label":"2 mois →","color":"#f59e0b","status":"WIP"},{"type":"bar","name":"4. Réception, CSSCT et mise en service","start":"2026-07-01","end":"2026-07-31","label":"1 mois →","color":"#2563eb","status":"Not started"}],"budget":{"years":["Capex 2025","Capex 2026"],"rows":[{"label":"Budget C1","values":[1200,2000]},{"label":"YTD Commit.","values":[980,1410]},{"label":"Spent","values":[910,1500]},{"label":"Final Cost","values":[1200,2440],"total":true}]},"ach":["Fondations coulées et séchées, contrôle béton conforme","Charpente levée et couverture posée, bardage en cours","Commande du quai niveleur passée, livraison confirmée en S20"]},"pp":{"milestones":[{"name":"Réception des fondations et contrôle béton","ini":"30/01/2026","neu":"30/01/2026","st":"Done"},{"name":"Levage de la charpente métallique","ini":"20/02/2026","neu":"06/03/2026","st":"Done"},{"name":"Pose du quai niveleur et des portes sectionnelles","ini":"15/05/2026","neu":"12/06/2026","st":"In progress"},{"name":"Visite CSSCT et permis de démarrage","ini":"20/07/2026","neu":"20/07/2026","st":"Not started"}],"risks":[{"desc":"Chiffrage de la couverture non reçu du charpentier","mit":"Relance hebdomadaire, devis de secours demandé","owner":"AV","date":"28/02/2026"},{"desc":"Co-activité avec la circulation des camions pendant les travaux","mit":"Plan de circulation provisoire validé avec la logistique","owner":"HSM","date":"15/03/2026"}],"nextSteps":[{"t":"Réception du quai niveleur et essais de charge","st":"En cours"},{"t":"Raccordement électrique des portes sectionnelles","st":"À faire"},{"t":"Dossier de réception et visite CSSCT","st":"À faire"}]}}};
 
 /* ======================= State ======================= */
 let S = null;
@@ -1063,7 +1070,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.8';
+const APP_BUILD='2026-10-15.9';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1474,7 +1481,9 @@ async function idbHydrate(){
 // Adopte un état venu du serveur (plus récent) — ne écrase jamais silencieusement.
 function adoptServerState(st,msg){
   try{ S=migrate(st); }catch(_){ return false; }
+  try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
   baselineSavedAt=(S&&S._savedAt)||0; dirty=false;
+  try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
   // Aucune copie navigateur en clair quand l'auth serveur OU le verrou local est actif.
   if(!AUTH.enforced && !(typeof LOCK!=='undefined' && LOCK.active)){ try{ localStorage.setItem('ppm_vitry_state',JSON.stringify(S)); }catch(_){} }
   try{ render(); }catch(_){}
@@ -2241,6 +2250,82 @@ function weightsBar(){
   return Object.keys(w).map(k=>`<div style="flex:${w[k]};background:${cols[k]}" title="${labs[k]} ${w[k]}%">${w[k]>=10?w[k]+'%':''}</div>`).join('');
 }
 
+/* ---- Installation des One Pages fournis ----------------------------------
+   Appelée après chaque chargement d'état. Elle ne fait rien deux fois : le
+   projet servi est retenu dans S.opSeeded, et rien n'est écrit sur une page
+   déjà travaillée. Objectif : ces deux projets s'ouvrent renseignés, tous les
+   autres gardent la page vierge qu'ils avaient. */
+function opSeedProjet(e){
+  const codes=(e.cles&&e.cles.codes||[]).map(norm);
+  const mots=(e.cles&&e.cles.nom||[]).map(norm);
+  const vivants=(S.projects||[]).filter(p=>!p.deleted);
+  /* Un code identifie sans ambiguïté ; le mot-clé ne sert qu'à défaut, et
+     seulement s'il ne désigne qu'un projet — sinon on ne devine pas. */
+  let p=vivants.find(x=>[x.id,x.shine,x.ishift,x.code].some(v=>v&&codes.includes(norm(v))));
+  if(!p && mots.length){
+    const cand=vivants.filter(x=>mots.some(m=>norm(x.nom||'').includes(m)));
+    if(cand.length===1) p=cand[0];
+  }
+  return p||null;
+}
+/* Frise vierge : ni date, ni jalon, ni réalisation, ni fenêtre fixée. On ne se
+   fie pas au nombre de lignes — le gabarit en pose deux, vides. */
+function opVierge(o){
+  if((o.wbs||[]).reduce((n,w)=>n+((w.milestones||[]).length),0)) return false;
+  if((o.wbs||[]).some(w=>w.type==='bar'&&(w.start||w.end))) return false;
+  if((o.ach||[]).length) return false;
+  if(o.endMarker||o.ganttStart||o.ganttEnd) return false;
+  return true;
+}
+/* Les blocs partagés avec la fiche (jalons, risques, étapes) sont complétés,
+   jamais remplacés : une ligne déjà saisie reste telle quelle, et seules les
+   lignes absentes sont ajoutées. Comparaison sur le libellé, accents et casse
+   ignorés, pour ne pas créer de doublon sur une reprise. */
+function opFondre(cible,ajouts,cle){
+  const vus=new Set((cible||[]).map(x=>norm(cle(x))));
+  let n=0;
+  (ajouts||[]).forEach(x=>{ const k=norm(cle(x)); if(!k||vus.has(k))return; vus.add(k); cible.push(x); n++; });
+  return n;
+}
+function appliquerSeedOP(){
+  if(typeof SEED_OP!=='object'||!SEED_OP) return 0;
+  S.opSeeded=S.opSeeded||{};
+  let n=0;
+  Object.keys(SEED_OP).forEach(cle=>{
+    if(S.opSeeded[cle]) return;                     // déjà traité : on ne revient pas dessus
+    const e=SEED_OP[cle], p=opSeedProjet(e);
+    if(!p) return;                                  // projet absent de ce portefeuille
+    const o=opOf(p.id), pp=ensurePP(p.id);
+    S.opSeeded[cle]=p.id;
+    let pose=[];
+    if(opVierge(o)){
+      const src=JSON.parse(JSON.stringify(e.op));
+      o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
+        if(r.type==='milestones') r.milestones=(r.milestones||[]).map(m=>Object.assign({id:kuid()},m));
+        return r; });
+      o.budget={years:src.budget.years.slice(),
+        rows:src.budget.rows.map(r=>Object.assign({id:kuid()},r,{values:r.values.slice()}))};
+      o.ach=(src.ach||[]).slice();
+      o.ganttStart=src.ganttStart||''; o.ganttEnd=src.ganttEnd||''; o.endMarker=src.endMarker||'';
+      pose.push('frise, budget et réalisations');
+    }
+    const q=JSON.parse(JSON.stringify(e.pp));
+    const a=opFondre(pp.milestones,q.milestones,x=>x.name);
+    const b=opFondre(pp.risks,q.risks,x=>x.desc);
+    pp.nextSteps=(pp.nextSteps||[]).map(nsNorm);
+    const c=opFondre(pp.nextSteps,(q.nextSteps||[]).map(nsNorm),x=>x.t);
+    if(a) pose.push(a+' jalon'+(a>1?'s':''));
+    if(b) pose.push(b+' risque'+(b>1?'s':''));
+    if(c) pose.push(c+' étape'+(c>1?'s':''));
+    if(!pp.statusTxt && e.statusTxt){ pp.statusTxt=e.statusTxt; pose.push('commentaire de statut'); }
+    if(!p.hoverride && e.sante){ p.hoverride=e.sante; pose.push('santé'); }
+    if(!pose.length) return;                        // tout était déjà là
+    logChange('One Page — '+(p.shine||p.nom),'reprise du One Page fourni','',pose.join(' · '));
+    n++;
+  });
+  return n;
+}
+
 /* ======================= Kit projet =======================
    Reprise de l'outil « Passeport projet industriel » : check-list des phases,
    organigramme, chiffrage, plan de charge et macroplanning — pour chaque
@@ -2702,6 +2787,10 @@ document.addEventListener('click',e=>{
 const OP_BARC=["#16a34a","#f59e0b","#14b8a6","#ec4899","#3b82f6","#8b5cf6","#a78bfa","#eab308","#ef4444","#64748b"];
 const OP_MSC =["#8b5cf6","#ef4444","#f59e0b","#16a34a","#14b8a6","#3b82f6","#eab308","#64748b"];
 const OP_ST=["Done","WIP","Not started","Late"];
+/* Hauteur de la bande des jalons. Les gates du process RT se suivent de pres :
+   sans trois niveaux de pose, leurs libelles se recouvrent et la frise devient
+   illisible la ou elle est la plus dense. topPct 0 / 50 / 100 = les trois niveaux. */
+const OP_MSH=78;
 const OP_PROG=["Done","In progress","Late","Not started"];
 const OP_STATUSES=[{k:'ok',c:'ok',l:'On Track',h:'g'},
                    {k:'att',c:'att',l:"Attention point\nadditional actions required",h:'a'},
@@ -2779,7 +2868,7 @@ function opPage(){
   const lignes=o.wbs.map((w,i)=>{
     if(w.type==='milestones'){
       const dia=(w.milestones||[]).map((m,j)=>{ const x=opPct(m.date,r); if(x==null) return '';
-        const top=Math.round(((m.topPct!=null)?m.topPct:15)/100*52);
+        const top=Math.round(((m.topPct!=null)?m.topPct:15)/100*(OP_MSH-26));
         return `<div class="gdia" style="left:${x}%;top:${top}px;background:${esc(m.color||OP_MSC[j%8])}" data-opdia="${i}|${j}" title="${esc(m.label||'')} — ${opFR(m.date)}"></div>
           <div class="gdl" style="left:${x}%;top:${top+15}px">${esc(m.label||'')}</div>
           <div class="gdl sub" style="left:${x}%;top:${top+25}px">${esc(m.sub||opFR(m.date))}</div>`; }).join('');
@@ -6261,6 +6350,7 @@ async function applyStateObject(obj, meta, msgEl){
   // les membres de demonstration se melangeraient aux vrais.
   if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
+  try{ appliquerSeedOP(); }catch(_){}
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
   const ok=await doSave();
@@ -6646,6 +6736,7 @@ function decorateNav(){
   document.querySelectorAll('.sb-sec[data-sec]').forEach(sec=>{ if(sec.querySelector('.nav-ic'))return; const s=document.createElement('span'); s.className='nav-ic'; s.textContent=NAV_ICONS.sec[sec.dataset.sec]||'•'; sec.insertBefore(s,sec.firstChild); });
 }
 decorateNav();
+try{ if(appliquerSeedOP()) scheduleSave(); }catch(_){}
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
 /* ---------- Ouverture directe du fichier : prévenir, faute de pouvoir relier ----------
