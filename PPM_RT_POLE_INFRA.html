@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.4 -->
+<!-- PPM_BUILD:2026-10-16.5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1157,11 +1157,16 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.4';
+const APP_BUILD='2026-10-16.5';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 const fmt = (n,d=0)=> n==null||n===''||isNaN(n) ? "—" : Number(n).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+/* Une cellule que l'on corrige doit montrer ce qu'elle contient. fmt() arrondit
+   à l'entier : un budget de 420,4 k€ s'y lit « 420 », et l'on cherche en vain
+   d'où vient la décimale qu'un autre écran affiche. Pour la saisie, on montre
+   la valeur telle qu'elle est enregistrée. */
+const fmtSaisie = n => (n==null||n===''||isNaN(n)) ? '' : Number(n).toLocaleString('fr-FR',{maximumFractionDigits:2});
 const uid = ()=> 'x'+Math.random().toString(36).slice(2,9);
 
 function poleGroup(p){
@@ -2457,16 +2462,20 @@ function appliquerCorrSeed(){
       const marque=cle+'#'+(c.id||i);
       if(S.corrSeed[marque]) return;
       S.corrSeed[marque]=1;
-      let faits=0;
+      let faits=0; const avant=[];
       idcCibles(d,c.quoi,p).forEach(({o,k})=>{
         if(!o) return;
         const av=o[k]==null?'':String(o[k]);
-        if(av!==String(c.de)) return;                 // valeur retouchée : on n'y touche pas
+        // « * » : la valeur est posée quelle qu'elle soit. Réservé au cas où
+        // l'utilisateur a demandé explicitement ce chiffre-là, et où la valeur
+        // en place n'est pas celle qu'on croyait.
+        if(c.de!=='*' && av!==String(c.de)) return;   // valeur retouchée : on n'y touche pas
+        if(avant.indexOf(av)<0) avant.push(av);       // ce qu'on remplace, pour la trace
         o[k]=(c.type==='n')?(+c.vers):c.vers;         // un budget reste un nombre
         faits++;
       });
       if(faits){ n++;
-        logChange('ID Card — '+(p.shine||p.nom),'correction de l’amorce',String(c.de),
+        logChange('ID Card — '+(p.shine||p.nom),'correction de l’amorce',avant.join(', '),
                   String(c.vers)+(faits>1?' ('+faits+' lignes)':'')); }
     });
   });
@@ -5237,13 +5246,13 @@ function budgetBlock(p,pp,atter){
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
   return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th></tr></thead>
   <tbody>
-    <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmt(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmt(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmt(p.b27):''}</td></tr>
+    <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmtSaisie(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmtSaisie(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmtSaisie(p.b27):''}</td></tr>
     <tr class="tot"><td>Atterrissage estimé</td><td class="num">—</td><td class="num" colspan="2" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
   </tbody></table></div>
   <div class="tblwrap" style="margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
   <tbody>
-    <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmt(p.act):''}</td><td class="num">${pc(act,c2||c1)}</td></tr>
-    <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmt(p.commit):''}</td><td class="num">${pc(com,c2||c1)}</td></tr>
+    <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act,c2||c1)}</td></tr>
+    <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com,c2||c1)}</td></tr>
     <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage,c2||c1)}</td></tr>
     <tr><td>Available Amount <span class="bmini">C1 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo1)};font-weight:600">${fmt(dispo1)}</td><td class="num">${pc(dispo1,c1)}</td></tr>
     <tr><td>Available Amount <span class="bmini">C2 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo2)};font-weight:600">${fmt(dispo2)}</td><td class="num">${pc(dispo2,c2)}</td></tr>
