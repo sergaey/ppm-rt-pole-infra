@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.15 -->
+<!-- PPM_BUILD:2026-10-16.16 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -907,6 +907,7 @@
   .idcnote{display:flex;align-items:center;gap:12px;padding:10px 13px;border-radius:11px;margin-bottom:11px;
     border:1px solid var(--accent);background:var(--accent-soft);font-size:12.5px;line-height:1.45}
   .idcnote.gate{border-color:var(--copper);background:var(--copper-soft,var(--warn-soft))}
+  .idcnote.cdo{border-color:var(--accent);background:var(--accent-soft)}
   .idcnote .ic{font-size:20px} .idcnote div{flex:1}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   .idccard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px 15px;box-shadow:var(--shadow)}
@@ -1207,7 +1208,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.15';
+const APP_BUILD='2026-10-16.16';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2421,24 +2422,24 @@ function idcCDOde(p){
 }
 /* Poser un cahier sur une carte : zone par zone, et seulement sur du blanc.
    Rend le nombre de zones comblees — zero veut dire « tout y etait deja ». */
-function idcPoserCDO(d,src,p){
+function idcPoserCDO(d,src,p,essai){
   const s=JSON.parse(JSON.stringify(src||{}));
-  const comble=(k,v)=>{ if(v && !String(d[k]||'').trim()){ d[k]=v; return 1; } return 0; };
+  const comble=(k,v)=>{ if(v && !String(d[k]||'').trim()){ if(!essai) d[k]=v; return 1; } return 0; };
   const vierge=!idcRempli(d);
   let k=0;
   ['description','benefits','rationale','timeline'].forEach(x=>{ k+=comble(x,s[x]); });
-  if(s.gap && (!String(d.gap||'').trim() || d.gap===IDC_GAP0)){ d.gap=s.gap; k++; }
+  if(s.gap && (!String(d.gap||'').trim() || d.gap===IDC_GAP0)){ if(!essai) d.gap=s.gap; k++; }
   if(s.fin) ['capex','opex'].forEach(y=>{ if(!s.fin[y]) return;
     ['b','r'].forEach(z=>{ if(!Array.isArray(s.fin[y][z])) return;
       s.fin[y][z].slice(0,4).forEach((v,i)=>{
-        if(v!=='' && !String(d.fin[y][z][i]||'').trim()){ d.fin[y][z][i]=v; k++; } }); }); });
-  if(vierge && s.statut && IDC_STATUTS.includes(s.statut)) d.statut=s.statut;
+        if(v!=='' && !String(d.fin[y][z][i]||'').trim()){ if(!essai) d.fin[y][z][i]=v; k++; } }); }); });
+  if(vierge && s.statut && IDC_STATUTS.includes(s.statut) && !essai) d.statut=s.statut;
   k+=comble('nom', s.nom||(p&&p.nom)); k+=comble('code', s.code||(p&&(p.shine||p.ishift)));
   k+=comble('pm', s.pm||(p&&p.pm)); k+=comble('sponsor', s.sponsor||(p&&p.sponsor));
   /* Les approbateurs portent une valeur par defaut : la liste du cahier la
      remplace, mais jamais une liste saisie a la main. */
   if(s.approvers && (!String(d.approvers||'').trim() || d.approvers==='PPM, finance, Resp secteur')
-     && d.approvers!==s.approvers){ d.approvers=s.approvers; k++; }
+     && d.approvers!==s.approvers){ if(!essai) d.approvers=s.approvers; k++; }
   k+=comble('maj', s.maj);
   return k;
 }
@@ -3572,8 +3573,19 @@ function kitIdCard(){
       ${idcProjetHTML(p,c)}
     </div>`;
   }
+  /* Un cahier des objectifs attend ce projet et comblerait des zones encore
+     vides : on le dit dans la carte, là où on regarde — un bouton rangé dans
+     une barre d'outils, ça se manque. */
+  const cdo=idcCDOde(p);
+  const aPrendre=cdo?idcPoserCDO(d,cdo.e.idc,p,true):0;
+  const noteCDO=aPrendre?`<div class="idcnote cdo"><span class="ic">📄</span>
+      <div><b>Le cahier des objectifs de ce projet est disponible.</b>
+        Il remplirait ${aPrendre} zone${aPrendre>1?'s':''} restée${aPrendre>1?'s':''} vide${aPrendre>1?'s':''}
+        — description, bénéfices, rationnel, planning — sans toucher à ce qui est déjà écrit.</div>
+      <button class="iconbtn" id="idcCDO2">📄 Reprendre le CDO</button></div>`:'';
   return `<div class="idc">
     ${bandeau}
+    ${noteCDO}
     <div class="idcbar">
       <span class="idcquoi">${reg==='gate'?'Process de Gate':reg==='bucket'?'Bucket ID Card':'Project ID Card'}</span>
       <span class="sp"></span>
@@ -3970,14 +3982,16 @@ function kitArmerIdCard(){
      passe par un appariement — un code, sinon un mot-clé — et un mot-clé qui
      désigne deux projets n'en désigne aucun. Ici il n'y a rien à apparier :
      c'est ce projet-ci qu'on regarde. */
-  lier('#idcCDO','click',()=>{
+  const reprendreCDO=()=>{
     const src=idcCDOde(p);
     if(!src){ alert("Aucun cahier des objectifs n'est fourni pour ce projet."); return; }
     const k=idcPoserCDO(cible,src.e.idc,p);
     if(!k){ alert("Le cahier des objectifs n'apporte rien de plus : les zones qu'il renseigne sont déjà écrites.\n\nVidez une zone puis relancez pour la faire reprendre."); return; }
     logChange('ID Card — '+(p.shine||p.nom),'reprise du CDO','',k+' zone'+(k>1?'s':'')+' remplie'+(k>1?'s':''));
     scheduleSave(); renderKit();
-  });
+  };
+  lier('#idcCDO','click',reprendreCDO);
+  lier('#idcCDO2','click',reprendreCDO);
   lier('#idcMaj','click',()=>{
     const av=[d.nom,d.code,d.pm,d.sponsor].join('|');
     d.nom=p.nom||d.nom; d.code=p.shine||p.ishift||d.code; d.pm=p.pm||d.pm; d.sponsor=p.sponsor||d.sponsor;
