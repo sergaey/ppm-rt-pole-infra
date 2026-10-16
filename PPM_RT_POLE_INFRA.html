@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16 -->
+<!-- PPM_BUILD:2026-10-16.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1149,7 +1149,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16';
+const APP_BUILD='2026-10-16.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1561,9 +1561,9 @@ async function idbHydrate(){
 // Adopte un état venu du serveur (plus récent) — ne écrase jamais silencieusement.
 function adoptServerState(st,msg){
   try{ S=migrate(st); }catch(_){ return false; }
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }catch(_){}
   baselineSavedAt=(S&&S._savedAt)||0; dirty=false;
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }catch(_){}
   // Aucune copie navigateur en clair quand l'auth serveur OU le verrou local est actif.
   if(!AUTH.enforced && !(typeof LOCK!=='undefined' && LOCK.active)){ try{ localStorage.setItem('ppm_vitry_state',JSON.stringify(S)); }catch(_){} }
   try{ render(); }catch(_){}
@@ -2401,6 +2401,57 @@ function migrerBudgetOP(){
     o.budget.rows=o.budget.rows.map((r,i2)=>({r,i2}))
       .sort((a,b)=>(rang(a.r)-rang(b.r))||(a.i2-b.i2)).map(x=>x.r);
     if(JSON.stringify(o.budget.rows.map(r=>[r.role||'',r.label]))!==av) n++;
+  });
+  return n;
+}
+/* Corriger une amorce déjà posée.
+
+   Une donnée fournie se corrige parfois après coup — un numéro WBS qui
+   arrive, une enveloppe revue. Reposer l'amorce entière écraserait le travail
+   fait depuis ; ne rien faire laisserait la carte fausse. Chaque correction
+   dit donc ce qu'elle remplace, et ne s'applique que si la valeur en place est
+   encore celle qui avait été semée. Retouchée depuis, elle est laissée telle
+   quelle — et la correction est comptée comme traitée, pour ne pas revenir
+   dessus à chaque chargement.
+
+   Le chemin désigne un emplacement de la carte : « bucketRef.capex.0 », ou
+   sous « lignes », soit « * » pour toutes les lignes, soit le nom d'un
+   sous-projet. */
+function idcCibles(d,chemin){
+  const c=chemin.split('.');
+  if(c[0]!=='lignes') return [{o:idcParent(d,c), k:c[c.length-1]}];
+  const sel=c[1], reste=c.slice(2);
+  const lot=(sel==='*') ? (d.lignes||[]) : (d.lignes||[]).filter(l=>norm(l.nom||'')===norm(sel));
+  return lot.map(l=>({o:idcParent(l,reste), k:reste[reste.length-1]})).filter(x=>x.o);
+}
+function idcParent(o,c){ return c.slice(0,-1).reduce((x,k)=>(x==null?x:x[k]), o); }
+function appliquerCorrSeed(){
+  if(typeof SEED_OP!=='object'||!SEED_OP) return 0;
+  S.corrSeed=S.corrSeed||{};
+  let n=0;
+  Object.keys(SEED_OP).forEach(cle=>{
+    const e=SEED_OP[cle];
+    if(!Array.isArray(e.corr)||!e.corr.length) return;
+    const pid=(S.opSeeded||{})[cle];
+    if(!pid) return;                                  // amorce jamais posée ici
+    const p=S.projects.find(x=>x.id===pid&&!x.deleted);
+    if(!p||!(S.idc&&S.idc[pid])) return;
+    const d=idcOf(pid);
+    e.corr.forEach((c,i)=>{
+      const marque=cle+'#'+(c.id||i);
+      if(S.corrSeed[marque]) return;
+      S.corrSeed[marque]=1;
+      let faits=0;
+      idcCibles(d,c.quoi).forEach(({o,k})=>{
+        if(!o) return;
+        const av=o[k]==null?'':String(o[k]);
+        if(av!==String(c.de)) return;                 // valeur retouchée : on n'y touche pas
+        o[k]=c.vers; faits++;
+      });
+      if(faits){ n++;
+        logChange('ID Card — '+(p.shine||p.nom),'correction de l’amorce',String(c.de),
+                  String(c.vers)+(faits>1?' ('+faits+' lignes)':'')); }
+    });
   });
   return n;
 }
@@ -6833,7 +6884,7 @@ async function applyStateObject(obj, meta, msgEl){
   // les membres de demonstration se melangeraient aux vrais.
   if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
-  try{ appliquerSeedOP(); migrerBudgetOP(); }catch(_){}
+  try{ appliquerSeedOP(); migrerBudgetOP(); appliquerCorrSeed(); }catch(_){}
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
   const ok=await doSave();
@@ -7219,7 +7270,7 @@ function decorateNav(){
   document.querySelectorAll('.sb-sec[data-sec]').forEach(sec=>{ if(sec.querySelector('.nav-ic'))return; const s=document.createElement('span'); s.className='nav-ic'; s.textContent=NAV_ICONS.sec[sec.dataset.sec]||'•'; sec.insertBefore(s,sec.firstChild); });
 }
 decorateNav();
-try{ const a=appliquerSeedOP(), b=migrerBudgetOP(); if(a||b) scheduleSave(); }catch(_){}
+try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }catch(_){}
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
 /* ---------- Ouverture directe du fichier : prévenir, faute de pouvoir relier ----------
