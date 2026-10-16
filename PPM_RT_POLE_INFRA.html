@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.3 -->
+<!-- PPM_BUILD:2026-10-16.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -978,6 +978,14 @@
   .idcmini{display:block;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
   .idcwarn{display:block;margin-top:2px;font-size:10px;font-weight:800;color:var(--bad)}
   tr.idcgros td{background:var(--bad-soft)}
+  /* Barre de l'ID Card : à gauche ce qui est affiché, à droite ce qu'on peut faire.
+     L'intitulé était posé au milieu des boutons et se prenait pour l'un d'eux. */
+  .idcbar{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+  .idcquoi{font-family:Archivo;font-size:12.5px;font-weight:800;color:var(--ink-2);
+    padding:3px 11px;border-radius:999px;background:var(--panel-2);border:1px solid var(--line)}
+  .iconbtn.mini{padding:2px 7px;font-size:12px;line-height:1.5}
+  .idcpt{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:4px;vertical-align:1px}
+  .idcpt.ok{background:var(--good)} .idcpt.att{background:var(--warn)} .idcpt.ko{background:var(--bad)}
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -1149,7 +1157,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.3';
+const APP_BUILD='2026-10-16.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1333,6 +1341,7 @@ function migrerSuivi(r){
   r.atCfg = r.atCfg || {pre:[7,3,1],post:[1,3,7],esc:7};
   r.macroV = r.macroV || 1;
   r.idc = (r.idc && typeof r.idc==='object') ? r.idc : {};
+  r.idcSub = (r.idcSub && typeof r.idcSub==='object') ? r.idcSub : null;
   r.mp = r.mp || {an:new Date().getFullYear(),phase:(new Date().getMonth()<=5?1:2),pole:'',q:'',avecSeuls:false};
   if(Array.isArray(r.actions)){
     const PRIO={'Haute':'Haute','Critique':'Critique','Moyenne':'Normale','Normale':'Normale','Basse':'Basse'};
@@ -3330,19 +3339,68 @@ function idcOf(id){
 const idcN=v=>{ if(v==null||v==='')return null; const n=parseFloat(String(v).replace(/\s/g,'').replace(',','.')); return isFinite(n)?n:null; };
 const idcF=v=>v==null?'' : (Math.round(v*100)/100).toLocaleString('fr-FR');
 const idcSigne=v=>v==null?'—' : (v>0?'+':'')+idcF(v);
-/* L'écart d'un exercice : le besoin exprimé moins le budget de référence. */
-function idcEcart(d,k,j){ const b=idcN(d.fin[k].b[j]), r=idcN(d.fin[k].r[j]);
-  if(b==null&&r==null) return null; return (b||0)-(r||0); }
+/* L'écart d'un exercice : le besoin exprimé moins le budget de référence.
+   Tant que la référence n'est pas saisie, il n'y a rien à comparer — afficher
+   le besoin comme un dépassement ferait crier une carte simplement en cours
+   de remplissage. */
+function idcEcart(d,k,j){ const r=idcN(d.fin[k].r[j]);
+  if(r==null) return null; return (idcN(d.fin[k].b[j])||0)-r; }
 function idcTotalLignes(d,k,j){
   let s=null;
   d.lignes.forEach(l=>{ const v=idcN((l[k]||[])[j]); if(v!=null) s=(s||0)+v; });
   return s;
 }
 function idcEcartBucket(d,k,j){
-  const t=idcTotalLignes(d,k,j), r=idcN(d.bucketRef[k][j]);
-  if(t==null&&r==null) return null; return (t||0)-(r||0);
+  const r=idcN(d.bucketRef[k][j]);
+  if(r==null) return null; return (idcTotalLignes(d,k,j)||0)-r;
 }
 
+/* La carte d'un sous-projet de bucket.
+
+   Une bucket groupe des projets pour le budget ; chacun peut avoir besoin de
+   sa propre ID Card pour passer en validation. Elle est amorcée depuis la
+   ligne — nom, WBS, description, bénéfices, planning, montants — pour que le
+   PM parte de ce qui est déjà saisi plutôt que d'une page blanche. */
+function idcCarteSous(d,i){
+  const l=(d.lignes||[])[i]; if(!l) return null;
+  if(!l.card){
+    l.card={ nom:l.nom||'', code:l.wbs||'', maj:'', statut:'To approve',
+      sponsor:d.sponsor||'', pm:d.pm||'', approvers:d.approvers||'PPM, finance, Resp secteur',
+      description:l.description||'', benefits:l.benefits||'', rationale:'', timeline:l.timeline||'',
+      gap:'Gap vs B26/H27 : Yes or No\nIf yes, justify the gap',
+      fin:{capex:{b:[],r:[]}, opex:{b:[],r:[]}}, diffusions:[] };
+    idcCarteSousSync(d,i);
+  }
+  const c=l.card;
+  c.fin=c.fin||{};
+  ['capex','opex'].forEach(k=>{ c.fin[k]=c.fin[k]||{};
+    ['b','r'].forEach(x=>{ c.fin[k][x]=Array.isArray(c.fin[k][x])?c.fin[k][x]:['','','',''];
+      while(c.fin[k][x].length<4) c.fin[k][x].push(''); c.fin[k][x].length=4; }); });
+  c.diffusions=Array.isArray(c.diffusions)?c.diffusions:[];
+  if(!IDC_STATUTS.includes(c.statut)) c.statut='To approve';
+  return c;
+}
+/* Reprendre la ligne : ce que la bucket sait du sous-projet redescend dans sa
+   carte, sans écraser ce qui y a été écrit depuis. */
+function idcCarteSousSync(d,i){
+  const l=(d.lignes||[])[i], c=l&&l.card; if(!c) return 0;
+  let n=0;
+  const poser=(champ,val)=>{ const v=String(val||'').trim();
+    if(v && !String(c[champ]||'').trim()){ c[champ]=v; n++; } };
+  poser('nom',l.nom); poser('code',l.wbs);
+  poser('description',l.description); poser('benefits',l.benefits); poser('timeline',l.timeline);
+  [0,1].forEach(j=>{
+    if(!String(c.fin.capex.b[j]||'').trim() && String((l.capex||[])[j]||'').trim()){ c.fin.capex.b[j]=l.capex[j]; n++; }
+    if(!String(c.fin.opex.b[j]||'').trim() && String((l.opex||[])[j]||'').trim()){ c.fin.opex.b[j]=l.opex[j]; n++; }
+  });
+  return n;
+}
+function idcSousOuverte(p){
+  const s=S.idcSub;
+  if(!s||s.id!==p.id) return -1;
+  const d=idcOf(p.id);
+  return (s.i>=0 && s.i<(d.lignes||[]).length) ? s.i : -1;
+}
 function kitIdCard(){
   const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return '<div class="hint">Aucun projet.</div>';
   const d=idcOf(p.id), bud=idcBudget(p), reg=idcRegime(p);
@@ -3365,13 +3423,35 @@ function kitIdCard(){
           Rédigée par le PM, envoyée au responsable de secteur, au PPM et à la finance ; une fois
           validée, elle ouvre la SPE.</div>
         ${bascule}</div>`;
+  /* Sous-carte ouverte : on laisse la bucket de côté le temps de la remplir. */
+  const si=idcSousOuverte(p);
+  if(si>=0){
+    const l=d.lignes[si], c=idcCarteSous(d,si), m=idcLigneTotal(l);
+    return `<div class="idc">
+      <div class="idcnote ${m>=IDC_SEUIL?'gate':''}"><span class="ic">🪪</span>
+        <div><b>${esc(l.nom||'Sous-projet '+(si+1))} — ${idcF(m)} k€.</b>
+          Sous-projet ${si+1} sur ${d.lignes.length} de la bucket « ${esc(d.nom||p.nom)} ».
+          ${m>=IDC_SEUIL?`Au-delà de ${IDC_SEUIL} k€ : ce sous-projet relève du process de Gate.`
+                        :`Sous ${IDC_SEUIL} k€ : il se valide par sa propre ID Card.`}</div>
+        <button class="iconbtn" id="idcRetour">← Retour à la bucket</button></div>
+      <div class="idcbar"><span class="idcquoi">Project ID Card</span>
+        <span class="sp"></span>
+        <button class="iconbtn" id="idcPrint">⎙ Diffuser pour approbation</button>
+        <button class="iconbtn" id="idcSync" title="Reprendre de la ligne de bucket ce qui manque dans la carte, sans rien écraser">⟲ Reprendre la ligne</button>
+        <button class="iconbtn" id="idcPrev" ${si<=0?'disabled':''} title="Sous-projet précédent">‹</button>
+        <span class="hint">${si+1} / ${d.lignes.length}</span>
+        <button class="iconbtn" id="idcNext" ${si>=d.lignes.length-1?'disabled':''} title="Sous-projet suivant">›</button>
+      </div>
+      ${idcProjetHTML(p,c)}
+    </div>`;
+  }
   return `<div class="idc">
     ${bandeau}
-    <div class="idctools">
+    <div class="idcbar">
+      <span class="idcquoi">${reg==='gate'?'Process de Gate':reg==='bucket'?'Bucket ID Card':'Project ID Card'}</span>
+      <span class="sp"></span>
       ${reg==='gate'?'':`<button class="iconbtn" id="idcPrint">⎙ Diffuser pour approbation</button>`}
       <button class="iconbtn" id="idcMaj" title="Reprendre le nom, le code, le PM et le sponsor de la fiche projet">⟲ Reprendre la fiche</button>
-      <span class="sp"></span>
-      <span class="hint">${reg==='gate'?'Process de Gate':reg==='bucket'?'Bucket ID Card':'Project ID Card'}</span>
     </div>
     ${reg==='gate' ? idcGatesHTML(p) : reg==='bucket' ? idcBucketHTML(p,d) : idcProjetHTML(p,d)}
   </div>`;
@@ -3440,7 +3520,8 @@ function idcBucketHTML(p,d){
     <td class="wrap"><span contenteditable data-idcl="${i}|timeline" data-vide="—">${esc(l.timeline||'')}</span></td>
     <td class="an">CAPEX ${cel(i,l,'capex',0)} / OPEX ${cel(i,l,'opex',0)}</td>
     <td class="an">CAPEX ${cel(i,l,'capex',1)} / OPEX ${cel(i,l,'opex',1)}</td>
-    <td><button class="delbtn" data-idcdel="${i}">×</button></td></tr>`;}).join('')
+    <td style="white-space:nowrap"><button class="iconbtn mini" data-idccard="${i}" title="Ouvrir l'ID Card de ce sous-projet">🪪${l.card?`<i class="idcpt ${norm(l.card.statut)==='approved'?'ok':norm(l.card.statut)==='rejected'?'ko':'att'}" title="${esc(l.card.statut)}"></i>`:''}</button>
+      <button class="delbtn" data-idcdel="${i}">×</button></td></tr>`;}).join('')
     ||`<tr><td colspan="8" class="empty">Aucun projet dans cette bucket. « + Projet ».</td></tr>`;
   const tot=j=>`CAPEX <b>${idcF(idcTotalLignes(d,'capex',j))||'—'}</b> / OPEX <b>${idcF(idcTotalLignes(d,'opex',j))||'—'}</b>`;
   const lig=(k)=>`<tr><th>${k.toUpperCase()}</th>
@@ -3461,7 +3542,7 @@ function idcBucketHTML(p,d){
     ${recap}
     <div class="tblwrap"><table class="idcbk"><thead><tr>
       <th style="width:120px"></th><th style="width:124px">WBS (INV-042XXX)</th><th>Description</th>
-      <th>Benefits</th><th>Timeline / Milestones</th><th style="width:150px">2026</th><th style="width:150px">2027</th><th style="width:24px"></th></tr></thead>
+      <th>Benefits</th><th>Timeline / Milestones</th><th style="width:150px">2026</th><th style="width:150px">2027</th><th style="width:62px">ID Card</th></tr></thead>
       <tbody>${lignes}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">Total</th>
         <th class="an">${tot(0)}</th><th class="an">${tot(1)}</th><th></th></tr></tfoot></table></div>
@@ -3508,21 +3589,24 @@ function kitArmerIdCard(){
   const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
   const d=idcOf(p.id);
   const rr=()=>renderGardeFocus(()=>{ renderKit(); });
+  /* Une sous-carte ouverte : la saisie vise sa fiche à elle, pas celle de la bucket. */
+  const si=idcSousOuverte(p);
+  const cible=(si>=0)?idcCarteSous(d,si):d;
   $$('#kitPane [data-idc]').forEach(el=>{
     const ev=(el.tagName==='SELECT'||el.type==='date')?'change':(el.tagName==='INPUT'?'change':'blur');
     el.addEventListener(ev,()=>{
       const ch=el.dataset.idc;
       const v=(el.tagName==='INPUT'||el.tagName==='SELECT')?el.value:el.innerText.replace(/ /g,' ').trim();
-      const av=idcGet(d,ch);
+      const av=idcGet(cible,ch);
       if(String(av==null?'':av)===String(v)) return;
-      idcSet(d,ch,v);
-      logChange('ID Card — '+(p.shine||p.nom), ch, av, v);
+      idcSet(cible,ch,v);
+      logChange('ID Card — '+(p.shine||p.nom)+((si>=0)?' › '+(cible.nom||'sous-projet '+(si+1)):''), ch, av, v);
       scheduleSave();
       if(/^fin\.|^bucketRef\./.test(ch)) rr();
     });
     if(el.isContentEditable) el.addEventListener('keydown',e=>{
       if(e.key==='Enter'&&!e.altKey&&!e.shiftKey){ e.preventDefault(); el.blur(); }
-      if(e.key==='Escape'){ el.innerText=String(idcGet(d,el.dataset.idc)||''); el.blur(); } });
+      if(e.key==='Escape'){ el.innerText=String(idcGet(cible,el.dataset.idc)||''); el.blur(); } });
   });
   $$('#kitPane [data-idcl]').forEach(el=>{
     const ev=el.tagName==='INPUT'?'change':'blur';
@@ -3552,7 +3636,23 @@ function kitArmerIdCard(){
     if([d.nom,d.code,d.pm,d.sponsor].join('|')!==av){ logChange('ID Card — '+(p.shine||p.nom),'reprise de la fiche','',d.nom); scheduleSave(); }
     renderKit(); });
   lier('#idcGates','click',()=>{ S.tab='gates'; S.navKey=''; render(); });
-  lier('#idcPrint','click',()=>idcDiffuser(p,d));
+  lier('#idcPrint','click',()=>idcDiffuser(p,cible));
+  /* Navigation entre la bucket et les cartes de ses sous-projets. */
+  $$('#kitPane [data-idccard]').forEach(b=>b.onclick=e=>{
+    e.preventDefault(); e.stopPropagation();
+    S.idcSub={id:p.id,i:+b.dataset.idccard};
+    idcCarteSous(d,S.idcSub.i); scheduleSave(); renderKit(); });
+  lier('#idcRetour','click',()=>{ S.idcSub=null; renderKit(); });
+  const saut=k=>{ const n=(d.lignes||[]).length; const j=si+k;
+    if(j>=0&&j<n){ S.idcSub={id:p.id,i:j}; idcCarteSous(d,j); scheduleSave(); renderKit(); } };
+  lier('#idcPrev','click',()=>saut(-1));
+  lier('#idcNext','click',()=>saut(1));
+  lier('#idcSync','click',()=>{
+    const n=idcCarteSousSync(d,si);
+    if(n){ logChange('ID Card — '+(p.shine||p.nom),'reprise de la ligne de bucket','',String(n)+' champ(s)'); scheduleSave(); }
+    renderKit();
+    if(!n) alert('Rien à reprendre : la carte porte déjà ce que la ligne de bucket contient.');
+  });
 }
 
 /* ---- Diffusion : la carte seule, prête à imprimer ou à enregistrer en PDF ---- */
