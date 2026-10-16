@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.12 -->
+<!-- PPM_BUILD:2026-10-16.14 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1207,7 +1207,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.12';
+const APP_BUILD='2026-10-16.14';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2536,15 +2536,22 @@ function appliquerSeedOP(){
   S.opSeeded=S.opSeeded||{};
   let n=0;
   Object.keys(SEED_OP).forEach(cle=>{
-    if(S.opSeeded[cle]) return;                     // déjà traité : on ne revient pas dessus
     const e=SEED_OP[cle], p=opSeedProjet(e);
     if(!p) return;                                  // projet absent de ce portefeuille
+    /* La frise, le budget et le passeport ne se posent qu'une fois : les
+       refondre ramènerait des jalons qu'on a retirés depuis. Le cahier des
+       objectifs, lui, est retenté à chaque ouverture — il ne comble que le
+       vide, donc il n'a rien à écraser, et une zone restée blanche finit par
+       recevoir son texte. */
+    const neuf=!S.opSeeded[cle];
     const o=opOf(p.id), pp=ensurePP(p.id);
     S.opSeeded[cle]=p.id;
     let pose=[];
-    /* Une ID Card fournie — bucket ou projet. Elle n'est posée que sur une
-       carte encore vierge : un texte écrit depuis n'est jamais remplacé.
-       Les champs d'identité (nom, code, PM, sponsor) ne comblent que le vide. */
+    /* Une ID Card fournie — bucket ou projet. Le cahier des objectifs comble
+       zone par zone ce qui est resté blanc ; un texte écrit depuis n'est
+       jamais remplacé. C'était autrefois tout ou rien : un seul mot posé
+       quelque part sur la carte suffisait à écarter le cahier entier, et on
+       n'y revenait plus. */
     if(e.idc){
       const d=idcOf(p.id), s=JSON.parse(JSON.stringify(e.idc));
       const comble=(k,v)=>{ if(v && !String(d[k]||'').trim()){ d[k]=v; return 1; } return 0; };
@@ -2557,24 +2564,29 @@ function appliquerSeedOP(){
           comble('nom',p.nom); comble('code',p.shine||p.ishift);
           pose.push(d.lignes.length+' sous-projet'+(d.lignes.length>1?'s':'')+' de la bucket');
         }
-      } else if(!idcRempli(d)){
-        ['description','benefits','rationale','timeline'].forEach(k=>{ if(s[k]) d[k]=s[k]; });
-        if(s.gap) d.gap=s.gap;
-        /* Montants fournis : ils n'arrivent que sur une carte vierge, comme le reste. */
-        if(s.fin) ['capex','opex'].forEach(k=>{ if(!s.fin[k]) return;
-          ['b','r'].forEach(x=>{ if(Array.isArray(s.fin[k][x])) d.fin[k][x]=s.fin[k][x].slice(0,4); }); });
-        if(s.statut && IDC_STATUTS.includes(s.statut)) d.statut=s.statut;
-        comble('nom', s.nom||p.nom); comble('code', s.code||p.shine||p.ishift);
-        comble('pm', s.pm||p.pm); comble('sponsor', s.sponsor||p.sponsor);
+      } else {
+        const vierge=!idcRempli(d);
+        let k=0;
+        ['description','benefits','rationale','timeline'].forEach(x=>{ k+=comble(x,s[x]); });
+        /* Le gap part d'une phrase type : elle ne vaut pas une saisie. */
+        if(s.gap && (!String(d.gap||'').trim() || d.gap===IDC_GAP0)){ d.gap=s.gap; k++; }
+        /* Les montants fournis comblent case à case, jamais par-dessus. */
+        if(s.fin) ['capex','opex'].forEach(y=>{ if(!s.fin[y]) return;
+          ['b','r'].forEach(z=>{ if(!Array.isArray(s.fin[y][z])) return;
+            s.fin[y][z].slice(0,4).forEach((v,i)=>{
+              if(v!=='' && !String(d.fin[y][z][i]||'').trim()){ d.fin[y][z][i]=v; k++; } }); }); });
+        if(vierge && s.statut && IDC_STATUTS.includes(s.statut)) d.statut=s.statut;
+        k+=comble('nom', s.nom||p.nom); k+=comble('code', s.code||p.shine||p.ishift);
+        k+=comble('pm', s.pm||p.pm); k+=comble('sponsor', s.sponsor||p.sponsor);
         /* Les approbateurs portent une valeur par défaut : la liste du CDO
            la remplace, mais jamais une liste saisie à la main. */
-        if(s.approvers && (!String(d.approvers||'').trim() || d.approvers==='PPM, finance, Resp secteur'))
-          d.approvers=s.approvers;
-        if(s.maj) comble('maj', s.maj);
-        pose.push('ID Card renseignée depuis le CDO');
+        if(s.approvers && (!String(d.approvers||'').trim() || d.approvers==='PPM, finance, Resp secteur')
+           && d.approvers!==s.approvers){ d.approvers=s.approvers; k++; }
+        k+=comble('maj', s.maj);
+        if(k) pose.push(k+' zone'+(k>1?'s':'')+' de l\u2019ID Card depuis le CDO');
       }
     }
-    if(e.op && opVierge(o)){
+    if(neuf && e.op && opVierge(o)){
       const src=JSON.parse(JSON.stringify(e.op));
       o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
         if(r.type==='milestones') r.milestones=(r.milestones||[]).map(m=>Object.assign({id:kuid()},m));
@@ -2585,14 +2597,18 @@ function appliquerSeedOP(){
       o.ganttStart=src.ganttStart||''; o.ganttEnd=src.ganttEnd||''; o.endMarker=src.endMarker||'';
       pose.push('frise, budget et réalisations');
     }
-    const q=JSON.parse(JSON.stringify(e.pp||{}));
-    const a=opFondre(pp.milestones,q.milestones,x=>x.name);
-    const b=opFondre(pp.risks,q.risks,x=>x.desc);
-    pp.nextSteps=(pp.nextSteps||[]).map(nsNorm);
-    const c=opFondre(pp.nextSteps,(q.nextSteps||[]).map(nsNorm),x=>x.t);
-    if(a) pose.push(a+' jalon'+(a>1?'s':''));
-    if(b) pose.push(b+' risque'+(b>1?'s':''));
-    if(c) pose.push(c+' étape'+(c>1?'s':''));
+    /* Jalons, risques et prochaines étapes se fondent dans le passeport : on
+       ne refond qu'une fois, sans quoi ce qu'on en a retiré reviendrait. */
+    if(neuf){
+      const q=JSON.parse(JSON.stringify(e.pp||{}));
+      const a=opFondre(pp.milestones,q.milestones,x=>x.name);
+      const b=opFondre(pp.risks,q.risks,x=>x.desc);
+      pp.nextSteps=(pp.nextSteps||[]).map(nsNorm);
+      const c=opFondre(pp.nextSteps,(q.nextSteps||[]).map(nsNorm),x=>x.t);
+      if(a) pose.push(a+' jalon'+(a>1?'s':''));
+      if(b) pose.push(b+' risque'+(b>1?'s':''));
+      if(c) pose.push(c+' étape'+(c>1?'s':''));
+    }
     if(!pp.statusTxt && e.statusTxt){ pp.statusTxt=e.statusTxt; pose.push('commentaire de statut'); }
     if(!p.hoverride && e.sante){ p.hoverride=e.sante; pose.push('santé'); }
     if(!pose.length) return;                        // tout était déjà là
@@ -3368,6 +3384,7 @@ const IDC_SEUIL=250;                       // k€ — au-delà, process de Gate
 const IDC_STATUTS=['To approve','Approved','Rejected'];
 const IDC_ANNEES=['26','27','28','29'];
 const IDC_REFS=['C2 26','B 27','SP 28','SP 29'];
+const IDC_GAP0='Gap vs B26/H27 : Yes or No\nIf yes, justify the gap';
 
 function idcBudget(p){ if(!p) return 0; const c=(p.c2!=null&&p.c2!=='')?p.c2:p.c1; return +c||0; }
 /* Le régime d'un projet. Le seuil de 250 k€ porte sur le projet qui passe en
@@ -3396,7 +3413,7 @@ function idcOf(id){
       nom:p.nom||'', code:p.shine||p.ishift||'', maj:'', statut:'To approve',
       sponsor:p.sponsor||'', pm:p.pm||'', approvers:'PPM, finance, Resp secteur',
       description:'', benefits:'', rationale:'', timeline:'',
-      gap:'Gap vs B26/H27 : Yes or No\nIf yes, justify the gap',
+      gap:IDC_GAP0,
       fin:{capex:{b:['','','',''],r:['','','','']}, opex:{b:['','','',''],r:['','','','']}},
       lignes:[], bucketRef:{capex:['',''],opex:['','']},
       diffusions:[]
@@ -3444,7 +3461,7 @@ function idcCarteSous(d,i){
     l.card={ nom:l.nom||'', code:l.wbs||'', maj:'', statut:'To approve',
       sponsor:d.sponsor||'', pm:d.pm||'', approvers:d.approvers||'PPM, finance, Resp secteur',
       description:l.description||'', benefits:l.benefits||'', rationale:'', timeline:l.timeline||'',
-      gap:'Gap vs B26/H27 : Yes or No\nIf yes, justify the gap',
+      gap:IDC_GAP0,
       fin:{capex:{b:[],r:[]}, opex:{b:[],r:[]}}, diffusions:[] };
     idcCarteSousSync(d,i);
   }
