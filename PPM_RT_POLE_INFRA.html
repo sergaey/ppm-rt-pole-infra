@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.8 -->
+<!-- PPM_BUILD:2026-10-16.12 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -925,29 +925,79 @@
   .idcappro th{width:84px;text-align:left;font-weight:700;background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;white-space:nowrap}
   .idcappro td{border:1px solid var(--line);padding:3px 8px;word-break:break-word}
   .idcgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
-  .idcgrid.bas{grid-template-columns:1fr 1fr;margin-top:11px}
+  .idcgrid.bas{grid-template-columns:1fr;margin-top:11px}
   .idcz{position:relative;border:1px solid var(--line-2);border-radius:9px;padding:14px 11px 10px;background:var(--panel)}
   .idclab{position:absolute;top:-8px;left:11px;padding:1px 8px;background:var(--panel-2);border:1px solid var(--line);
     border-radius:6px;font-size:10.5px;font-weight:800;color:var(--ink-2);letter-spacing:.02em}
   .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none}
-  .idcz.tl .idcbody{min-height:150px}
-  .idcz.fin .idcbody.gap{min-height:40px;margin-bottom:8px}
-  .idcbody:empty::before,[data-idc]:empty::before,[data-idcl]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
+
+  .idcz.fin .idcbody.gap{flex:1 1 auto;min-height:34px;margin-bottom:0}
+  .idcbody:empty::before,[data-idc]:empty::before,[data-idcl]:empty::before,
+  [data-tlnom]:empty::before,[data-tlab]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .idcbody:focus,.idcappro td:focus,.idct span:focus{background:var(--accent-soft);border-radius:4px}
-  .idcfin{width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px}
-  .idcfin th:first-child{width:76px}
-  .idcfin th,.idcfin td{border:1px solid var(--line);padding:2px 5px;text-align:center}
-  .idcfin thead th{background:var(--panel-2);font-weight:700;white-space:nowrap}
+  /* La synthèse financière est reprise du support d'origine trait pour trait :
+     trois violets d'en-tête (les exercices, les références budgétaires, les
+     écarts), un corps gris, des cellules d'écart orange au-dessus du budget et
+     vertes en dessous, et la question du gap en puce SOUS le tableau. Ces
+     teintes ne suivent pas le thème : la carte est la reproduction d'un
+     document, elle part en approbation et doit s'imprimer à l'identique. */
+  .idcfin{--f-an:#23004C;--f-ref:#5500B9;--f-gap:#7A00E6;--f-case:#D9D9D9;
+    --f-pos:#FFC000;--f-neg:#92D050;
+    width:100%;table-layout:fixed;border-collapse:collapse;font-size:11px;color:#000}
+  .idcfin th:first-child{width:8.8%}
+  .idcfin th,.idcfin td{border:2px solid #fff;padding:4px;text-align:center}
+  .idcfin thead th{background:var(--f-an);color:#fff;font-weight:700;white-space:nowrap;padding:7px 4px}
   /* Le support d'origine écrit « Gap 26 », pas « GAP 26 » : on le reproduit. */
   .idcfin th,.idcappro th,.idcbk th{text-transform:none;letter-spacing:0}
-  .idcfin th.ref,.idcfin td.ref{background:var(--panel-3)}
-  .idcfin th.gap,.idcfin td.gap{background:var(--warn-soft)}
-  .idcfin tbody th{text-align:left;background:var(--panel-2);font-weight:800}
-  .idcfin input.num{width:100%;min-width:40px;text-align:right;font-size:11px;padding:1px 3px}
-  .idccalc{display:inline-block;min-width:34px;padding:1px 5px;border-radius:5px;font-weight:800;
-    font-variant-numeric:tabular-nums;background:var(--panel-2);color:var(--ink-2);cursor:help}
-  .idccalc.pos{background:var(--bad-soft);color:var(--bad)}
-  .idccalc.neg{background:var(--good-soft);color:var(--good)}
+  .idcfin thead th.ref{background:var(--f-ref)}
+  .idcfin thead th.gap{background:var(--f-gap)}
+  .idcfin tbody th,.idcfin tbody td{background:var(--f-case);color:#000}
+  .idcfin tbody th{font-weight:700}
+  .idcfin td.gap.pos{background:var(--f-pos)}
+  .idcfin td.gap.neg{background:var(--f-neg)}
+  .idcfin input.num{width:100%;min-width:34px;text-align:center;font-size:11px;padding:1px 2px;
+    background:transparent;border:0;border-radius:0;color:#000}
+  .idcfin input.num:focus{background:#fff;outline:2px solid var(--f-ref);outline-offset:-2px}
+  .idccalc{display:inline-block;min-width:30px;font-weight:700;
+    font-variant-numeric:tabular-nums;background:transparent;color:inherit;cursor:help}
+  .idcgapline{display:flex;gap:8px;align-items:flex-start;margin-top:10px}
+  .idcpuce{flex:0 0 auto;color:#7A00E6;font-size:16px;line-height:1.15}
+  /* ---- Le planning du support : deux bandes d'annee, vingt-quatre mois ----
+     Memes violets que la synthese financiere, meme parti pris : ces teintes ne
+     suivent pas le theme, la carte part en approbation telle qu'on la voit. */
+  .idctl{border:2px solid #7A00E6;border-radius:3px;overflow:hidden;background:#EFEBFA;
+    color:#11202e;user-select:none}
+  .idctlan,.idctlm,.idctlgrid{display:grid;grid-template-columns:repeat(24,1fr)}
+  .idctlan>span{grid-column:span 12;background:#7A00E6;color:#fff;font-weight:800;font-size:15px;
+    text-align:center;padding:2px 0;outline:none}
+  .idctlan>span+span{box-shadow:inset 2px 0 0 #fff}
+  .idctlm>span{background:#EFEBFA;color:#156082;font-weight:800;font-size:9.5px;text-align:center;
+    padding:3px 0;border-right:1px solid #DED4F2;border-bottom:1px solid #C9BCE8}
+  .idctlm>span:nth-child(12){border-right:2px solid #7A00E6}
+  .idctlcorps{position:relative;padding:9px 0;min-height:52px}
+  .idctlgrid{position:absolute;inset:0;pointer-events:none}
+  .idctlgrid>i{border-right:1px solid #DED4F2}
+  .idctlgrid>i:nth-child(12){border-right:2px solid #7A00E6}
+  .idctlr{position:relative;height:26px;margin:4px 0}
+  .idctlnom{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;z-index:2;
+    padding-right:9px;font-size:11.5px;text-align:right;outline:none;max-width:46%;overflow:hidden}
+  .idctlb{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
+    cursor:grab;z-index:1}
+  .idctlb .bg{position:absolute;inset:0;border-radius:1px}
+  .idctlb .bg.fl{clip-path:polygon(0 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,0 100%)}
+  .idctlb .l{position:relative;padding:0 13px 0 6px;font-size:10px;line-height:1.1;text-align:center;
+    white-space:pre-wrap;outline:none;overflow:hidden;max-height:100%}
+  .idctlb.sel .bg{outline:2px solid #11202e;outline-offset:-2px}
+  .idctlb>i{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:2}
+  .idctlb>i.g{left:0}
+  .idctlb>i.d{right:0}
+  .idctlr .act{position:absolute;right:2px;top:50%;transform:translateY(-50%);z-index:4;
+    display:none;gap:3px;align-items:center}
+  .idctlr:hover .act{display:flex}
+  .idctlbarre{display:flex;gap:6px;align-items:center;margin:0 0 7px;flex-wrap:wrap}
+  .idctlsw{width:19px;height:19px;border-radius:5px;border:1px solid var(--line);cursor:pointer;padding:0}
+  .idctlsw.on{outline:2px solid var(--ink-2);outline-offset:1px}
+  .idcz.tl .idctltxt{min-height:52px;margin-top:9px}
   .idcbk{width:100%;border-collapse:collapse;font-size:11.5px}
   .idcbk th,.idcbk td{border:1px solid var(--line);padding:4px 6px;vertical-align:top}
   .idcbk thead th{background:var(--panel-2);font-weight:700;text-align:left}
@@ -1157,7 +1207,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.8';
+const APP_BUILD='2026-10-16.12';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3518,13 +3568,209 @@ function idcEnteteHTML(p,d,titre){
 const idcZone=(lbl,champ,val,cls)=>`<div class="idcz ${cls||''}"><span class="idclab">${esc(lbl)}</span>
   <div class="idcbody" contenteditable data-idc="${champ}" data-vide="Xxx">${esc(val||'')}</div></div>`;
 
+/* ---- Timeline : le planning du support, deux exercices au mois ----
+   Le support pose vingt-quatre mois en deux bandes d'année, des lignes dont
+   le libellé vient buter contre le début de la première barre, et des barres
+   au bout pointu — droit quand la barre suivante prend le relais au même
+   mois. Ici elles se déplacent et s'allongent à la souris, et leur texte
+   s'écrit au double-clic : c'est un planning qu'on tient, pas une image. */
+const IDC_TLM=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const IDC_TLMF=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+/* Teinte pleine puis teinte pâle : les deux tons du support pour un même ton. */
+const IDC_TLC=[['#00B0F0','#CCEEFC'],['#FF4FC3','#FFD3F0'],['#9933FF','#E0CCFF'],
+               ['#00B050','#CCEBD8'],['#FFC000','#FFECC2'],['#4472C4','#D8E2F5']];
+function idcTL(d){
+  const an=new Date().getFullYear();
+  if(!d.tl||typeof d.tl!=='object'||!Array.isArray(d.tl.rows)){
+    /* Une bucket connaît déjà ses lignes : ce sont ses sous-projets. On les
+       pose telles quelles, chacune avec les deux phases du support — il ne
+       reste qu'à tirer les dates. */
+    const base=(i)=>[{lab:'Faisa/APS/APD/DCE',a:2,b:6,c:i%IDC_TLC.length,t:0},
+                     {lab:'Travaux',a:6,b:11,c:i%IDC_TLC.length,t:1}];
+    d.tl=(d.lignes&&d.lignes.length)
+      ? {y0:an,rows:d.lignes.map((l,i)=>({nom:l.nom||'',bars:base(i)}))}
+      : {y0:an,rows:[{nom:'',bars:base(0)}]};
+  }
+  d.tl.y0=+d.tl.y0||an;
+  d.tl.rows.forEach(r=>{ r.bars=Array.isArray(r.bars)?r.bars:[];
+    r.bars.forEach(b=>{ b.a=Math.max(0,Math.min(23,Math.round(+b.a||0)));
+                        b.b=Math.max(b.a+1,Math.min(24,Math.round(+b.b||b.a+1))); }); });
+  return d.tl;
+}
+/* Une période, dite comme on la dit à l'oral — pour le journal des changements. */
+function idcTLQuand(t,a,b){ const f=m=>IDC_TLMF[m%12]+' '+(t.y0+Math.floor(m/12));
+  return f(a)+' → '+f(Math.max(a,b-1)); }
+function idcTLPc(n){ return (n/24*100).toFixed(4)+'%'; }
+
+function idcTLHTML(d){
+  const t=idcTL(d);
+  const sel=(S.idcBar&&t.rows[S.idcBar.i]&&t.rows[S.idcBar.i].bars[S.idcBar.j])?S.idcBar:null;
+  const bs=sel?t.rows[sel.i].bars[sel.j]:null;
+  const lignes=t.rows.map((r,i)=>{
+    /* Le libellé s'arrête là où commence la première barre. Sans barre, on le
+       pose au quart de la bande : il reste lisible et prêt à être rempli. */
+    const prem=r.bars.length?Math.min.apply(null,r.bars.map(b=>b.a)):6;
+    const barres=r.bars.map((b,j)=>{
+      const colle=r.bars.some((o,k)=>k!==j&&o.a===b.b);
+      const c=IDC_TLC[(+b.c||0)%IDC_TLC.length];
+      const fond=(+b.t)?'linear-gradient(90deg,'+c[1]+','+c[0]+')'
+                       :'linear-gradient(90deg,#fff,'+c[1]+')';
+      const on=sel&&sel.i===i&&sel.j===j;
+      return `<div class="idctlb${on?' sel':''}" data-tlb="${i}|${j}"
+        style="left:${idcTLPc(b.a)};width:${idcTLPc(b.b-b.a)}"
+        title="${esc(idcTLQuand(t,b.a,b.b))} — glisser pour déplacer, les bords pour allonger, double-clic pour écrire">
+        <span class="bg${colle?'':' fl'}" style="background:${fond}"></span>
+        <span class="l" data-tlab="${i}|${j}" data-vide="Phase">${esc(b.lab||'')}</span>
+        <i class="g" data-tlp="a"></i><i class="d" data-tlp="b"></i></div>`;}).join('');
+    return `<div class="idctlr" data-tlr="${i}">
+      <span class="idctlnom" contenteditable data-tlnom="${i}" data-vide="Projet"
+        style="right:${idcTLPc(24-prem)}">${esc(r.nom||'')}</span>${barres}
+      <span class="act noprint"><button class="iconbtn mini" data-tladd="${i}" title="Ajouter une barre">+</button>
+        <button class="delbtn" data-tlrdel="${i}" title="Supprimer la ligne">×</button></span></div>`;}).join('')
+    ||`<div class="idctlr"><span class="idctlnom" style="right:60%">Aucune ligne.</span></div>`;
+  const outils=`<div class="idctlbarre noprint">
+    <button class="iconbtn mini" id="tlAddR">+ Ligne</button>
+    ${bs?`<span class="hint">Barre « ${esc(bs.lab||'sans titre')} » :</span>
+      ${IDC_TLC.map((c,k)=>`<button class="idctlsw${(+bs.c||0)===k?' on':''}" data-tlc="${k}"
+        style="background:linear-gradient(90deg,${c[1]},${c[0]})" title="Teinte ${k+1}"></button>`).join('')}
+      <button class="iconbtn mini" id="tlTon">${(+bs.t)?'● teinte pleine':'○ teinte pâle'}</button>
+      <button class="iconbtn mini" id="tlDel">Supprimer la barre</button>`
+    :`<span class="hint">Glissez une barre pour la déplacer, ses bords pour l'allonger, double-cliquez pour écrire dedans.</span>`}
+  </div>`;
+  return outils+`<div class="idctl">
+    <div class="idctlan"><span contenteditable data-tly="0">${t.y0}</span><span contenteditable data-tly="1">${t.y0+1}</span></div>
+    <div class="idctlm">${[0,1].map(()=>IDC_TLM.map(m=>`<span>${m}</span>`).join('')).join('')}</div>
+    <div class="idctlcorps"><div class="idctlgrid">${Array(24).join('.').split('.').map(()=>'<i></i>').join('')}</div>
+      ${lignes}</div></div>`;
+}
+
+/* Le glisser-déposer vit sur le document — une barre qu'on tire suit la souris
+   même quand elle sort du cadre. On ne laisse jamais deux jeux d'écouteurs :
+   chaque rendu remplace les précédents. */
+let IDC_TLDOC=null;
+function idcTLBind(p,d,rr){
+  const corps=$('#kitPane .idctlcorps'); if(!corps) return;
+  const t=idcTL(d), nom=(p&&(p.shine||p.nom))||'';
+  const trace=(q,av,ap)=>{ logChange('ID Card — '+nom,'planning · '+q,av,ap); scheduleSave(); };
+  let dr=null, tSel=null;
+
+  corps.addEventListener('mousedown',e=>{
+    const el=e.target.closest('.idctlb');
+    if(!el){ if(S.idcBar){ S.idcBar=null; rr(); } return; }
+    if(e.target.isContentEditable) return;                 /* on est en train d'écrire */
+    const ij=el.dataset.tlb.split('|').map(Number);
+    const bar=t.rows[ij[0]]&&t.rows[ij[0]].bars[ij[1]]; if(!bar) return;
+    dr={el,bar,i:ij[0],j:ij[1],poi:e.target.dataset.tlp||'m',x0:e.clientX,
+        a0:bar.a,b0:bar.b,na:bar.a,nb:bar.b,bouge:false,
+        pas:el.parentNode.getBoundingClientRect().width/24};
+    el.style.cursor='grabbing'; e.preventDefault();
+  });
+
+  const bouger=e=>{
+    if(!dr) return;
+    const dm=Math.round((e.clientX-dr.x0)/dr.pas); if(dm) dr.bouge=true;
+    const L=dr.b0-dr.a0; let a=dr.a0,b=dr.b0;
+    if(dr.poi==='m'){ a=Math.max(0,Math.min(24-L,dr.a0+dm)); b=a+L; }
+    else if(dr.poi==='a'){ a=Math.max(0,Math.min(dr.b0-1,dr.a0+dm)); }
+    else { b=Math.max(dr.a0+1,Math.min(24,dr.b0+dm)); }
+    dr.na=a; dr.nb=b;
+    dr.el.style.left=idcTLPc(a); dr.el.style.width=idcTLPc(b-a);
+  };
+
+  const lacher=()=>{
+    if(!dr) return;
+    const c=dr; dr=null; c.el.style.cursor='';
+    if(c.bouge){
+      if(c.na!==c.bar.a||c.nb!==c.bar.b){
+        const av=idcTLQuand(t,c.bar.a,c.bar.b);
+        c.bar.a=c.na; c.bar.b=c.nb;
+        trace(c.bar.lab||'barre',av,idcTLQuand(t,c.bar.a,c.bar.b));
+      }
+      rr();
+    } else {
+      /* Un clic sans déplacement sélectionne la barre — mais on laisse au
+         double-clic le temps d'arriver : redessiner tout de suite arracherait
+         la barre sous la souris avant qu'on ait pu écrire dedans. */
+      S.idcBar=(S.idcBar&&S.idcBar.i===c.i&&S.idcBar.j===c.j)?null:{i:c.i,j:c.j};
+      clearTimeout(tSel); tSel=setTimeout(rr,230);
+    }
+  };
+  if(IDC_TLDOC){ document.removeEventListener('mousemove',IDC_TLDOC.m);
+                 document.removeEventListener('mouseup',IDC_TLDOC.u); }
+  IDC_TLDOC={m:bouger,u:lacher};
+  document.addEventListener('mousemove',bouger);
+  document.addEventListener('mouseup',lacher);
+
+  /* Le texte d'une barre s'écrit au double-clic : le simple clic sert à tirer. */
+  corps.addEventListener('dblclick',e=>{
+    const l=e.target.closest('[data-tlab]'); if(!l) return;
+    clearTimeout(tSel);                                    /* on écrit, on ne redessine pas */
+    l.setAttribute('contenteditable','true'); l.focus();
+    const r=document.createRange(); r.selectNodeContents(l);
+    const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r);
+  });
+  $$('#kitPane [data-tlab]').forEach(l=>{
+    l.addEventListener('blur',()=>{
+      l.removeAttribute('contenteditable');
+      const ij=l.dataset.tlab.split('|').map(Number);
+      const bar=t.rows[ij[0]]&&t.rows[ij[0]].bars[ij[1]]; if(!bar) return;
+      const v=l.innerText.replace(/ /g,' ').trim();
+      if(String(bar.lab||'')===v) return;
+      trace('intitulé',bar.lab||'',v); bar.lab=v; rr();
+    });
+    l.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); l.blur(); } });
+  });
+
+  $$('#kitPane [data-tlnom]').forEach(el=>el.addEventListener('blur',()=>{
+    const r=t.rows[+el.dataset.tlnom]; if(!r) return;
+    const v=el.innerText.replace(/ /g,' ').trim();
+    if(String(r.nom||'')===v) return;
+    trace('ligne',r.nom||'',v); r.nom=v;
+  }));
+
+  /* Changer l'exercice de départ : on saisit l'une ou l'autre des deux bandes. */
+  $$('#kitPane [data-tly]').forEach(el=>el.addEventListener('blur',()=>{
+    const an=parseInt(el.innerText.replace(/[^0-9]/g,''),10);
+    const y0=(+el.dataset.tly===1)?an-1:an;
+    if(!an||y0===t.y0||y0<2000||y0>2100){ el.innerText=t.y0+(+el.dataset.tly); return; }
+    trace('exercices',t.y0+' | '+(t.y0+1),y0+' | '+(y0+1)); t.y0=y0; rr();
+  }));
+
+  const lier=(sel,fn)=>{const n=$(sel); if(n)n.addEventListener('click',fn);};
+  lier('#tlAddR',()=>{ t.rows.push({nom:'',bars:[{lab:'Faisa/APS/APD/DCE',a:2,b:6,c:t.rows.length%IDC_TLC.length,t:0},
+                                                 {lab:'Travaux',a:6,b:11,c:t.rows.length%IDC_TLC.length,t:1}]});
+    trace('ligne','',"ajoutée"); S.idcBar=null; rr(); });
+  $$('#kitPane [data-tladd]').forEach(b=>b.onclick=()=>{
+    const r=t.rows[+b.dataset.tladd]; if(!r) return;
+    const fin=r.bars.length?Math.max.apply(null,r.bars.map(x=>x.b)):0;
+    const a=Math.min(23,fin), c=r.bars.length?(+r.bars[r.bars.length-1].c||0):0;
+    r.bars.push({lab:'Travaux',a,b:Math.min(24,a+4),c,t:1});
+    trace('barre','',"ajoutée à « "+(r.nom||'ligne')+" »"); S.idcBar={i:+b.dataset.tladd,j:r.bars.length-1}; rr(); });
+  $$('#kitPane [data-tlrdel]').forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.tlrdel, r=t.rows[i]; if(!r) return;
+    if(!confirm('Supprimer la ligne « '+(r.nom||(i+1))+' » du planning ?')) return;
+    t.rows.splice(i,1); trace('ligne',r.nom||String(i+1),'supprimée'); S.idcBar=null; rr(); });
+
+  /* Les retouches de la barre sélectionnée. */
+  const bs=(S.idcBar&&t.rows[S.idcBar.i])?t.rows[S.idcBar.i].bars[S.idcBar.j]:null;
+  $$('#kitPane [data-tlc]').forEach(b=>b.onclick=()=>{
+    if(!bs) return; const k=+b.dataset.tlc; if((+bs.c||0)===k) return;
+    trace('teinte de « '+(bs.lab||'barre')+' »',String(+bs.c||0),String(k)); bs.c=k; rr(); });
+  lier('#tlTon',()=>{ if(!bs) return; bs.t=(+bs.t)?0:1;
+    trace('teinte de « '+(bs.lab||'barre')+' »','',(+bs.t)?'pleine':'pâle'); rr(); });
+  lier('#tlDel',()=>{ if(!bs) return;
+    const r=t.rows[S.idcBar.i];
+    if(!confirm('Supprimer la barre « '+(bs.lab||'sans titre')+' » ?')) return;
+    r.bars.splice(S.idcBar.j,1); trace('barre',bs.lab||'sans titre','supprimée'); S.idcBar=null; rr(); });
+}
+
 /* ---- Project ID Card ---- */
 function idcProjetHTML(p,d){
   const col=(k)=>`<tr><th>${k.toUpperCase()}</th>
     ${IDC_ANNEES.map((a,j)=>`<td><input class="kin num" data-idc="fin.${k}.b.${j}" value="${esc(d.fin[k].b[j])}"></td>`).join('')}
     ${IDC_REFS.map((r,j)=>`<td class="ref"><input class="kin num" data-idc="fin.${k}.r.${j}" value="${esc(d.fin[k].r[j])}"></td>`).join('')}
     ${IDC_ANNEES.map((a,j)=>{const e=idcEcart(d,k,j);
-      return `<td class="gap"><span class="idccalc ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}" title="Besoin ${esc(d.fin[k].b[j]||'—')} − référence ${esc(d.fin[k].r[j]||'—')}">${idcSigne(e)}</span></td>`;}).join('')}
+      return `<td class="gap ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}"><span class="idccalc" title="Besoin ${esc(d.fin[k].b[j]||'—')} − référence ${esc(d.fin[k].r[j]||'—')}">${e==null?'':idcSigne(e)}</span></td>`;}).join('')}
   </tr>`;
   return `<div class="idccard" id="idcCard">
     ${idcEnteteHTML(p,d,'Project ID Card')}
@@ -3534,14 +3780,17 @@ function idcProjetHTML(p,d){
       ${idcZone('Rationale','rationale',d.rationale)}
     </div>
     <div class="idcgrid bas">
-      ${idcZone('Timeline','timeline',d.timeline,'tl')}
+      <div class="idcz tl"><span class="idclab">Timeline</span>
+        ${idcTLHTML(d)}
+        <div class="idcbody idctltxt" contenteditable data-idc="timeline" data-vide="Xxx">${esc(d.timeline||'')}</div>
+      </div>
       <div class="idcz fin"><span class="idclab">Financial Summary</span>
-        <div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No">${esc(d.gap||'')}</div>
         <div class="tblwrap"><table class="idcfin"><thead>
           <tr><th>(K€)</th>${IDC_ANNEES.map(a=>`<th>’${a}</th>`).join('')}
             ${IDC_REFS.map(r=>`<th class="ref">${esc(r)}</th>`).join('')}
             ${IDC_ANNEES.map(a=>`<th class="gap">Gap ${a}</th>`).join('')}</tr></thead>
           <tbody>${col('capex')}${col('opex')}</tbody></table></div>
+        <div class="idcgapline"><span class="idcpuce">•</span><div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No&#10;If yes, justify the gap">${esc(d.gap||'')}</div></div>
       </div>
     </div></div>`;
 }
@@ -3567,7 +3816,7 @@ function idcBucketHTML(p,d){
     ${[0,1].map(j=>`<td class="num"><span class="idccalc" title="Somme des projets de la bucket">${idcF(idcTotalLignes(d,k,j))||'—'}</span></td>`).join('')}
     ${[0,1].map(j=>`<td class="ref"><input class="kin num" data-idc="bucketRef.${k}.${j}" value="${esc(d.bucketRef[k][j])}"></td>`).join('')}
     ${[0,1].map(j=>{const e=idcEcartBucket(d,k,j);
-      return `<td class="gap"><span class="idccalc ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}" title="Total projets − budget bucket">${idcSigne(e)}</span></td>`;}).join('')}
+      return `<td class="gap ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}"><span class="idccalc" title="Total projets − budget bucket">${e==null?'':idcSigne(e)}</span></td>`;}).join('')}
   </tr>`;
   /* Ce que porte l'enveloppe, ce qui est réparti, ce qui reste à affecter :
      la question qu'on se pose en ouvrant une bucket. */
@@ -3585,13 +3834,17 @@ function idcBucketHTML(p,d){
       <tbody>${lignes}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">Total</th>
         <th class="an">${tot(0)}</th><th class="an">${tot(1)}</th><th></th></tr></tfoot></table></div>
+    <div class="idcz tl" style="margin-top:12px"><span class="idclab">Timeline</span>
+      ${idcTLHTML(d)}
+      <div class="idcbody idctltxt" contenteditable data-idc="timeline" data-vide="Xxx">${esc(d.timeline||'')}</div>
+    </div>
     <div class="idcz fin" style="margin-top:12px"><span class="idclab">Bucket Financial Summary</span>
-      <div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No">${esc(d.gap||'')}</div>
       <div class="tblwrap"><table class="idcfin"><thead>
         <tr><th></th><th colspan="2">Total Projects</th><th colspan="2" class="ref">Total Bucket</th><th colspan="2" class="gap"></th></tr>
-        <tr><th>(K€)</th><th>’26 *</th><th>’27 *</th><th class="ref">C2 26</th><th class="ref">B27</th>
+        <tr><th>(K€)</th><th>’26 *</th><th>’27 *</th><th class="ref">C2 26</th><th class="ref">B 27</th>
           <th class="gap">Gap 26</th><th class="gap">Gap 27</th></tr></thead>
         <tbody>${lig('capex')}${lig('opex')}</tbody></table></div>
+      <div class="idcgapline"><span class="idcpuce">•</span><div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No&#10;If yes, justify the gap">${esc(d.gap||'')}</div></div>
       <div class="hint" style="margin-top:7px">* Totaux du tableau ci-dessus, repris pour être comparés au budget de la bucket (cf. fichier CAPEX/OPEX).</div>
     </div>
     <div class="idctools" style="margin-top:10px"><button class="iconbtn" id="idcAdd">+ Projet dans la bucket</button></div>
@@ -3686,6 +3939,7 @@ function kitArmerIdCard(){
     if(j>=0&&j<n){ S.idcSub={id:p.id,i:j}; idcCarteSous(d,j); scheduleSave(); renderKit(); } };
   lier('#idcPrev','click',()=>saut(-1));
   lier('#idcNext','click',()=>saut(1));
+  idcTLBind(p,cible,rr);
   lier('#idcSync','click',()=>{
     const n=idcCarteSousSync(d,si);
     if(n){ logChange('ID Card — '+(p.shine||p.nom),'reprise de la ligne de bucket','',String(n)+' champ(s)'); scheduleSave(); }
@@ -3707,7 +3961,7 @@ function idcDiffuser(p,d){
       body{margin:0;padding:14px 16px;background:#fff;color:#11202e;font-family:Inter,Segoe UI,Arial,sans-serif}
       .idccard{box-shadow:none;border:1px solid #cfd8de}
       [contenteditable]{outline:none}
-      .delbtn,.idctools{display:none!important}
+      .delbtn,.idctools,.idctlbarre,.idctlr .act,.noprint{display:none!important}
       .idcfoot{margin-top:10px;font-size:10.5px;color:#5e7485;display:flex;justify-content:space-between}
       @page{size:A4 landscape;margin:8mm}
     </style></head><body>
