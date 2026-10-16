@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.5 -->
+<!-- PPM_BUILD:2026-10-16.6 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1157,7 +1157,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.5';
+const APP_BUILD='2026-10-16.6';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2492,18 +2492,33 @@ function appliquerSeedOP(){
     const o=opOf(p.id), pp=ensurePP(p.id);
     S.opSeeded[cle]=p.id;
     let pose=[];
-    /* Une bucket fournie : ses sous-projets ne sont posés que si la carte est
-       encore vide, pour ne jamais écraser une répartition déjà travaillée. */
+    /* Une ID Card fournie — bucket ou projet. Elle n'est posée que sur une
+       carte encore vierge : un texte écrit depuis n'est jamais remplacé.
+       Les champs d'identité (nom, code, PM, sponsor) ne comblent que le vide. */
     if(e.idc){
-      const d=idcOf(p.id);
-      if(!(d.lignes||[]).length){
-        const s=JSON.parse(JSON.stringify(e.idc));
-        d.bucket=true;
-        d.lignes=(s.lignes||[]).map(l=>Object.assign({capex:['',''],opex:['','']},l));
-        if(s.bucketRef) d.bucketRef=s.bucketRef;
+      const d=idcOf(p.id), s=JSON.parse(JSON.stringify(e.idc));
+      const comble=(k,v)=>{ if(v && !String(d[k]||'').trim()){ d[k]=v; return 1; } return 0; };
+      if(Array.isArray(s.lignes) && s.lignes.length){
+        if(!(d.lignes||[]).length){
+          d.bucket=true;
+          d.lignes=s.lignes.map(l=>Object.assign({capex:['',''],opex:['','']},l));
+          if(s.bucketRef) d.bucketRef=s.bucketRef;
+          if(s.gap) d.gap=s.gap;
+          comble('nom',p.nom); comble('code',p.shine||p.ishift);
+          pose.push(d.lignes.length+' sous-projet'+(d.lignes.length>1?'s':'')+' de la bucket');
+        }
+      } else if(!idcRempli(d)){
+        ['description','benefits','rationale','timeline'].forEach(k=>{ if(s[k]) d[k]=s[k]; });
         if(s.gap) d.gap=s.gap;
-        if(!d.nom) d.nom=p.nom||''; if(!d.code) d.code=p.shine||p.ishift||'';
-        pose.push(d.lignes.length+' sous-projet'+(d.lignes.length>1?'s':'')+' de la bucket');
+        if(s.statut && IDC_STATUTS.includes(s.statut)) d.statut=s.statut;
+        comble('nom', s.nom||p.nom); comble('code', s.code||p.shine||p.ishift);
+        comble('pm', s.pm||p.pm); comble('sponsor', s.sponsor||p.sponsor);
+        /* Les approbateurs portent une valeur par défaut : la liste du CDO
+           la remplace, mais jamais une liste saisie à la main. */
+        if(s.approvers && (!String(d.approvers||'').trim() || d.approvers==='PPM, finance, Resp secteur'))
+          d.approvers=s.approvers;
+        if(s.maj) comble('maj', s.maj);
+        pose.push('ID Card renseignée depuis le CDO');
       }
     }
     if(e.op && opVierge(o)){
@@ -3404,6 +3419,13 @@ function idcCarteSousSync(d,i){
   });
   return n;
 }
+/* Une carte porte-t-elle du contenu ? Sert à ne pas écraser un texte déjà
+   écrit, et à signaler une ID Card rédigée sur un projet qui relève du Gate. */
+function idcRempli(d){
+  if(!d) return false;
+  if((d.lignes||[]).length) return true;
+  return ['description','benefits','rationale','timeline'].some(k=>String(d[k]||'').trim().length>0);
+}
 function idcSousOuverte(p){
   const s=S.idcSub;
   if(!s||s.id!==p.id) return -1;
@@ -3462,7 +3484,12 @@ function kitIdCard(){
       ${reg==='gate'?'':`<button class="iconbtn" id="idcPrint">⎙ Diffuser pour approbation</button>`}
       <button class="iconbtn" id="idcMaj" title="Reprendre le nom, le code, le PM et le sponsor de la fiche projet">⟲ Reprendre la fiche</button>
     </div>
-    ${reg==='gate' ? idcGatesHTML(p) : reg==='bucket' ? idcBucketHTML(p,d) : idcProjetHTML(p,d)}
+    ${reg==='gate' ? idcGatesHTML(p)+(idcRempli(d)?`
+        <div class="idcnote" style="margin:14px 0 11px"><span class="ic">🪪</span>
+          <div><b>Une ID Card a été rédigée pour ce projet.</b> Au-delà de ${IDC_SEUIL} k€ elle ne vaut
+            pas validation — c'est le process de Gate qui s'applique —, mais son contenu reste le
+            cadrage du projet et alimente les supports de passage.</div></div>`+idcProjetHTML(p,d):'')
+      : reg==='bucket' ? idcBucketHTML(p,d) : idcProjetHTML(p,d)}
   </div>`;
 }
 
