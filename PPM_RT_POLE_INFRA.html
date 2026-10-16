@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-15.11 -->
+<!-- PPM_BUILD:2026-10-16 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -969,6 +969,15 @@
   .idcgate .gm{font-size:10.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
   .idcgate .gt{margin-top:6px;font-size:10px;font-style:italic}
   @media (max-width:1180px){ .idcgrid{grid-template-columns:1fr} .idcgrid.bas{grid-template-columns:1fr} }
+  .idcrecap{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-bottom:10px;padding:7px 12px;
+    border-radius:9px;border:1px solid var(--line);background:var(--panel-2);font-size:12px;color:var(--ink-2)}
+  .idcrecap b{font-family:Archivo;font-size:13.5px;color:var(--ink);margin-left:5px;font-variant-numeric:tabular-nums}
+  .idcrecap.ok{border-color:var(--good);background:var(--good-soft)}
+  .idcrecap.att{border-color:var(--warn);background:var(--warn-soft)}
+  .idcrecap.ko{border-color:var(--bad);background:var(--bad-soft)}
+  .idcmini{display:block;font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;margin-top:2px}
+  .idcwarn{display:block;margin-top:2px;font-size:10px;font-weight:800;color:var(--bad)}
+  tr.idcgros td{background:var(--bad-soft)}
 </style>
 <div class="app">
   <aside class="sidebar">
@@ -1115,7 +1124,7 @@ const SEED_PASSPORTS = {"P40203":{"code":"P40203","phase":"Travaux","gate":"G3",
    projet correspondant du portefeuille, une seule fois et seulement si sa
    page est encore vierge : une saisie faite depuis n'est jamais ecrasee.
    Les autres projets gardent la structure de base. */
-const SEED_OP = {"demo":{"cles":{"codes":["P40156"],"nom":[]},"etiquette":"Extension quai de réception matières","sante":"a","statusTxt":"Attente du retour du charpentier sur le chiffrage de la couverture.\n\nBudget à piloter : l'atterrissage dépasse le C1 de 440 k€.","op":{"ganttStart":"2025-10-01","ganttEnd":"2026-09-01","endMarker":"2026-07-31","wbs":[{"type":"milestones","name":"Jalons Projet","milestones":[{"label":"CDO","date":"2025-10-14","color":"#f59e0b","topPct":0},{"label":"CER","date":"2025-11-20","color":"#db2777","topPct":50},{"label":"Gate 3","date":"2026-01-15","color":"#4f46e5","topPct":100},{"label":"Gate 5","date":"2026-07-31","color":"#16a34a","topPct":0}]},{"type":"bar","name":"1. Terrassement et fondations du quai","start":"2025-11-03","end":"2026-01-30","label":"3 mois →","color":"#16a34a","status":"Done"},{"type":"bar","name":"2. Charpente métallique et couverture","start":"2026-02-02","end":"2026-04-30","label":"3 mois →","color":"#2563eb","status":"Done"},{"type":"bar","name":"3. Quai niveleur, portes sectionnelles et abri","start":"2026-05-04","end":"2026-06-30","label":"2 mois →","color":"#f59e0b","status":"WIP"},{"type":"bar","name":"4. Réception, CSSCT et mise en service","start":"2026-07-01","end":"2026-07-31","label":"1 mois →","color":"#2563eb","status":"Not started"}],"budget":{"years":["Capex 2025","Capex 2026"],"rows":[{"role":"budget","label":"Budget Value","values":[1200,2000]},{"role":"act","label":"Actuals Amount","values":[910,1500]},{"role":"commit","label":"Open Commitments","values":[240,410]},{"role":"dispo","label":"Available Amount","values":[0,0]},{"role":"final","label":"Final Cost","values":[1200,2440],"total":true}]},"ach":["Fondations coulées et séchées, contrôle béton conforme","Charpente levée et couverture posée, bardage en cours","Commande du quai niveleur passée, livraison confirmée en S20"]},"pp":{"milestones":[{"name":"Réception des fondations et contrôle béton","ini":"30/01/2026","neu":"30/01/2026","st":"Done"},{"name":"Levage de la charpente métallique","ini":"20/02/2026","neu":"06/03/2026","st":"Done"},{"name":"Pose du quai niveleur et des portes sectionnelles","ini":"15/05/2026","neu":"12/06/2026","st":"In progress"},{"name":"Visite CSSCT et permis de démarrage","ini":"20/07/2026","neu":"20/07/2026","st":"Not started"}],"risks":[{"desc":"Chiffrage de la couverture non reçu du charpentier","mit":"Relance hebdomadaire, devis de secours demandé","owner":"AV","date":"28/02/2026"},{"desc":"Co-activité avec la circulation des camions pendant les travaux","mit":"Plan de circulation provisoire validé avec la logistique","owner":"HSM","date":"15/03/2026"}],"nextSteps":[{"t":"Réception du quai niveleur et essais de charge","st":"En cours"},{"t":"Raccordement électrique des portes sectionnelles","st":"À faire"},{"t":"Dossier de réception et visite CSSCT","st":"À faire"}]}}};
+const SEED_OP = {"demo":{"cles":{"codes":["P40156"],"nom":[]},"etiquette":"Extension quai de réception matières","sante":"a","statusTxt":"Attente du retour du charpentier sur le chiffrage de la couverture.\n\nBudget à piloter : l'atterrissage dépasse le C1 de 440 k€.","op":{"ganttStart":"2025-10-01","ganttEnd":"2026-09-01","endMarker":"2026-07-31","wbs":[{"type":"milestones","name":"Jalons Projet","milestones":[{"label":"CDO","date":"2025-10-14","color":"#f59e0b","topPct":0},{"label":"CER","date":"2025-11-20","color":"#db2777","topPct":50},{"label":"Gate 3","date":"2026-01-15","color":"#4f46e5","topPct":100},{"label":"Gate 5","date":"2026-07-31","color":"#16a34a","topPct":0}]},{"type":"bar","name":"1. Terrassement et fondations du quai","start":"2025-11-03","end":"2026-01-30","label":"3 mois →","color":"#16a34a","status":"Done"},{"type":"bar","name":"2. Charpente métallique et couverture","start":"2026-02-02","end":"2026-04-30","label":"3 mois →","color":"#2563eb","status":"Done"},{"type":"bar","name":"3. Quai niveleur, portes sectionnelles et abri","start":"2026-05-04","end":"2026-06-30","label":"2 mois →","color":"#f59e0b","status":"WIP"},{"type":"bar","name":"4. Réception, CSSCT et mise en service","start":"2026-07-01","end":"2026-07-31","label":"1 mois →","color":"#2563eb","status":"Not started"}],"budget":{"years":["Capex 2025","Capex 2026"],"rows":[{"role":"budget","label":"Budget Value","values":[1200,2000]},{"role":"act","label":"Actuals Amount","values":[910,1500]},{"role":"commit","label":"Open Commitments","values":[240,410]},{"role":"dispo","label":"Available Amount","values":[0,0]},{"role":"final","label":"Final Cost","values":[1200,2440],"total":true}]},"ach":["Fondations coulées et séchées, contrôle béton conforme","Charpente levée et couverture posée, bardage en cours","Commande du quai niveleur passée, livraison confirmée en S20"]},"pp":{"milestones":[{"name":"Réception des fondations et contrôle béton","ini":"30/01/2026","neu":"30/01/2026","st":"Done"},{"name":"Levage de la charpente métallique","ini":"20/02/2026","neu":"06/03/2026","st":"Done"},{"name":"Pose du quai niveleur et des portes sectionnelles","ini":"15/05/2026","neu":"12/06/2026","st":"In progress"},{"name":"Visite CSSCT et permis de démarrage","ini":"20/07/2026","neu":"20/07/2026","st":"Not started"}],"risks":[{"desc":"Chiffrage de la couverture non reçu du charpentier","mit":"Relance hebdomadaire, devis de secours demandé","owner":"AV","date":"28/02/2026"},{"desc":"Co-activité avec la circulation des camions pendant les travaux","mit":"Plan de circulation provisoire validé avec la logistique","owner":"HSM","date":"15/03/2026"}],"nextSteps":[{"t":"Réception du quai niveleur et essais de charge","st":"En cours"},{"t":"Raccordement électrique des portes sectionnelles","st":"À faire"},{"t":"Dossier de réception et visite CSSCT","st":"À faire"}]}},"demo_bucket":{"cles":{"codes":["P40615"],"nom":[]},"etiquette":"Mise aux normes ATEX zone solvants","idc":{"gap":"Gap vs B26/H27 : No\nEnveloppe répartie entre les trois sous-projets.","bucketRef":{"capex":["300","0"],"opex":["0","0"]},"lignes":[{"nom":"Ventilation zone solvants","wbs":"","description":"Reprise de l'extraction","benefits":"","timeline":"","capex":["120",""],"opex":["",""]},{"nom":"Mise à la terre des cuves","wbs":"","description":"Continuité électrique","benefits":"","timeline":"","capex":["95",""],"opex":["",""]},{"nom":"Divers ATEX","wbs":"","description":"Reste de l'enveloppe","benefits":"","timeline":"","capex":["85",""],"opex":["",""]}]}}};
 
 /* ======================= State ======================= */
 let S = null;
@@ -1140,7 +1149,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-15.11';
+const APP_BUILD='2026-10-16';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2406,7 +2415,21 @@ function appliquerSeedOP(){
     const o=opOf(p.id), pp=ensurePP(p.id);
     S.opSeeded[cle]=p.id;
     let pose=[];
-    if(opVierge(o)){
+    /* Une bucket fournie : ses sous-projets ne sont posés que si la carte est
+       encore vide, pour ne jamais écraser une répartition déjà travaillée. */
+    if(e.idc){
+      const d=idcOf(p.id);
+      if(!(d.lignes||[]).length){
+        const s=JSON.parse(JSON.stringify(e.idc));
+        d.bucket=true;
+        d.lignes=(s.lignes||[]).map(l=>Object.assign({capex:['',''],opex:['','']},l));
+        if(s.bucketRef) d.bucketRef=s.bucketRef;
+        if(s.gap) d.gap=s.gap;
+        if(!d.nom) d.nom=p.nom||''; if(!d.code) d.code=p.shine||p.ishift||'';
+        pose.push(d.lignes.length+' sous-projet'+(d.lignes.length>1?'s':'')+' de la bucket');
+      }
+    }
+    if(e.op && opVierge(o)){
       const src=JSON.parse(JSON.stringify(e.op));
       o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
         if(r.type==='milestones') r.milestones=(r.milestones||[]).map(m=>Object.assign({id:kuid()},m));
@@ -2417,7 +2440,7 @@ function appliquerSeedOP(){
       o.ganttStart=src.ganttStart||''; o.ganttEnd=src.ganttEnd||''; o.endMarker=src.endMarker||'';
       pose.push('frise, budget et réalisations');
     }
-    const q=JSON.parse(JSON.stringify(e.pp));
+    const q=JSON.parse(JSON.stringify(e.pp||{}));
     const a=opFondre(pp.milestones,q.milestones,x=>x.name);
     const b=opFondre(pp.risks,q.risks,x=>x.desc);
     pp.nextSteps=(pp.nextSteps||[]).map(nsNorm);
@@ -3202,7 +3225,23 @@ const IDC_ANNEES=['26','27','28','29'];
 const IDC_REFS=['C2 26','B 27','SP 28','SP 29'];
 
 function idcBudget(p){ if(!p) return 0; const c=(p.c2!=null&&p.c2!=='')?p.c2:p.c1; return +c||0; }
-function idcRegime(p){ return idcBudget(p)<IDC_SEUIL ? 'idcard' : 'gate'; }
+/* Le régime d'un projet. Le seuil de 250 k€ porte sur le projet qui passe en
+   validation, pas sur une enveloppe : une bucket existe précisément pour
+   regrouper des petits projets, et c'est chacun d'eux qui doit rester sous le
+   seuil. Juger la bucket sur son total reviendrait à envoyer au process de
+   Gate un groupe dont aucun membre n'en relève. */
+function idcRegime(p){
+  const d=(S.idc&&S.idc[p&&p.id])||null;
+  if(d&&d.bucket) return 'bucket';
+  return idcBudget(p)<IDC_SEUIL ? 'idcard' : 'gate';
+}
+/* Montant d'un sous-projet de bucket : tous exercices, CAPEX et OPEX. */
+function idcLigneTotal(l){
+  let s=0;
+  ['capex','opex'].forEach(k=>(l[k]||[]).forEach(v=>{ const n=idcN(v); if(n!=null) s+=n; }));
+  return s;
+}
+function idcBucketTotal(d){ return (d.lignes||[]).reduce((s,l)=>s+idcLigneTotal(l),0); }
 function idcOf(id){
   S.idc=S.idc||{};
   if(!S.idc[id]){
@@ -3248,26 +3287,34 @@ function idcEcartBucket(d,k,j){
 function kitIdCard(){
   const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return '<div class="hint">Aucun projet.</div>';
   const d=idcOf(p.id), bud=idcBudget(p), reg=idcRegime(p);
+  const bascule=`<label class="iconbtn" style="gap:6px" title="Une bucket regroupe plusieurs petits projets sous une même enveloppe : le seuil s'applique alors à chaque sous-projet"><input type="checkbox" id="idcBucket" ${d.bucket?'checked':''}> Bucket</label>`;
+  const horsSeuil=(d.lignes||[]).filter(l=>idcLigneTotal(l)>=IDC_SEUIL);
   const bandeau = reg==='gate'
     ? `<div class="idcnote gate"><span class="ic">🚦</span>
         <div><b>Budget ${idcF(bud)} k€ — au-delà de ${IDC_SEUIL} k€, l'ID Card ne suffit pas.</b>
           Le process de Gate s'applique : G0 Cadrage → G5 Clôture. Les six gates de ce projet sont
           ci-dessous ; leurs supports de passage seront déposés ici dès qu'ils seront fournis.</div>
-        <button class="iconbtn" id="idcGates">🚦 Ouvrir le suivi des gates</button></div>`
+        <button class="iconbtn" id="idcGates">🚦 Ouvrir le suivi des gates</button>${bascule}</div>`
+    : reg==='bucket'
+    ? `<div class="idcnote ${horsSeuil.length?'gate':''}"><span class="ic">🗂</span>
+        <div><b>Enveloppe de ${idcF(bud)} k€ répartie entre ${(d.lignes||[]).length} sous-projet${(d.lignes||[]).length>1?'s':''}.</b>
+          Le seuil de ${IDC_SEUIL} k€ s'applique à chaque sous-projet, pas à l'enveloppe : c'est l'objet
+          même d'une bucket.${horsSeuil.length?` <b>${horsSeuil.length} sous-projet${horsSeuil.length>1?'s atteignent':' atteint'} le seuil</b> et relève${horsSeuil.length>1?'nt':''} du process de Gate.`:''}</div>
+        ${bascule}</div>`
     : `<div class="idcnote"><span class="ic">🪪</span>
         <div><b>Budget ${idcF(bud)} k€ — sous ${IDC_SEUIL} k€, le projet se valide par une ID Card.</b>
           Rédigée par le PM, envoyée au responsable de secteur, au PPM et à la finance ; une fois
           validée, elle ouvre la SPE.</div>
-        <label class="iconbtn" style="gap:6px" title="Une bucket regroupe plusieurs petits projets sous une même enveloppe"><input type="checkbox" id="idcBucket" ${d.bucket?'checked':''}> Bucket</label></div>`;
+        ${bascule}</div>`;
   return `<div class="idc">
     ${bandeau}
     <div class="idctools">
       ${reg==='gate'?'':`<button class="iconbtn" id="idcPrint">⎙ Diffuser pour approbation</button>`}
       <button class="iconbtn" id="idcMaj" title="Reprendre le nom, le code, le PM et le sponsor de la fiche projet">⟲ Reprendre la fiche</button>
       <span class="sp"></span>
-      <span class="hint">${reg==='gate'?'Process de Gate':(d.bucket?'Bucket ID Card':'Project ID Card')}</span>
+      <span class="hint">${reg==='gate'?'Process de Gate':reg==='bucket'?'Bucket ID Card':'Project ID Card'}</span>
     </div>
-    ${reg==='gate' ? idcGatesHTML(p) : (d.bucket?idcBucketHTML(p,d):idcProjetHTML(p,d))}
+    ${reg==='gate' ? idcGatesHTML(p) : reg==='bucket' ? idcBucketHTML(p,d) : idcProjetHTML(p,d)}
   </div>`;
 }
 
@@ -3324,15 +3371,17 @@ function idcProjetHTML(p,d){
 /* ---- Bucket ID Card ---- */
 function idcBucketHTML(p,d){
   const cel=(i,l,k,j)=>`<input class="kin num" data-idcl="${i}|${k}|${j}" value="${esc((l[k]||[])[j]||'')}" placeholder="0">`;
-  const lignes=d.lignes.map((l,i)=>`<tr>
-    <td><span contenteditable data-idcl="${i}|nom" data-vide="Project ${i+1}">${esc(l.nom||'')}</span></td>
+  const lignes=d.lignes.map((l,i)=>{ const tl=idcLigneTotal(l), gros=tl>=IDC_SEUIL;
+  return `<tr class="${gros?'idcgros':''}">
+    <td><span contenteditable data-idcl="${i}|nom" data-vide="Project ${i+1}">${esc(l.nom||'')}</span>
+      ${gros?`<span class="idcwarn" title="${idcF(tl)} k€ : ce sous-projet atteint le seuil de ${IDC_SEUIL} k€ et relève du process de Gate">⚠ ${idcF(tl)} k€</span>`:`<span class="idcmini">${idcF(tl)||'—'} k€</span>`}</td>
     <td class="code"><span contenteditable data-idcl="${i}|wbs" data-vide="INV-042XXX">${esc(l.wbs||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|description" data-vide="—">${esc(l.description||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|benefits" data-vide="—">${esc(l.benefits||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|timeline" data-vide="—">${esc(l.timeline||'')}</span></td>
     <td class="an">CAPEX ${cel(i,l,'capex',0)} / OPEX ${cel(i,l,'opex',0)}</td>
     <td class="an">CAPEX ${cel(i,l,'capex',1)} / OPEX ${cel(i,l,'opex',1)}</td>
-    <td><button class="delbtn" data-idcdel="${i}">×</button></td></tr>`).join('')
+    <td><button class="delbtn" data-idcdel="${i}">×</button></td></tr>`;}).join('')
     ||`<tr><td colspan="8" class="empty">Aucun projet dans cette bucket. « + Projet ».</td></tr>`;
   const tot=j=>`CAPEX <b>${idcF(idcTotalLignes(d,'capex',j))||'—'}</b> / OPEX <b>${idcF(idcTotalLignes(d,'opex',j))||'—'}</b>`;
   const lig=(k)=>`<tr><th>${k.toUpperCase()}</th>
@@ -3341,8 +3390,16 @@ function idcBucketHTML(p,d){
     ${[0,1].map(j=>{const e=idcEcartBucket(d,k,j);
       return `<td class="gap"><span class="idccalc ${e!=null&&e>0?'pos':(e!=null&&e<0?'neg':'')}" title="Total projets − budget bucket">${idcSigne(e)}</span></td>`;}).join('')}
   </tr>`;
+  /* Ce que porte l'enveloppe, ce qui est réparti, ce qui reste à affecter :
+     la question qu'on se pose en ouvrant une bucket. */
+  const env=idcBudget(p), rep=idcBucketTotal(d), reste=Math.round((env-rep)*100)/100;
+  const recap=`<div class="idcrecap ${Math.abs(reste)<0.5?'ok':(reste<0?'ko':'att')}">
+    <span>Enveloppe du projet <b>${idcF(env)} k€</b></span>
+    <span>Réparti sur ${d.lignes.length} sous-projet${d.lignes.length>1?'s':''} <b>${idcF(rep)} k€</b></span>
+    <span>${reste<0?'Dépassement':'Reste à affecter'} <b>${idcF(Math.abs(reste))} k€</b></span></div>`;
   return `<div class="idccard bucket" id="idcCard">
     ${idcEnteteHTML(p,d,'Bucket ID Card')}
+    ${recap}
     <div class="tblwrap"><table class="idcbk"><thead><tr>
       <th style="width:120px"></th><th style="width:124px">WBS (INV-042XXX)</th><th>Description</th>
       <th>Benefits</th><th>Timeline / Milestones</th><th style="width:150px">2026</th><th style="width:150px">2027</th><th style="width:24px"></th></tr></thead>
