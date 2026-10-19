@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-19.1 -->
+<!-- PPM_BUILD:2026-10-19.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -936,11 +936,15 @@
   .idcz{position:relative;border:1px solid #7A00E6;border-radius:5px;padding:13px 11px 10px;background:transparent}
   .idclab{position:absolute;top:-9px;left:12px;padding:0 7px;background:#F2F2F2;border:0;
     border-radius:0;font-size:12.5px;font-weight:700;color:#7A00E6;letter-spacing:0}
-  .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none;color:#000}
+  /* Le support justifie ses pavés : on fait de même, en laissant la dernière
+     ligne au fil du texte — une dernière ligne étirée se voit de loin. */
+  .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none;color:#000;
+    text-align:justify;text-align-last:left;hyphens:auto}
   /* Le support énumère : chaque paragraphe est une puce, et Entrée en ouvre une. */
   .idcul{margin:0;padding:0 0 0 17px;min-height:104px;font-size:12px;line-height:1.5;
     list-style:none;outline:none;color:#000}
-  .idcul li{position:relative;margin:0 0 8px;white-space:pre-wrap}
+  .idcul li{position:relative;margin:0 0 8px;white-space:pre-wrap;
+    text-align:justify;text-align-last:left;hyphens:auto}
   .idcul li::before{content:'\2022';position:absolute;left:-14px;color:#7A00E6;font-weight:700}
   /* Deux règles, pas une liste : un sélecteur que le navigateur ne connaît pas
      emporterait l'autre avec lui, et la puce vide perdrait son invite. */
@@ -1007,6 +1011,13 @@
   .idctlb>i{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:2}
   .idctlb>i.g{left:0}
   .idctlb>i.d{right:0}
+  /* La croix doit se voir sur n'importe quelle teinte de barre : pastille
+     blanche cerclée, et non un caractère posé sur un dégradé. */
+  .idctlb .tlx{position:absolute;top:-8px;right:-8px;z-index:6;display:none;
+    width:17px;height:17px;padding:0;border-radius:50%;border:1px solid #7A00E6;
+    background:#fff;color:#7A00E6;font-size:12px;font-weight:700;line-height:15px;text-align:center}
+  .idctlb .tlx:hover{background:#7A00E6;color:#fff}
+  .idctlb:hover .tlx,.idctlb.sel .tlx{display:block}
   .idctlr .act{position:absolute;right:2px;top:50%;transform:translateY(-50%);z-index:4;
     display:none;gap:3px;align-items:center}
   .idctlr:hover .act{display:flex}
@@ -1224,7 +1235,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-19.1';
+const APP_BUILD='2026-10-19.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3701,7 +3712,8 @@ function idcTLHTML(d){
         title="${esc(idcTLQuand(t,b.a,b.b))} — glisser pour déplacer, les bords pour allonger, double-clic pour écrire">
         <span class="bg${colle?'':' fl'}" style="background:${fond}"></span>
         <span class="l" data-tlab="${i}|${j}" data-vide="Phase">${esc(b.lab||'')}</span>
-        <i class="g" data-tlp="a"></i><i class="d" data-tlp="b"></i></div>`;}).join('');
+        <i class="g" data-tlp="a"></i><i class="d" data-tlp="b"></i>
+        <button class="delbtn tlx noprint" data-tlbdel="${i}|${j}" title="Supprimer cette barre">×</button></div>`;}).join('');
     return `<div class="idctlr" data-tlr="${i}">
       <span class="idctlnom" contenteditable data-tlnom="${i}" data-vide="Projet"
         style="right:${idcTLPc(24-prem)}">${esc(r.nom||'')}</span>${barres}
@@ -3710,12 +3722,14 @@ function idcTLHTML(d){
     ||`<div class="idctlr"><span class="idctlnom" style="right:60%">Aucune ligne.</span></div>`;
   const outils=`<div class="idctlbarre noprint">
     <button class="iconbtn mini" id="tlAddR">+ Ligne</button>
-    ${bs?`<span class="hint">Barre « ${esc(bs.lab||'sans titre')} » :</span>
+    ${bs?`<span class="hint">Barre :</span>
+      <input class="kin" id="tlLab" value="${esc(bs.lab||'')}" placeholder="Intitulé de la barre" style="width:210px">
       ${IDC_TLC.map((c,k)=>`<button class="idctlsw${(+bs.c||0)===k?' on':''}" data-tlc="${k}"
         style="background:linear-gradient(90deg,${c[1]},${c[0]})" title="Teinte ${k+1}"></button>`).join('')}
       <button class="iconbtn mini" id="tlTon">${(+bs.t)?'● teinte pleine':'○ teinte pâle'}</button>
       <button class="iconbtn mini" id="tlDel">Supprimer la barre</button>`
-    :`<span class="hint">Glissez une barre pour la déplacer, ses bords pour l'allonger, double-cliquez pour écrire dedans.</span>`}
+    :`<span class="hint">Glissez une barre pour la déplacer, ses bords pour l'allonger. Cliquez-la pour en changer
+        l'intitulé et la teinte, double-cliquez pour écrire dedans, ✕ pour la retirer. Ctrl+Entrée va à la ligne.</span>`}
   </div>`;
   return outils+`<div class="idctl">
     <div class="idctlan"><span contenteditable data-tly="0">${t.y0}</span><span contenteditable data-tly="1">${t.y0+1}</span></div>
@@ -3735,6 +3749,7 @@ function idcTLBind(p,d,rr){
   let dr=null, tSel=null;
 
   corps.addEventListener('mousedown',e=>{
+    if(e.target.closest('[data-tlbdel]')) return;          /* la croix n'est pas une poignée */
     const el=e.target.closest('.idctlb');
     if(!el){ if(S.idcBar){ S.idcBar=null; rr(); } return; }
     if(e.target.isContentEditable) return;                 /* on est en train d'écrire */
@@ -3798,7 +3813,9 @@ function idcTLBind(p,d,rr){
       if(String(bar.lab||'')===v) return;
       trace('intitulé',bar.lab||'',v); bar.lab=v; rr();
     });
-    l.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); l.blur(); } });
+    l.addEventListener('keydown',e=>{
+      if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); idcSautLigne(); return; }
+      if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); l.blur(); } });
   });
 
   $$('#kitPane [data-tlnom]').forEach(el=>el.addEventListener('blur',()=>{
@@ -3826,6 +3843,17 @@ function idcTLBind(p,d,rr){
     const a=Math.min(23,fin), c=r.bars.length?(+r.bars[r.bars.length-1].c||0):0;
     r.bars.push({lab:'Travaux',a,b:Math.min(24,a+4),c,t:1});
     trace('barre','',"ajoutée à « "+(r.nom||'ligne')+" »"); S.idcBar={i:+b.dataset.tladd,j:r.bars.length-1}; rr(); });
+  $$('#kitPane [data-tlbdel]').forEach(x=>x.onclick=e=>{
+    e.preventDefault(); e.stopPropagation();
+    const ij=x.dataset.tlbdel.split('|').map(Number);
+    const r=t.rows[ij[0]], bar=r&&r.bars[ij[1]]; if(!bar) return;
+    if(!confirm('Supprimer la barre « '+(bar.lab||'sans titre')+' » ?')) return;
+    r.bars.splice(ij[1],1); trace('barre',bar.lab||'sans titre','supprimée'); S.idcBar=null; rr(); });
+  const champLab=$('#tlLab');
+  if(champLab) champLab.addEventListener('change',()=>{
+    const b2=(S.idcBar&&t.rows[S.idcBar.i])?t.rows[S.idcBar.i].bars[S.idcBar.j]:null; if(!b2) return;
+    const v=champLab.value.trim(); if(String(b2.lab||'')===v) return;
+    trace('intitulé',b2.lab||'',v); b2.lab=v; rr(); });
   $$('#kitPane [data-tlrdel]').forEach(b=>b.onclick=()=>{
     const i=+b.dataset.tlrdel, r=t.rows[i]; if(!r) return;
     if(!confirm('Supprimer la ligne « '+(r.nom||(i+1))+' » du planning ?')) return;
@@ -3954,6 +3982,14 @@ function idcGatesHTML(p){
 }
 
 /* ---- Saisie ---- */
+/* Un saut de ligne à l'endroit du curseur, sans quitter le champ. */
+function idcSautLigne(){
+  try{ if(document.execCommand('insertLineBreak')) return; }catch(_){}
+  const sel=getSelection(); if(!sel||!sel.rangeCount) return;
+  const r=sel.getRangeAt(0); r.deleteContents();
+  const br=document.createElement('br'); r.insertNode(br);
+  r.setStartAfter(br); r.collapse(true); sel.removeAllRanges(); sel.addRange(r);
+}
 function idcSet(d,chemin,v){
   const c=chemin.split('.'), last=c.pop();
   const o=c.reduce((x,k)=>x[k], d); if(o) o[last]=v;
@@ -3982,6 +4018,9 @@ function kitArmerIdCard(){
       if(/^fin\.|^bucketRef\./.test(ch)) rr();
     });
     if(el.isContentEditable) el.addEventListener('keydown',e=>{
+      /* Ctrl+Entrée va à la ligne sans quitter le champ — partout, y compris
+         dans une puce, où Entrée seul ouvre la puce suivante. */
+      if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); idcSautLigne(); return; }
       /* Dans une liste à puces, Entrée ouvre la puce suivante : c'est le geste
          attendu, et sortir du champ à chaque retour serait intenable. */
       if(e.key==='Enter'&&!e.altKey&&!e.shiftKey&&!el.dataset.puces){ e.preventDefault(); el.blur(); }
