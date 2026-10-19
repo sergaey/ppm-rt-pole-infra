@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-16.16 -->
+<!-- PPM_BUILD:2026-10-19.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -910,27 +910,42 @@
   .idcnote.cdo{border-color:var(--accent);background:var(--accent-soft)}
   .idcnote .ic{font-size:20px} .idcnote div{flex:1}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
-  .idccard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px 15px;box-shadow:var(--shadow)}
-  .idchead{display:flex;align-items:flex-start;gap:14px;margin-bottom:11px;flex-wrap:wrap}
-  .idchl{flex:1 1 320px;min-width:260px}
-  .idct{font-family:Archivo;font-size:15px;font-weight:800;line-height:1.3}
-  .idct b{color:var(--accent-ink)}
-  .idccode{color:var(--copper)}
-  .idcsub{margin-top:5px;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-  .idcst{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:999px;font-weight:700;white-space:nowrap}
-  .idcst.ok{background:var(--good-soft);color:var(--good)}
-  .idcst.att{background:var(--warn-soft);color:var(--warn)}
-  .idcst.ko{background:var(--bad-soft);color:var(--bad)}
-  .idcst select{border:0;background:transparent;color:inherit;font:inherit;font-weight:700;cursor:pointer}
-  .idcappro{flex:0 0 auto;width:306px;table-layout:fixed;border-collapse:collapse;font-size:11.5px}
-  .idcappro th{width:84px;text-align:left;font-weight:700;background:var(--panel-2);border:1px solid var(--line);padding:3px 8px;white-space:nowrap}
-  .idcappro td{border:1px solid var(--line);padding:3px 8px;word-break:break-word}
-  .idcgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px}
-  .idcgrid.bas{grid-template-columns:1fr;margin-top:11px}
-  .idcz{position:relative;border:1px solid var(--line-2);border-radius:9px;padding:14px 11px 10px;background:var(--panel)}
-  .idclab{position:absolute;top:-8px;left:11px;padding:1px 8px;background:var(--panel-2);border:1px solid var(--line);
-    border-radius:6px;font-size:10.5px;font-weight:800;color:var(--ink-2);letter-spacing:.02em}
-  .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none}
+  /* La carte reprend le support : fond gris clair, encadrés à liseré violet
+     dont l'intitulé chevauche le trait, parties variables en violet italique.
+     Teintes fixes, non thématisées — c'est un document qui part en approbation. */
+  .idccard{background:#F2F2F2;border:1px solid #CFCFCF;border-radius:4px;padding:15px 17px 17px;
+    box-shadow:var(--shadow);color:#000}
+  .idchead{display:flex;align-items:flex-start;gap:18px;margin-bottom:15px;flex-wrap:wrap}
+  .idchl{flex:1 1 330px;min-width:270px}
+  .idct{font-size:18px;font-weight:600;line-height:1.35;color:#000}
+  .idct .v,.idccode{color:#7A00E6;font-style:italic;outline:none}
+  .idcsub{margin-top:1px;font-size:15px;color:#000;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .idcdate{border:0;background:transparent;color:#7A00E6;font-style:italic;font-size:15px;padding:0;width:148px}
+  .idcstw{flex:0 1 auto;display:flex;flex-direction:column;align-items:center;gap:7px;padding-top:2px}
+  .idcint{color:#4A5CA8;font-size:11px;font-weight:600;align-self:flex-start}
+  .idcstat{font-size:16px;color:#000;white-space:nowrap}
+  .idcstat select{border:0;background:#FFFF00;color:#7A00E6;font:inherit;font-style:italic;
+    font-weight:600;cursor:pointer;padding:1px 2px}
+  .idcappro{flex:0 0 auto;width:318px;table-layout:fixed;border-collapse:collapse;font-size:11.5px}
+  .idcappro th{width:98px;text-align:left;font-weight:400;color:#000;background:#fff;
+    border:1px solid #8C8C8C;padding:4px 9px;white-space:nowrap}
+  .idcappro td{border:1px solid #23004C;background:#23004C;color:#fff;padding:4px 9px;
+    word-break:break-word;outline:none}
+  .idcgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px}
+  .idcgrid.bas{grid-template-columns:1fr 1fr;margin-top:13px}
+  .idcz{position:relative;border:1px solid #7A00E6;border-radius:5px;padding:13px 11px 10px;background:transparent}
+  .idclab{position:absolute;top:-9px;left:12px;padding:0 7px;background:#F2F2F2;border:0;
+    border-radius:0;font-size:12.5px;font-weight:700;color:#7A00E6;letter-spacing:0}
+  .idcbody{min-height:112px;font-size:12px;line-height:1.5;white-space:pre-wrap;outline:none;color:#000}
+  /* Le support énumère : chaque paragraphe est une puce, et Entrée en ouvre une. */
+  .idcul{margin:0;padding:0 0 0 17px;min-height:104px;font-size:12px;line-height:1.5;
+    list-style:none;outline:none;color:#000}
+  .idcul li{position:relative;margin:0 0 8px;white-space:pre-wrap}
+  .idcul li::before{content:'\2022';position:absolute;left:-14px;color:#7A00E6;font-weight:700}
+  /* Deux règles, pas une liste : un sélecteur que le navigateur ne connaît pas
+     emporterait l'autre avec lui, et la puce vide perdrait son invite. */
+  .idcul li:empty::after{content:attr(data-vide);color:#8a8a8a;font-style:italic}
+  .idcul li:has(>br:only-child)::after{content:attr(data-vide);color:#8a8a8a;font-style:italic}
 
   .idcz.fin .idcbody.gap{flex:1 1 auto;min-height:34px;margin-bottom:0}
   .idcbody:empty::before,[data-idc]:empty::before,[data-idcl]:empty::before,
@@ -998,7 +1013,8 @@
   .idctlbarre{display:flex;gap:6px;align-items:center;margin:0 0 7px;flex-wrap:wrap}
   .idctlsw{width:19px;height:19px;border-radius:5px;border:1px solid var(--line);cursor:pointer;padding:0}
   .idctlsw.on{outline:2px solid var(--ink-2);outline-offset:1px}
-  .idcz.tl .idctltxt{min-height:52px;margin-top:9px}
+  .idcz.tl .idcul{min-height:150px}
+  .idcz.pl{margin-top:13px}
   .idcbk{width:100%;border-collapse:collapse;font-size:11.5px}
   .idcbk th,.idcbk td{border:1px solid var(--line);padding:4px 6px;vertical-align:top}
   .idcbk thead th{background:var(--panel-2);font-weight:700;text-align:left}
@@ -1208,7 +1224,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-16.16';
+const APP_BUILD='2026-10-19.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3607,22 +3623,30 @@ function idcEnteteHTML(p,d,titre){
   const cls=norm(d.statut)==='approved'?'ok':norm(d.statut)==='rejected'?'ko':'att';
   return `<div class="idchead">
     <div class="idchl">
-      <div class="idct"><b>${esc(titre)} :</b>
-        <span contenteditable data-idc="nom" data-vide="Project Name">${esc(d.nom)}</span>
-        <span class="idccode">(<span contenteditable data-idc="code" data-vide="P Number">${esc(d.code)}</span>)</span></div>
+      <div class="idct">${esc(titre)} :
+        <span class="v" contenteditable data-idc="nom" data-vide="Project Name">${esc(d.nom)}</span>
+        <span class="idccode">(<span class="v" contenteditable data-idc="code" data-vide="P Number">${esc(d.code)}</span>)</span></div>
       <div class="idcsub">Update date :
-        <input type="date" class="kin" data-idc="maj" value="${esc(d.maj)}" style="width:130px">
-        ${d.bucket?'':`<span class="idcst ${cls}">Status :
-          <select class="kin" data-idc="statut">${IDC_STATUTS.map(s=>`<option ${d.statut===s?'selected':''}>${s}</option>`).join('')}</select></span>`}</div>
+        <input type="date" class="kin idcdate" data-idc="maj" value="${esc(d.maj)}"></div>
     </div>
+    ${d.bucket?'':`<div class="idcstw"><span class="idcint">Internal</span>
+      <div class="idcstat ${cls}">Status :
+        <select class="kin" data-idc="statut">${IDC_STATUTS.map(s=>`<option ${d.statut===s?'selected':''}>${s}</option>`).join('')}</select></div></div>`}
     <table class="idcappro"><tbody>
       <tr><th>Sponsor</th><td contenteditable data-idc="sponsor" data-vide="—">${esc(d.sponsor)}</td></tr>
       <tr><th>PM</th><td contenteditable data-idc="pm" data-vide="—">${esc(d.pm)}</td></tr>
       <tr><th>Approvers</th><td contenteditable data-idc="approvers" data-vide="PPM, finance, Resp secteur">${esc(d.approvers)}</td></tr>
     </tbody></table></div>`;
 }
+/* Un paragraphe du texte stocké = une puce du support. L'aller-retour est
+   exact : on sépare sur la ligne vide, on rejoint sur la ligne vide. */
+function idcPuces(txt){
+  const items=String(txt||'').split(/\n{2,}/).map(x=>x.trim()).filter(Boolean);
+  if(!items.length) return '<li data-vide="Xxx"></li>';
+  return items.map(t=>`<li data-vide="Xxx">${esc(t)}</li>`).join('');
+}
 const idcZone=(lbl,champ,val,cls)=>`<div class="idcz ${cls||''}"><span class="idclab">${esc(lbl)}</span>
-  <div class="idcbody" contenteditable data-idc="${champ}" data-vide="Xxx">${esc(val||'')}</div></div>`;
+  <ul class="idcul" contenteditable data-idc="${champ}" data-puces="1">${idcPuces(val)}</ul></div>`;
 
 /* ---- Timeline : le planning du support, deux exercices au mois ----
    Le support pose vingt-quatre mois en deux bandes d'année, des lignes dont
@@ -3836,10 +3860,7 @@ function idcProjetHTML(p,d){
       ${idcZone('Rationale','rationale',d.rationale)}
     </div>
     <div class="idcgrid bas">
-      <div class="idcz tl"><span class="idclab">Timeline</span>
-        ${idcTLHTML(d)}
-        <div class="idcbody idctltxt" contenteditable data-idc="timeline" data-vide="Xxx">${esc(d.timeline||'')}</div>
-      </div>
+      ${idcZone('Timeline','timeline',d.timeline,'tl')}
       <div class="idcz fin"><span class="idclab">Financial Summary</span>
         <div class="tblwrap"><table class="idcfin"><thead>
           <tr><th>(K€)</th>${IDC_ANNEES.map(a=>`<th>’${a}</th>`).join('')}
@@ -3848,6 +3869,9 @@ function idcProjetHTML(p,d){
           <tbody>${col('capex')}${col('opex')}</tbody></table></div>
         <div class="idcgapline"><span class="idcpuce">•</span><div class="idcbody gap" contenteditable data-idc="gap" data-vide="Gap vs B26/H27 : Yes or No&#10;If yes, justify the gap">${esc(d.gap||'')}</div></div>
       </div>
+    </div>
+    <div class="idcz pl"><span class="idclab">Planning</span>
+      ${idcTLHTML(d)}
     </div></div>`;
 }
 
@@ -3890,9 +3914,11 @@ function idcBucketHTML(p,d){
       <tbody>${lignes}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">Total</th>
         <th class="an">${tot(0)}</th><th class="an">${tot(1)}</th><th></th></tr></tfoot></table></div>
-    <div class="idcz tl" style="margin-top:12px"><span class="idclab">Timeline</span>
+    <div class="idcgrid bas">
+      ${idcZone('Timeline','timeline',d.timeline,'tl')}
+    </div>
+    <div class="idcz pl"><span class="idclab">Planning</span>
       ${idcTLHTML(d)}
-      <div class="idcbody idctltxt" contenteditable data-idc="timeline" data-vide="Xxx">${esc(d.timeline||'')}</div>
     </div>
     <div class="idcz fin" style="margin-top:12px"><span class="idclab">Bucket Financial Summary</span>
       <div class="tblwrap"><table class="idcfin"><thead>
@@ -3944,7 +3970,10 @@ function kitArmerIdCard(){
     const ev=(el.tagName==='SELECT'||el.type==='date')?'change':(el.tagName==='INPUT'?'change':'blur');
     el.addEventListener(ev,()=>{
       const ch=el.dataset.idc;
-      const v=(el.tagName==='INPUT'||el.tagName==='SELECT')?el.value:el.innerText.replace(/ /g,' ').trim();
+      const v=(el.tagName==='INPUT'||el.tagName==='SELECT') ? el.value
+        : el.dataset.puces ? [...el.querySelectorAll('li')].map(li=>li.innerText.replace(/\u00a0/g,' ').trim())
+                               .filter(Boolean).join('\n\n')
+        : el.innerText.replace(/\u00a0/g,' ').trim();
       const av=idcGet(cible,ch);
       if(String(av==null?'':av)===String(v)) return;
       idcSet(cible,ch,v);
@@ -3953,8 +3982,11 @@ function kitArmerIdCard(){
       if(/^fin\.|^bucketRef\./.test(ch)) rr();
     });
     if(el.isContentEditable) el.addEventListener('keydown',e=>{
-      if(e.key==='Enter'&&!e.altKey&&!e.shiftKey){ e.preventDefault(); el.blur(); }
-      if(e.key==='Escape'){ el.innerText=String(idcGet(cible,el.dataset.idc)||''); el.blur(); } });
+      /* Dans une liste à puces, Entrée ouvre la puce suivante : c'est le geste
+         attendu, et sortir du champ à chaque retour serait intenable. */
+      if(e.key==='Enter'&&!e.altKey&&!e.shiftKey&&!el.dataset.puces){ e.preventDefault(); el.blur(); }
+      if(e.key==='Escape'){ if(el.dataset.puces) el.innerHTML=idcPuces(idcGet(cible,el.dataset.idc));
+                            else el.innerText=String(idcGet(cible,el.dataset.idc)||''); el.blur(); } });
   });
   $$('#kitPane [data-idcl]').forEach(el=>{
     const ev=el.tagName==='INPUT'?'change':'blur';
