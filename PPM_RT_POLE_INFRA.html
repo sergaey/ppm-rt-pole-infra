@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-19.2 -->
+<!-- PPM_BUILD:2026-10-20.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -370,6 +370,62 @@
   .kadd{border:1px dashed var(--line-2);background:transparent;color:var(--accent-ink);border-radius:8px;
     padding:5px 11px;font-size:11.5px;font-weight:700;cursor:pointer}
   .kadd:hover{border-color:var(--accent);background:var(--accent-soft)}
+  /* ---- Check-list et Chiffrage : la mise en page des classeurs d'origine.
+     Teintes fixes, non thématisées : ces deux onglets se lisent et s'impriment
+     comme les fichiers dont ils viennent, et c'est ainsi qu'on les reconnaît. */
+  .xls{width:100%;border-collapse:collapse;font-size:11.5px;color:#000;background:#fff}
+  .xls th,.xls td{border:1px solid #808080;padding:3px 6px;vertical-align:middle;
+    text-transform:none;letter-spacing:0}
+  .xls textarea.kin{resize:vertical;overflow:hidden;line-height:1.35;min-height:17px}
+  .xls .kin,.xls textarea.kin{border:0;background:transparent;width:100%;font:inherit;color:inherit;padding:1px 2px}
+  .xls .kin:focus{background:#fff;box-shadow:0 0 0 2px #2E75B6}
+  .xls .num{text-align:right;font-variant-numeric:tabular-nums}
+  .xls .kdel,.xls .kadd{font-size:10px}
+  /* Check-list : bandeau de tête, bandes de phase, statuts en pastille pleine */
+  .xchk .xtitre th{background:#5B9BD5;color:#000;font-weight:700;text-align:left;padding:6px}
+  .xchk .xtitre th:first-child{background:#2E75B6;color:#fff}
+  .xchk .xph td{color:#fff;font-weight:700;text-align:center;padding:4px 6px}
+  .xchk .xph td .kin{color:#fff;font-weight:700;text-align:center}
+  .xchk .xph.p0 td{background:#70AD47}.xchk .xph.p1 td{background:#FFC000;color:#000}
+  .xchk .xph.p1 td .kin{color:#000}
+  .xchk .xph.p2 td{background:#ED7D31}.xchk .xph.p3 td{background:#C55A11}
+  .xchk .xph.p4 td{background:#2F5597}.xchk .xph.p5 td{background:#FF00FF}
+  .xchk .xph.p6 td{background:#33CCCC;color:#000}.xchk .xph.p6 td .kin{color:#000}
+  .xchk .xph.p7 td{background:#7F7F7F}
+  .xchk td.st{text-align:center;font-weight:500}
+  .xchk td.st select{border:0;background:transparent;width:100%;text-align:center;font:inherit;color:inherit;cursor:pointer}
+  .xchk td.st.s-Fait{background:#C6EFCE}
+  .xchk td.st.s-En{background:#9DC3E6}
+  .xchk td.st.s-A{background:#FFE699}
+  .xchk td.st.s-NA{background:#BFBFBF;color:#3f3f3f}
+  .xchk td.pil{text-align:center}
+  /* Chiffrage : bandeaux de section, postes en sous-total, saisies en bleu */
+  .xbud .xtit td{background:#1F3864;color:#fff;font-weight:700;text-align:center;font-size:13px;padding:6px}
+  .xbud .xpar td{background:#fff}
+  .xbud .xpar td.lab{text-align:right;font-weight:600}
+  .xbud .xpar td.val{background:#FFF2CC;text-align:center;font-weight:700}
+  .xbud .xh td{background:#2E75B6;color:#fff;font-weight:700;text-align:center}
+  .xbud .xh td.g{text-align:left}
+  .xbud .xsec td{color:#fff;font-weight:700;padding:4px 8px}
+  .xbud .xsec.e td{background:#2E75B6}
+  .xbud .xsec.w td{background:#2F8F83}
+  .xbud .xsec.o td{background:#C55A11}
+  .xbud .xposte td{background:#DEEBF7;font-weight:700}
+  .xbud .xsec.w~tr .xposte td{background:#E2F0EE}
+  .xbud .xposte.w td{background:#E2F0EE}
+  .xbud .xposte.o td{background:#F6E2D4}
+  .xbud tr.xd td{background:#fff}
+  .xbud tr.xd .kin{color:#0000FF}
+  .xbud tr.xd td.num{color:#0000FF;font-weight:600}
+  .xbud .xtot td{color:#fff;font-weight:700}
+  .xbud .xtot.e td{background:#2E75B6}.xbud .xtot.w td{background:#2F8F83}.xbud .xtot.o td{background:#C55A11}
+  .xbud .xsum td{background:#BF8F00;color:#fff;font-weight:700;text-align:center}
+  .xbud .xsum td.g{text-align:left;background:#1F3864}
+  .xbud .xsr td{background:#fff}
+  .xbud .xsr td.num{color:#375623;font-weight:700}
+  .xbud .xgt td{background:#1F3864;color:#fff;font-weight:700}
+  .xbud .xgt td.num{color:#fff}
+  .xnote{margin-top:8px;font-size:10.5px;font-style:italic;color:#595959}
   .kst-Fait{background:var(--good-soft);color:var(--good)}
   .kst-En{background:var(--warn-soft);color:var(--warn)}
   .kst-A{background:var(--panel-2);color:var(--muted)}
@@ -1003,10 +1059,20 @@
     padding-right:9px;font-size:11.5px;text-align:right;outline:none;max-width:46%;overflow:hidden}
   .idctlb{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;
     cursor:grab;z-index:1}
+  .idctlchamps{display:flex;flex-wrap:wrap;gap:7px 13px;margin-top:9px;align-items:center}
+  .idctlf{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+  .idctlf b{font-weight:600;color:var(--ink-2);white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis}
+  .idctlf input{width:168px}
   .idctlb .bg{position:absolute;inset:0;border-radius:1px}
   .idctlb .bg.fl{clip-path:polygon(0 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,0 100%)}
-  .idctlb .l{position:relative;padding:0 13px 0 6px;font-size:10px;line-height:1.1;text-align:center;
-    white-space:pre-wrap;outline:none;overflow:hidden;max-height:100%}
+  /* L'intitulé est un texte qu'on écrit : il se clique pour poser le curseur,
+     jamais pour saisir la barre. Le déplacement a sa poignée à lui. */
+  .idctlb .l{position:relative;z-index:3;padding:0 15px 0 17px;font-size:10px;line-height:1.1;
+    text-align:center;white-space:pre-wrap;outline:none;overflow:hidden;max-height:100%;cursor:text}
+  .idctlb .l:focus{background:rgba(255,255,255,.72);border-radius:3px;box-shadow:0 0 0 1px #11202e}
+  .idctlb>i.m{left:8px;width:11px;cursor:grab;display:flex;align-items:center;justify-content:center;
+    font-size:9px;color:rgba(17,32,46,.45);z-index:4}
+  .idctlb:hover>i.m{color:rgba(17,32,46,.85)}
   .idctlb.sel .bg{outline:2px solid #11202e;outline-offset:-2px}
   .idctlb>i{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:2}
   .idctlb>i.g{left:0}
@@ -1235,7 +1301,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-19.2';
+const APP_BUILD='2026-10-20.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2740,27 +2806,36 @@ const kbtn=(a,l,cls)=>`<button class="${cls||'kadd'}" data-ka="${a}">${l}</butto
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
   const base=Math.max(1, all.length-c('NA'));
+  const p=S.projects.find(x=>x.id===S.currentProj)||{};
+  /* Le classeur titre la feuille par le n° d'ETU et l'intitulé du projet ;
+     sans ETU saisi, l'intitulé suffit. On lit sans rien créer au passage. */
+  const etu=((S.csd&&S.csd[p.id])||{}).etu||'';
   let h=`<div class="kstats"><div class="kstat"><b>${all.length}</b><span>Actions</span></div>
     ${KIT_STAT.map(s=>`<div class="kstat"><b>${c(s)}</b><span>${s}</span></div>`).join('')}
     <div class="kstat"><b>${Math.round(c('Fait')/base*100)} %</b><span>Avancement</span></div></div>
-    <div class="kbar-tools">${kbtn('addPhase','+ Phase')}<span class="sp" style="margin-left:auto"></span>
+    <div class="kbar-tools noprint">${kbtn('addPhase','+ Phase')}<span class="sp" style="margin-left:auto"></span>
     <span>Pilote : qui porte l'action — RT, Utilisateur, Q/V, HSE…</span></div>
-    <table class="ktbl"><thead><tr><th>Action</th><th style="width:140px">Pilote</th><th style="width:118px">Statut</th><th style="width:30%">Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
-  k.phases.forEach((p,pi)=>{
-    const fait=p.rows.filter(r=>r.status==='Fait').length, net=Math.max(1,p.rows.length-p.rows.filter(r=>r.status==='NA').length);
-    h+=`<tr class="kgrp lc lc${pi%8}"><td colspan="3">${kinp(`phases.${pi}.name`)}</td>
-      <td class="num">${p.rows.length?Math.round(fait/net*100)+' %':'—'}</td>
-      <td><button class="kdel" data-ka="delPhase|${pi}" title="Supprimer la phase">✕</button></td></tr>`;
-    p.rows.forEach((r,ri)=>{ const b=`phases.${pi}.rows.${ri}`;
-      h+=`<tr class="lc lc${pi%8}${r.status==='NA'?' kna':''}"><td>${kta(b+'.task')}</td>
-        <td>${kinp(b+'.owner')}</td>
-        <td><select class="kin kst-${(r.status||'A').split(' ')[0]}" data-kp="${b}.status" data-kr="checklist">${KIT_STAT.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></td>
+    <div class="tblwrap"><table class="xls xchk"><thead>
+      <tr class="xtitre"><th>${esc([etu,p.nom].filter(Boolean).join(' — ')||'Projet')}</th>
+        <th style="width:128px">Pilote</th><th style="width:106px">Statut</th>
+        <th style="width:30%">Commentaires</th><th style="width:26px" class="noprint"></th></tr></thead><tbody>`;
+  k.phases.forEach((ph,pi)=>{
+    const fait=ph.rows.filter(r=>r.status==='Fait').length,
+          net=Math.max(1,ph.rows.length-ph.rows.filter(r=>r.status==='NA').length);
+    h+=`<tr class="xph p${pi%8}"><td colspan="3">${kinp(`phases.${pi}.name`)}</td>
+      <td class="num">${ph.rows.length?Math.round(fait/net*100)+' %':''}</td>
+      <td class="noprint"><button class="kdel" data-ka="delPhase|${pi}" title="Supprimer la phase">✕</button></td></tr>`;
+    ph.rows.forEach((r,ri)=>{ const b=`phases.${pi}.rows.${ri}`;
+      const st=(r.status||'A faire').split(' ')[0];
+      h+=`<tr><td>${kta(b+'.task')}</td>
+        <td class="pil">${kinp(b+'.owner')}</td>
+        <td class="st s-${st}"><select data-kp="${b}.status" data-kr="checklist">${KIT_STAT.map(x=>`<option ${x===r.status?'selected':''}>${x}</option>`).join('')}</select></td>
         <td>${kta(b+'.notes')}</td>
-        <td><button class="kdel" data-ka="delRow|${pi}|${ri}">✕</button></td></tr>`; });
-    h+=`<tr class="lc lc${pi%8}"><td colspan="5">${kbtn('addRow|'+pi,'+ Action')}</td></tr>`;
+        <td class="noprint"><button class="kdel" data-ka="delRow|${pi}|${ri}">✕</button></td></tr>`; });
+    h+=`<tr class="noprint"><td colspan="5">${kbtn('addRow|'+pi,'+ Action')}</td></tr>`;
   });
   if(!k.phases.length) h+=`<tr><td colspan="5" class="empty">Aucune phase.</td></tr>`;
-  return h+'</tbody></table>';
+  return h+'</tbody></table></div>';
 }
 /* ---- Organigramme ----
    Un arbre, et non une grille : le sponsor en tête, puis les niveaux reliés
@@ -2877,44 +2952,86 @@ function kitArmerOrga(){
 /* ---- Chiffrage ---- */
 function kitDnd(k,key){ return Math.round(ksum(k.budgetGroups.filter(g=>g.section==='Travaux'||g.section===KIT_BOTH).flatMap(g=>g.rows.map(r=>+r[key]||0)))*(+k.dnd||0)); }
 function kitBudget(k){
-  const an=key=>{ const rows=g=>g.rows.map(r=>+r[key]||0);
-    const all=ksum(k.budgetGroups.flatMap(rows)),
-      st=ksum(k.budgetGroups.filter(g=>g.section==='Études').flatMap(rows)),
-      w=ksum(k.budgetGroups.filter(g=>g.section==='Travaux').flatMap(rows)),
-      mx=ksum(k.budgetGroups.filter(g=>g.section===KIT_BOTH).flatMap(rows)),
-      c=kitDnd(k,key);
-    return {st,w,mx,ot:all-st-w-mx,c,t:all+c}; };
-  const a=an('y1'), b=an('y2'), A=k.year1||new Date().getFullYear(), B=k.year2||(A+1);
+  /* Le classeur d'origine empile trois niveaux : la section (Études, Travaux,
+     Other), le poste — qui porte le sous-total de ses lignes — et la ligne de
+     détail, seule saisie. Tout remonte : une ligne alimente son poste, un
+     poste sa section, les sections la synthèse. Rien n'est à ressaisir. */
+  const A=k.year1||new Date().getFullYear(), B=k.year2||(A+1);
+  const SEC=[['Études','e'],['Travaux','w'],[KIT_BOTH,'w']];
+  const somme=(g,key)=>ksum(g.rows.map(r=>+r[key]||0));
+  const unite=g=>{ const n=ksum(g.rows.map(r=>parseFloat(String(r.unit||'').replace(',','.'))||0));
+    return n?kfmt(n):(g.rows.some(r=>String(r.unit||'').trim())?'ens':''); };
+  const parSec=nom=>k.budgetGroups.map((g,gi)=>({g,gi})).filter(x=>x.g.section===nom);
+  const totSec=(nom,key)=>ksum(parSec(nom).map(x=>somme(x.g,key)));
+  const uSec=nom=>{ const n=ksum(parSec(nom).flatMap(x=>x.g.rows.map(r=>parseFloat(String(r.unit||'').replace(',','.'))||0)));
+    return n?kfmt(n):''; };
+  const dA=kitDnd(k,'y1'), dB=kitDnd(k,'y2');
+  const eA=totSec('Études','y1')+totSec(KIT_BOTH,'y1')*0, eB=totSec('Études','y2');
+  const wA=totSec('Travaux','y1')+totSec(KIT_BOTH,'y1'), wB=totSec('Travaux','y2')+totSec(KIT_BOTH,'y2');
+
   let h=`<div class="kstats">
-    <div class="kstat"><b>${keur(a.t+b.t)}</b><span>Budget total HT</span></div>
-    <div class="kstat"><b>${keur(a.t)}</b><span>${A}</span></div>
-    <div class="kstat"><b>${keur(b.t)}</b><span>${B}</span></div>
-    <div class="kstat"><b>${keur(a.c+b.c)}</b><span>Contingence D.N.D.</span></div></div>
-   <div class="kbar-tools">Taux D.N.D. <input class="kin num" style="width:70px" type="number" step="any" value="${esc(k.dnd)}" data-kp="dnd" data-kt="number" data-kr="budget">
-     Taux journalier (€) <input class="kin num" style="width:84px" type="number" value="${esc(k.dailyRate)}" data-kp="dailyRate" data-kt="number" data-kr="budget">
-     1<sup>re</sup> année <input class="kin num" style="width:70px" type="number" value="${A}" data-kp="year1" data-kt="number" data-kr="budget">
-     ${kbtn('addLot','+ Lot')}<span style="margin-left:auto">${k.budgetGroups.length} lot(s) · une couleur par lot</span></div>
-   <table class="ktbl"><thead><tr><th>Poste</th><th style="width:130px">Section</th><th style="width:90px">Unité / jours</th>
-     <th class="num" style="width:110px">${A} (€ HT)</th><th class="num" style="width:110px">${B} (€ HT)</th><th class="num" style="width:110px">Total</th><th style="width:22%">Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
-  k.budgetGroups.forEach((g,gi)=>{ const lc='lc'+(gi%8);
-    h+=`<tr class="kgrp lc ${lc}"><td>${kinp(`budgetGroups.${gi}.name`)}</td>
-      <td><select class="kin" data-kp="budgetGroups.${gi}.section" data-kr="budget">${KIT_SECT.map(s=>`<option ${s===g.section?'selected':''}>${s}</option>`).join('')}</select></td>
-      <td></td><td class="num">${keur(ksum(g.rows.map(r=>r.y1)))}</td><td class="num">${keur(ksum(g.rows.map(r=>r.y2)))}</td>
-      <td class="num">${keur(ksum(g.rows.map(r=>(+r.y1||0)+(+r.y2||0))))}</td><td></td>
-      <td><button class="kdel" data-ka="delLot|${gi}">✕</button></td></tr>`;
-    g.rows.forEach((r,ri)=>{ const p=`budgetGroups.${gi}.rows.${ri}`;
-      h+=`<tr class="lc ${lc}"><td>${kta(p+'.name')}</td><td></td><td>${kinp(p+'.unit')}</td>
-        <td>${kinp(p+'.y1','number','data-kr="budget"')}</td><td>${kinp(p+'.y2','number','data-kr="budget"')}</td>
-        <td class="num"><b>${keur((+r.y1||0)+(+r.y2||0))}</b></td><td>${kta(p+'.notes')}</td>
-        <td><button class="kdel" data-ka="delLotRow|${gi}|${ri}">✕</button></td></tr>`; });
-    h+=`<tr class="lc ${lc}"><td colspan="8">${kbtn('addLotRow|'+gi,'+ Ligne')}</td></tr>`;
+    <div class="kstat"><b>${keur(eA+eB+wA+wB+dA+dB)}</b><span>Budget total HT</span></div>
+    <div class="kstat"><b>${keur(eA+wA+dA)}</b><span>${A}</span></div>
+    <div class="kstat"><b>${keur(eB+wB+dB)}</b><span>${B}</span></div>
+    <div class="kstat"><b>${keur(dA+dB)}</b><span>Contingence D.N.D.</span></div></div>
+   <div class="kbar-tools noprint">
+     1<sup>re</sup> année <input class="kin num" style="width:72px" type="number" value="${A}" data-kp="year1" data-kt="number" data-kr="budget">
+     ${kbtn('addLot','+ Poste')}<span style="margin-left:auto">${k.budgetGroups.length} poste(s) · chaque poste porte le sous-total de ses lignes</span></div>
+   <div class="tblwrap"><table class="xls xbud">
+    <tr class="xtit"><td colspan="6">CHIFFRAGE BUDGET SPE FINALE</td></tr>
+    <tr class="xpar"><td>Paramètres :</td><td></td><td class="lab">Taux D.N.D.</td>
+      <td class="val"><input class="kin num" type="number" step="any" value="${esc(Math.round((+k.dnd||0)*1000)/10)}" data-kp="dnd" data-kt="pct" data-kr="budget"> %</td><td colspan="2"></td></tr>
+    <tr class="xpar"><td></td><td></td><td class="lab">Taux journalier moyen (€)</td>
+      <td class="val"><input class="kin num" type="number" value="${esc(k.dailyRate)}" data-kp="dailyRate" data-kt="number" data-kr="budget"></td><td colspan="2"></td></tr>
+    <tr class="xh"><td class="g">DESCRIPTION DES ACTIVITÉS</td><td style="width:62px">Unit</td>
+      <td style="width:118px">TOTAL COST (€)</td><td style="width:118px">TOTAL ${A} (€)</td>
+      <td style="width:118px">TOTAL ${B} (€)</td><td style="width:22%">Notes</td></tr>`;
+
+  SEC.filter((x,n)=>SEC.findIndex(y=>y[0]===x[0])===n).forEach(([nom,cls])=>{
+    const lot=parSec(nom); if(!lot.length) return;
+    h+=`<tr class="xsec ${cls}"><td colspan="6">${esc(nom)}</td></tr>`;
+    lot.forEach(({g,gi})=>{
+      h+=`<tr class="xposte ${cls}"><td>${kinp(`budgetGroups.${gi}.name`)}</td><td class="num">${unite(g)}</td>
+        <td class="num">${keur(somme(g,'y1')+somme(g,'y2'))}</td>
+        <td class="num">${keur(somme(g,'y1'))}</td><td class="num">${keur(somme(g,'y2'))}</td>
+        <td><select class="kin" data-kp="budgetGroups.${gi}.section" data-kr="budget">${KIT_SECT.map(x=>`<option ${x===g.section?'selected':''}>${x}</option>`).join('')}</select>
+          <button class="kdel noprint" data-ka="delLot|${gi}">✕</button></td></tr>`;
+      g.rows.forEach((r,ri)=>{ const pp=`budgetGroups.${gi}.rows.${ri}`;
+        h+=`<tr class="xd"><td>${kta(pp+'.name')}</td><td>${kinp(pp+'.unit')}</td>
+          <td class="num">${keur((+r.y1||0)+(+r.y2||0))}</td>
+          <td>${kinp(pp+'.y1','number','data-kr="budget"')}</td>
+          <td>${kinp(pp+'.y2','number','data-kr="budget"')}</td>
+          <td>${kta(pp+'.notes')}<button class="kdel noprint" data-ka="delLotRow|${gi}|${ri}">✕</button></td></tr>`; });
+      h+=`<tr class="xd noprint"><td colspan="6">${kbtn('addLotRow|'+gi,'+ Ligne')}</td></tr>`;
+    });
+    const x=totSec(nom,'y1'), y=totSec(nom,'y2');
+    h+=`<tr class="xtot ${cls}"><td style="text-align:right">TOTAL</td><td class="num">${uSec(nom)}</td>
+      <td class="num">${keur(x+y)}</td><td class="num">${keur(x)}</td><td class="num">${keur(y)}</td><td></td></tr>`;
   });
-  const ligne=(lb,x,y)=>`<tr class="ktot"><td>${lb}</td><td colspan="2"></td><td class="num">${keur(x)}</td><td class="num">${keur(y)}</td><td class="num">${keur(x+y)}</td><td colspan="2"></td></tr>`;
-  h+=ligne('Études',a.st,b.st)+ligne('Travaux',a.w,b.w)
-   +(k.budgetGroups.some(g=>g.section===KIT_BOTH)?ligne(KIT_BOTH,a.mx,b.mx):'')
-   +((a.ot||b.ot)?ligne('Autre',a.ot,b.ot):'')
-   +ligne('Contingence D.N.D.',a.c,b.c)+ligne('TOTAL HT',a.t,b.t);
-  return h+'</tbody></table>';
+
+  /* Other : la D.N.D., calculée sur les travaux — jamais saisie. */
+  h+=`<tr class="xsec o"><td colspan="6">Other</td></tr>
+    <tr class="xposte o"><td>D.N.D. (${kfmt(Math.round((+k.dnd||0)*1000)/10)} %)</td><td class="num">ens</td>
+      <td class="num">${keur(dA+dB)}</td><td class="num">${keur(dA)}</td><td class="num">${keur(dB)}</td>
+      <td>Aléas et imprévus (taux D.N.D. × total Travaux)</td></tr>
+    <tr class="xtot o"><td style="text-align:right">TOTAL</td><td></td>
+      <td class="num">${keur(dA+dB)}</td><td class="num">${keur(dA)}</td><td class="num">${keur(dB)}</td><td></td></tr>`;
+
+  /* La synthèse du classeur : trois lignes et le total hors taxes. */
+  const sr=(lb,x,y)=>`<tr class="xsr"><td>${lb}</td><td></td><td class="num">${keur(x+y)}</td>
+    <td class="num">${keur(x)}</td><td class="num">${keur(y)}</td><td></td></tr>`;
+  h+=`<tr><td colspan="6" style="border:0;height:9px"></td></tr>
+    <tr class="xsum"><td class="g">COST ESTIMATE SUMMARY</td><td></td><td>CAPEX (€)</td>
+      <td>CAPEX ${A}</td><td>CAPEX ${B}</td><td>Remarks</td></tr>
+    ${sr('Études',eA,eB)}${sr('Travaux',wA,wB)}${sr('D.N.D. ('+kfmt(Math.round((+k.dnd||0)*1000)/10)+' %)',dA,dB)}
+    <tr class="xgt"><td>TOTAL COST (HT €)</td><td class="num">${uSec('Études')}</td>
+      <td class="num">${keur(eA+eB+wA+wB+dA+dB)}</td><td class="num">${keur(eA+wA+dA)}</td>
+      <td class="num">${keur(eB+wB+dB)}</td><td></td></tr>
+    </table></div>
+    <div class="xnote">Les cellules bleues sont les saisies. Un poste porte le sous-total de ses lignes, une section
+      le sous-total de ses postes, et la D.N.D. se calcule sur le total des travaux : seules les lignes de détail
+      se saisissent, tout le reste suit.</div>`;
+  return h;
 }
 /* ---- Plan de charge ---- */
 function kitLoad(k){
@@ -3039,10 +3156,19 @@ function renderKit(){
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
   h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
+  kitAjusterCellules();
   if(t==='macro') kitArmerJalons();
   if(t==='orga') kitArmerOrga();
   if(t==='idcard') kitArmerIdCard();
   if(t==='onepage'){ opArmer(); bindEditables(); }
+}
+/* Dans les tableaux repris des classeurs, une cellule ne tronque pas : elle
+   s'ouvre à la hauteur de son texte, à l'affichage comme à la frappe. */
+function kitAjusterCellules(){
+  $$('#kitPane .xls textarea').forEach(t=>{
+    const ajuste=()=>{ t.style.height='auto'; t.style.height=(t.scrollHeight+2)+'px'; };
+    ajuste(); t.addEventListener('input',ajuste);
+  });
 }
 function kitTabsHTML(){
   const t=S.kitTab||'synthese';
@@ -3083,12 +3209,14 @@ document.addEventListener('input',e=>{
   const p=e.target.dataset&&e.target.dataset.kp; if(!p || e.target.isContentEditable) return;
   let v=e.target.value;
   if(e.target.dataset.kt==='number') v=parseFloat(String(v).replace(',','.'))||0;
+  if(e.target.dataset.kt==='pct') v=(parseFloat(String(v).replace(',','.'))||0)/100;
   kSet(p,v); scheduleSave();
   if(e.target.dataset.kr) renderKitGarde();
 });
 document.addEventListener('change',e=>{
   const p=e.target.dataset&&e.target.dataset.kp; if(!p) return;
-  kSet(p, e.target.dataset.kt==='number'? (+e.target.value||0) : e.target.value);
+  kSet(p, e.target.dataset.kt==='number'? (+e.target.value||0)
+        : e.target.dataset.kt==='pct' ? (+e.target.value||0)/100 : e.target.value);
   scheduleSave(); if(e.target.dataset.kr) renderKit();
 });
 document.addEventListener('click',e=>{
@@ -3711,8 +3839,9 @@ function idcTLHTML(d){
         style="left:${idcTLPc(b.a)};width:${idcTLPc(b.b-b.a)}"
         title="${esc(idcTLQuand(t,b.a,b.b))} — glisser pour déplacer, les bords pour allonger, double-clic pour écrire">
         <span class="bg${colle?'':' fl'}" style="background:${fond}"></span>
-        <span class="l" data-tlab="${i}|${j}" data-vide="Phase">${esc(b.lab||'')}</span>
-        <i class="g" data-tlp="a"></i><i class="d" data-tlp="b"></i>
+        <span class="l" contenteditable data-tlab="${i}|${j}" data-vide="Phase">${esc(b.lab||'')}</span>
+        <i class="g" data-tlp="a"></i><i class="m" data-tlp="m" title="Glisser pour déplacer la barre">⠿</i>
+        <i class="d" data-tlp="b"></i>
         <button class="delbtn tlx noprint" data-tlbdel="${i}|${j}" title="Supprimer cette barre">×</button></div>`;}).join('');
     return `<div class="idctlr" data-tlr="${i}">
       <span class="idctlnom" contenteditable data-tlnom="${i}" data-vide="Projet"
@@ -3720,6 +3849,13 @@ function idcTLHTML(d){
       <span class="act noprint"><button class="iconbtn mini" data-tladd="${i}" title="Ajouter une barre">+</button>
         <button class="delbtn" data-tlrdel="${i}" title="Supprimer la ligne">×</button></span></div>`;}).join('')
     ||`<div class="idctlr"><span class="idctlnom" style="right:60%">Aucune ligne.</span></div>`;
+  /* Les intitulés, en clair sous le graphique : un champ par barre, toujours
+     là, toujours modifiable. Écrire dans la barre elle-même reste possible —
+     mais plus rien ne dépend d'un geste à deviner. */
+  const champs=t.rows.map((r,i)=>r.bars.map((b,j)=>
+    `<label class="idctlf"><b>${esc(r.nom||('Ligne '+(i+1)))} ›</b>
+      <input class="kin" data-tlfi="${i}|${j}" value="${esc(b.lab||'')}" placeholder="Intitulé de la barre"></label>`
+    ).join('')).join('');
   const outils=`<div class="idctlbarre noprint">
     <button class="iconbtn mini" id="tlAddR">+ Ligne</button>
     ${bs?`<span class="hint">Barre :</span>
@@ -3728,14 +3864,15 @@ function idcTLHTML(d){
         style="background:linear-gradient(90deg,${c[1]},${c[0]})" title="Teinte ${k+1}"></button>`).join('')}
       <button class="iconbtn mini" id="tlTon">${(+bs.t)?'● teinte pleine':'○ teinte pâle'}</button>
       <button class="iconbtn mini" id="tlDel">Supprimer la barre</button>`
-    :`<span class="hint">Glissez une barre pour la déplacer, ses bords pour l'allonger. Cliquez-la pour en changer
-        l'intitulé et la teinte, double-cliquez pour écrire dedans, ✕ pour la retirer. Ctrl+Entrée va à la ligne.</span>`}
+    :`<span class="hint">Écrivez directement dans une barre, ou dans les champs sous le graphique.
+        La poignée ⠿ la déplace, ses bords l'allongent, ✕ la retire. Ctrl+Entrée va à la ligne.</span>`}
   </div>`;
   return outils+`<div class="idctl">
     <div class="idctlan"><span contenteditable data-tly="0">${t.y0}</span><span contenteditable data-tly="1">${t.y0+1}</span></div>
     <div class="idctlm">${[0,1].map(()=>IDC_TLM.map(m=>`<span>${m}</span>`).join('')).join('')}</div>
     <div class="idctlcorps"><div class="idctlgrid">${Array(24).join('.').split('.').map(()=>'<i></i>').join('')}</div>
-      ${lignes}</div></div>`;
+      ${lignes}</div></div>
+    ${champs?`<div class="idctlchamps noprint"><span class="hint">Intitulés des barres :</span>${champs}</div>`:''}`;
 }
 
 /* Le glisser-déposer vit sur le document — une barre qu'on tire suit la souris
@@ -3750,9 +3887,9 @@ function idcTLBind(p,d,rr){
 
   corps.addEventListener('mousedown',e=>{
     if(e.target.closest('[data-tlbdel]')) return;          /* la croix n'est pas une poignée */
+    if(e.target.closest('[data-tlab]')) return;            /* on écrit dans la barre */
     const el=e.target.closest('.idctlb');
     if(!el){ if(S.idcBar){ S.idcBar=null; rr(); } return; }
-    if(e.target.isContentEditable) return;                 /* on est en train d'écrire */
     const ij=el.dataset.tlb.split('|').map(Number);
     const bar=t.rows[ij[0]]&&t.rows[ij[0]].bars[ij[1]]; if(!bar) return;
     dr={el,bar,i:ij[0],j:ij[1],poi:e.target.dataset.tlp||'m',x0:e.clientX,
@@ -3796,17 +3933,11 @@ function idcTLBind(p,d,rr){
   document.addEventListener('mousemove',bouger);
   document.addEventListener('mouseup',lacher);
 
-  /* Le texte d'une barre s'écrit au double-clic : le simple clic sert à tirer. */
-  corps.addEventListener('dblclick',e=>{
-    const l=e.target.closest('[data-tlab]'); if(!l) return;
-    clearTimeout(tSel);                                    /* on écrit, on ne redessine pas */
-    l.setAttribute('contenteditable','true'); l.focus();
-    const r=document.createRange(); r.selectNodeContents(l);
-    const sl=getSelection(); sl.removeAllRanges(); sl.addRange(r);
-  });
+  /* Cliquer dans l'intitulé pose le curseur ; pendant qu'on écrit, aucun
+     redessin ne vient arracher le champ sous les doigts. */
   $$('#kitPane [data-tlab]').forEach(l=>{
+    l.addEventListener('focus',()=>clearTimeout(tSel));
     l.addEventListener('blur',()=>{
-      l.removeAttribute('contenteditable');
       const ij=l.dataset.tlab.split('|').map(Number);
       const bar=t.rows[ij[0]]&&t.rows[ij[0]].bars[ij[1]]; if(!bar) return;
       const v=l.innerText.replace(/ /g,' ').trim();
@@ -3849,6 +3980,11 @@ function idcTLBind(p,d,rr){
     const r=t.rows[ij[0]], bar=r&&r.bars[ij[1]]; if(!bar) return;
     if(!confirm('Supprimer la barre « '+(bar.lab||'sans titre')+' » ?')) return;
     r.bars.splice(ij[1],1); trace('barre',bar.lab||'sans titre','supprimée'); S.idcBar=null; rr(); });
+  $$('#kitPane [data-tlfi]').forEach(f=>f.addEventListener('change',()=>{
+    const ij=f.dataset.tlfi.split('|').map(Number);
+    const bar=t.rows[ij[0]]&&t.rows[ij[0]].bars[ij[1]]; if(!bar) return;
+    const v=f.value.trim(); if(String(bar.lab||'')===v) return;
+    trace('intitulé',bar.lab||'',v); bar.lab=v; rr(); }));
   const champLab=$('#tlLab');
   if(champLab) champLab.addEventListener('change',()=>{
     const b2=(S.idcBar&&t.rows[S.idcBar.i])?t.rows[S.idcBar.i].bars[S.idcBar.j]:null; if(!b2) return;
