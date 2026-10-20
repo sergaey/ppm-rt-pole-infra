@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-20.3 -->
+<!-- PPM_BUILD:2026-10-20.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -260,6 +260,16 @@
   .ht .lb{font-size:12px;color:var(--ink-2)} .ht .sc{margin-left:auto;font-family:"IBM Plex Mono";font-weight:600;font-size:13px}
   .ht.main{border-width:2px} .ht.g{border-color:var(--good)} .ht.a{border-color:var(--warn)} .ht.r{border-color:var(--bad)}
   .ht.g .dot{background:var(--good)} .ht.a .dot{background:var(--warn)} .ht.r .dot{background:var(--bad)}
+  /* Les blocs de la synthèse prennent la couleur de ce qu'ils mesurent :
+     un liseré, un en-tête teinté, et le bloc se reconnaît avant d'être lu. */
+  .ppsec{position:relative;border-radius:11px;overflow:hidden;border:1px solid var(--line)}
+  .ppsec::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;z-index:2;
+    background:linear-gradient(180deg,var(--c),var(--cs))}
+  .ppsec .budget-mini thead th,.ppsec>.panel-h{background:var(--cs);border-bottom:1px solid var(--c)}
+  .ppsec .budget-mini thead th:first-child,.ppsec>.panel-h h3{color:var(--c);font-weight:800}
+  .ppsec .budget-mini{border:0}
+  .ppsec .budget-mini td:first-child{padding-left:14px}
+  .ppsec>.panel-h{padding-left:14px}
   .budget-mini td{padding:6px 10px}
   .budget-mini tr.tot td{font-weight:700;border-top:2px solid var(--line-2)}
   .drivers{font-size:12px;color:var(--ink-2);line-height:1.5}
@@ -1352,7 +1362,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-20.3';
+const APP_BUILD='2026-10-20.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -5905,12 +5915,12 @@ function budgetBlock(p,pp,atter){
   const dispo1=c1-engage, dispo2=(c2||0)-engage;           // Available Amount, base C1 puis C2
   const pc=(v,base)=>base?fmt(v/base*100,1)+' %':'—';
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
-  return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th></tr></thead>
+  return `<div class="tblwrap ppsec" style="--c:#D97706;--cs:rgba(217,119,6,.13);margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th></tr></thead>
   <tbody>
     <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmtSaisie(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmtSaisie(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmtSaisie(p.b27):''}</td></tr>
     <tr class="tot"><td>Atterrissage estimé</td><td class="num">—</td><td class="num" colspan="2" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
   </tbody></table></div>
-  <div class="tblwrap" style="margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
+  <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
   <tbody>
     <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act,c2||c1)}</td></tr>
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com,c2||c1)}</td></tr>
@@ -5921,7 +5931,7 @@ function budgetBlock(p,pp,atter){
 }
 function milestonesBlock(p,pp){
   const ms=(pp&&pp.milestones)||[];
-  return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Key Milestones</h3><span class="meta">${ms.length} jalons</span></div>
+  return `<div class="panel ppsec" style="--c:#E11D48;--cs:rgba(225,29,72,.13);margin-top:14px"><div class="panel-h"><h3>Key Milestones</h3><span class="meta">${ms.length} jalons</span></div>
   <div class="tblwrap"><table><thead><tr><th>Jalon</th><th style="width:96px">Initial</th><th style="width:96px">Révisé</th><th style="width:118px">Statut</th><th style="width:24px"></th></tr></thead>
   <tbody>${ms.length?ms.map((m,i)=>`<tr>
     <td class="wrap"><span class="km-done">${m.st==='Done'?'✓':'•'}</span><span contenteditable data-km="${p.id}|${i}|name">${esc(m.name)}</span></td>
