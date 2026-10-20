@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-20.1 -->
+<!-- PPM_BUILD:2026-10-20.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -425,6 +425,26 @@
   .xbud .xsr td.num{color:#375623;font-weight:700}
   .xbud .xgt td{background:#1F3864;color:#fff;font-weight:700}
   .xbud .xgt td.num{color:#fff}
+  /* Plan de charge : les mauves du classeur, les mois en lavande, la ligne
+     de total détachée. */
+  .xpdc .xtit td{background:#fff;color:#23004C;font-weight:700;font-size:13px;
+    text-align:left;border:0;padding:4px 2px 7px}
+  .xpdc .xh1 td,.xpdc .xh2 td{background:#7A6490;color:#fff;font-weight:700;text-align:center;
+    border-color:#fff;padding:4px 5px;white-space:nowrap}
+  .xpdc .xh1 td.g{text-align:left}
+  .xpdc .xh2 td .kin{color:#fff;text-align:center;font-weight:700}
+  .xpdc .xgrp td{background:#DCDEED;color:#23004C;font-weight:700;border-color:#fff}
+  .xpdc .xr td{background:#fff;border-color:#DCDEED;text-align:center}
+  .xpdc .xr td:first-child{text-align:left}
+  .xpdc .xr td.m{background:#F7F7FB}
+  .xpdc .xr td.b{background:#DCDEED;font-weight:700}
+  .xpdc .xr td.e{background:#fff;font-weight:700;white-space:nowrap}
+  .xpdc .xtotr td{background:#DCDEED;font-weight:700;text-align:center;border-color:#fff}
+  .xpdc .xtotr td.e{background:#fff}
+  .xpdc .kin{text-align:center}
+  .xpdc .xr td:first-child,.xpdc .xr td:nth-child(2){min-width:124px}
+  .xpdc .xr td:nth-child(2) textarea{text-align:center}
+  .xpdc .xr td:first-child .kin,.xpdc .xgrp .kin{text-align:left}
   .xnote{margin-top:8px;font-size:10.5px;font-style:italic;color:#595959}
   .kst-Fait{background:var(--good-soft);color:var(--good)}
   .kst-En{background:var(--warn-soft);color:var(--warn)}
@@ -965,6 +985,27 @@
   .idcnote.gate{border-color:var(--copper);background:var(--copper-soft,var(--warn-soft))}
   .idcnote.cdo{border-color:var(--accent);background:var(--accent-soft)}
   .idcnote .ic{font-size:20px} .idcnote div{flex:1}
+  /* Les cartes de synthèse : du relief, une couleur par nature de mesure,
+     une jauge là où il y a un reste à faire. */
+  .kscs{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:11px;margin-top:13px}
+  .ksc{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:3px;
+    padding:12px 13px 13px;border:1px solid var(--line);border-radius:13px;background:var(--panel);
+    cursor:pointer;text-align:left;overflow:hidden;transition:transform .13s,box-shadow .13s,border-color .13s}
+  .ksc:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(17,32,46,.13);border-color:var(--accent)}
+  .ksc::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}
+  .ksc .ic{position:absolute;top:11px;right:12px;font-size:17px;opacity:.5}
+  .ksc b{font-family:Archivo;font-size:25px;font-weight:800;line-height:1.1;color:var(--ink)}
+  .ksc b i{font-style:normal;font-size:13px;font-weight:700;color:var(--muted);margin-left:2px}
+  .ksc .lb{font-size:11.5px;color:var(--muted);line-height:1.35}
+  .ksc .jg{display:block;width:100%;height:5px;margin-top:7px;border-radius:999px;background:var(--panel-3);overflow:hidden}
+  .ksc .jg i{display:block;height:100%;border-radius:999px;background:var(--accent);transition:width .35s}
+  .ksc.ok::before,.ksc.ok .jg i{background:var(--good)}
+  .ksc.att::before,.ksc.att .jg i{background:var(--warn)}
+  .ksc.bas::before,.ksc.bas .jg i{background:var(--bad)}
+  .ksc.bud::before{background:var(--copper)}
+  .ksc.chg::before{background:#7d4f9e}
+  .ksc.op::before{background:var(--accent)}
+  .ksc.op b{font-size:17px}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   /* La carte reprend le support : fond gris clair, encadrés à liseré violet
      dont l'intitulé chevauche le trait, parties variables en violet italique.
@@ -1301,7 +1342,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-20.1';
+const APP_BUILD='2026-10-20.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3035,32 +3076,67 @@ function kitBudget(k){
 }
 /* ---- Plan de charge ---- */
 function kitLoad(k){
-  const M=k.months, all=k.groups.flatMap(g=>g.rows), col=i=>ksum(all.map(r=>r.values[i]));
-  const tot=ksum(M.map((_,i)=>col(i)));
-  let h=`<div class="kstats"><div class="kstat"><b>${kfmt(tot)} FTE</b><span>Charge totale</span></div>
-    <div class="kstat"><b>${kfmt(tot*k.jpf)} j</b><span>Jours</span></div>
-    <div class="kstat"><b>${keur(tot*k.jpf*k.dailyRate)}</b><span>Coût interne estimé</span></div>
-    <div class="kstat"><b>${M.length}</b><span>Mois</span></div></div>
-   <div class="kbar-tools">Jours / FTE <input class="kin num" style="width:64px" type="number" value="${esc(k.jpf)}" data-kp="jpf" data-kt="number" data-kr="load">
+  /* Le classeur « Plan de charge ressources projet » : une ligne par personne
+     avec son rôle, son approbation et son rattachement, les mois répartis sur
+     deux exercices, et pour chacun le total en jours et son coût. La charge
+     se saisit en FTE ; les jours et l'euro suivent — jours = FTE × jours par
+     FTE, coût = jours × taux journalier. Rien de tout cela ne se ressaisit. */
+  const M=k.months, A=k.year1||new Date().getFullYear(), B=k.year2||(A+1);
+  const n1=Math.max(0,Math.min(M.length, k.loadY1==null?M.length:+k.loadY1));
+  const i1=M.map((_,i)=>i).filter(i=>i<n1), i2=M.map((_,i)=>i).filter(i=>i>=n1);
+  const all=k.groups.flatMap(g=>g.rows), col=i=>ksum(all.map(r=>r.values[i]));
+  const fte=(r,idx)=>ksum(idx.map(i=>+r.values[i]||0));
+  const jours=v=>v*(+k.jpf||0), cout=v=>jours(v)*(+k.dailyRate||0);
+  const totFte=idx=>ksum(idx.map(i=>col(i)));
+  const nb=M.length+2*2+4;                                    // colonnes du tableau
+
+  let h=`<div class="kstats">
+    <div class="kstat"><b>${kfmt(totFte(i1)+totFte(i2))} FTE</b><span>Charge totale</span></div>
+    <div class="kstat"><b>${kfmt(jours(totFte(i1)+totFte(i2)))} j</b><span>Jours</span></div>
+    <div class="kstat"><b>${keur(cout(totFte(i1)+totFte(i2)))}</b><span>Coût estimé</span></div>
+    <div class="kstat"><b>${all.length}</b><span>Ressources</span></div></div>
+   <div class="kbar-tools noprint">Jours / FTE <input class="kin num" style="width:60px" type="number" value="${esc(k.jpf)}" data-kp="jpf" data-kt="number" data-kr="load">
+     Taux journalier <input class="kin num" style="width:74px" type="number" value="${esc(k.dailyRate)}" data-kp="dailyRate" data-kt="number" data-kr="load">
+     Mois en ${A} <input class="kin num" style="width:56px" type="number" min="0" max="${M.length}" value="${n1}" data-kp="loadY1" data-kt="number" data-kr="load">
      ${kbtn('addMonth','+ Mois')} ${kbtn('addPole','+ Pôle')}<span style="margin-left:auto">${k.groups.length} pôle(s)</span></div>
-   <div class="tblwrap" style="overflow:auto"><table class="ktbl"><thead><tr><th style="min-width:160px">Pôle / poste</th>
-     ${M.map((m,i)=>`<th style="min-width:72px"><input class="kin" value="${esc(m)}" data-kp="months.${i}"><button class="kdel" data-ka="delMonth|${i}">✕</button></th>`).join('')}
-     <th class="num">Total FTE</th><th class="num">Jours</th><th style="width:26px"></th></tr></thead><tbody>`;
-  k.groups.forEach((g,gi)=>{ const pc='lc'+(gi%8), t=ksum(g.rows.flatMap(r=>r.values));
-    h+=`<tr class="kgrp lc ${pc}"><td>${kinp(`groups.${gi}.name`)}</td>
-      ${M.map((_,i)=>`<td class="num">${kfmt(ksum(g.rows.map(r=>r.values[i])))}</td>`).join('')}
-      <td class="num">${kfmt(t)}</td><td class="num">${kfmt(t*k.jpf)}</td>
-      <td><button class="kdel" data-ka="delPole|${gi}">✕</button></td></tr>`;
+   <div class="tblwrap" style="overflow:auto"><table class="xls xpdc">
+    <tr class="xtit"><td colspan="${nb}">PLAN DE CHARGE RESSOURCES PROJET</td></tr>
+    <tr class="xh1"><td rowspan="2" class="g">Project Resources<br>Requirements</td>
+      <td rowspan="2">Project Role</td><td rowspan="2">Dtp Approval</td><td rowspan="2">Internal/<br>External</td>
+      ${i1.length?`<td colspan="${i1.length+2}">${A}</td>`:''}
+      ${i2.length?`<td colspan="${i2.length+2}">${B}</td>`:''}</tr>
+    <tr class="xh2">
+      ${i1.map(i=>`<td><input class="kin" value="${esc(M[i])}" data-kp="months.${i}"><button class="kdel noprint" data-ka="delMonth|${i}">✕</button></td>`).join('')}
+      ${i1.length?`<td>total ${String(A).slice(-2)}</td><td>€ ${String(A).slice(-2)}</td>`:''}
+      ${i2.map(i=>`<td><input class="kin" value="${esc(M[i])}" data-kp="months.${i}"><button class="kdel noprint" data-ka="delMonth|${i}">✕</button></td>`).join('')}
+      ${i2.length?`<td>total ${String(B).slice(-2)}</td><td>€ ${String(B).slice(-2)}</td>`:''}</tr>`;
+
+  k.groups.forEach((g,gi)=>{
+    h+=`<tr class="xgrp"><td colspan="${nb-1}">${kinp(`groups.${gi}.name`)}</td>
+      <td class="noprint"><button class="kdel" data-ka="delPole|${gi}">✕</button></td></tr>`;
     g.rows.forEach((r,ri)=>{ const p=`groups.${gi}.rows.${ri}`;
-      h+=`<tr class="lc ${pc}"><td>${kinp(p+'.name')}</td>
-        ${M.map((_,i)=>`<td>${kinp(`${p}.values.${i}`,'number','data-kr="load"')}</td>`).join('')}
-        <td class="num"><b>${kfmt(ksum(r.values))}</b></td><td class="num">${kfmt(ksum(r.values)*k.jpf)}</td>
-        <td><button class="kdel" data-ka="delPoleRow|${gi}|${ri}">✕</button></td></tr>`; });
-    h+=`<tr class="lc ${pc}"><td colspan="${M.length+4}">${kbtn('addPoleRow|'+gi,'+ Poste')}</td></tr>`;
+      const f1=fte(r,i1), f2=fte(r,i2);
+      h+=`<tr class="xr"><td>${kta(p+'.name')}</td><td>${kta(p+'.role')}</td>
+        <td class="c">${kinp(p+'.dtp')}</td><td class="c">${kinp(p+'.ie')}</td>
+        ${i1.map(i=>`<td class="m">${kinp(`${p}.values.${i}`,'number','data-kr="load"')}</td>`).join('')}
+        ${i1.length?`<td class="num b">${kfmt(jours(f1))}</td><td class="num e">${keur(cout(f1))}</td>`:''}
+        ${i2.map(i=>`<td class="m">${kinp(`${p}.values.${i}`,'number','data-kr="load"')}</td>`).join('')}
+        ${i2.length?`<td class="num b">${kfmt(jours(f2))}</td><td class="num e">${keur(cout(f2))}</td>`:''}
+        </tr>`; });
+    h+=`<tr class="noprint"><td colspan="${nb}">${kbtn('addPoleRow|'+gi,'+ Ressource')}</td></tr>`;
   });
-  h+=`<tr class="ktot"><td>TOTAL FTE</td>${M.map((_,i)=>`<td class="num">${kfmt(col(i))}</td>`).join('')}
-    <td class="num">${kfmt(tot)}</td><td class="num">${kfmt(tot*k.jpf)}</td><td></td></tr>`;
-  return h+'</tbody></table></div>';
+
+  const T1=totFte(i1), T2=totFte(i2);
+  h+=`<tr class="xgrp"><td colspan="${nb}">Total</td></tr>
+    <tr class="xtotr"><td colspan="3"></td><td class="c">External</td>
+      ${i1.map(i=>`<td class="num">${kfmt(col(i))}</td>`).join('')}
+      ${i1.length?`<td class="num b">${kfmt(jours(T1))}</td><td class="num e">${keur(cout(T1))}</td>`:''}
+      ${i2.map(i=>`<td class="num">${kfmt(col(i))}</td>`).join('')}
+      ${i2.length?`<td class="num b">${kfmt(jours(T2))}</td><td class="num e">${keur(cout(T2))}</td>`:''}
+      </tr>`;
+  return h+`</table></div>
+    <div class="xnote">La charge se saisit en FTE par mois. Les jours et les euros en découlent —
+      ${kfmt(k.jpf)} jours par FTE, ${keur(k.dailyRate)} la journée — et se recalculent à chaque frappe.</div>`;
 }
 /* ---- Macroplanning ---- */
 let kitAxe={start:0,end:0};
@@ -3142,14 +3218,23 @@ function renderKitGarde(){
 function kitResumeHTML(){
   if(!S.currentProj) return '';
   const k=kitOf(S.currentProj), r=kitSynthese(k);
-  const tuile=(v,l,t)=>`<button class="kstat" style="text-align:left;cursor:pointer;border-color:var(--line)" data-ktab="${t}"><b>${v}</b><span>${l}</span></button>`;
-  return `<div class="kstats" style="margin-top:12px">
-    ${tuile(r.av+' %','Check-list — '+r.fait+'/'+r.actions+' actions','checklist')}
-    ${tuile(r.equipe+'/'+k.people.length,'Organigramme renseigné','orga')}
-    ${tuile(keur(r.bud),'Chiffrage HT (D.N.D. incluse)','budget')}
-    ${tuile(kfmt(r.fte)+' FTE',kfmt(r.jours)+' jours de charge','load')}
-    ${tuile(r.jal+'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)','macro')}
-    ${tuile('⎙','Vue One Page — revue de projet','onepage')}</div>`;
+  /* Six cartes, chacune ouvrant son onglet. Une carte porte un chiffre, ce
+     qu'il mesure, et une jauge quand la mesure a un dénominateur : on voit
+     d'un coup d'œil ce qui est fait et ce qui reste, sans lire de tableau. */
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  const carte=(ic,t,v,u,lb,p,ton)=>`<button class="ksc ${ton||''}" data-ktab="${t}">
+    <span class="ic">${ic}</span>
+    <b>${v}${u?`<i>${u}</i>`:''}</b><span class="lb">${lb}</span>
+    ${p==null?'':`<span class="jg"><i style="width:${Math.max(0,Math.min(100,p))}%"></i></span>`}</button>`;
+  const avTon=r.av>=75?'ok':r.av>=35?'att':'bas';
+  const eq=pct(r.equipe,k.people.length||1), jl=pct(r.jal,r.nbJal||1);
+  return `<div class="kscs">
+    ${carte('✔','checklist',r.av,' %','Check-list · '+r.fait+'/'+r.actions+' actions',r.av,avTon)}
+    ${carte('👥','orga',r.equipe,'/'+k.people.length,'Organigramme renseigné',eq,eq>=75?'ok':eq>=35?'att':'bas')}
+    ${carte('€','budget',keur(r.bud),'','Chiffrage HT · D.N.D. incluse',null,'bud')}
+    ${carte('⏱','load',kfmt(r.fte),' FTE',kfmt(r.jours)+' jours de charge',null,'chg')}
+    ${carte('🚩','macro',r.jal,'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)',jl,jl>=75?'ok':jl>=35?'att':'bas')}
+    ${carte('⎙','onepage','One Page','','Revue de projet — vue à imprimer',null,'op')}</div>`;
 }
 function renderKit(){
   const h=document.getElementById('kitPane'); if(!h) return;
