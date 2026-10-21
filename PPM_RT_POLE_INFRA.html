@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.5 -->
+<!-- PPM_BUILD:2026-10-21.6 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -642,11 +642,18 @@
   .csd-f .kin{border:1px solid var(--line);background:var(--panel)}
   .csd-f.wide{grid-column:1/-1}
   /* ===== Organigramme projet : un arbre, pas une grille ===== */
-  .orgc{--n1:#0b4658;--n2:#115e75;--n3:#b0651f;--n4:#1d7a52;padding:6px 2px 10px;width:100%}
+  /* Quatre niveaux, quatre teintes — les mêmes que celles qui servent déjà
+     dans la synthèse et les cartes du kit, pour que l'ensemble se lise comme
+     un seul système plutôt que comme quatre écrans sans parenté. */
+  .orgc{--n1:#4F46E5;--n2:#0891B2;--n3:#D97706;--n4:#0E9F6E;
+    --s1:rgba(79,70,229,.13);--s2:rgba(8,145,178,.13);--s3:rgba(217,119,6,.13);--s4:rgba(14,159,110,.13);
+    padding:6px 2px 10px;width:100%}
   /* Un niveau à une seule fonction ne doit pas s'étaler sur toute la page :
      on le centre, et on laisse les autres remplir la largeur. */
   .orgr.solo{grid-template-columns:minmax(196px,330px)}
-  .orgcard{max-width:360px;margin:0 auto;width:100%}
+  /* Un item de grille ne descend pas sous sa largeur minimale sans qu'on le
+     lui dise : sans ce min-width, la dernière colonne dépassait du cadre. */
+  .orgcard .ro,.orgcard .na{overflow-wrap:anywhere}
   .orgc .orgtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .orgc .orgkpi{display:flex;gap:8px;flex-wrap:wrap}
   .orgc .orgk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 11px;box-shadow:var(--shadow)}
@@ -662,6 +669,12 @@
     color:#fff;border-radius:999px;padding:3px 10px}
   .orgl.l1 .orgh .tag{background:var(--n1)}.orgl.l2 .orgh .tag{background:var(--n2)}
   .orgl.l3 .orgh .tag{background:var(--n3)}.orgl.l4 .orgh .tag{background:var(--n4)}
+  .orgh{position:relative}
+  .orgh::before,.orgh::after{content:"";flex:1;height:2px;border-radius:2px;opacity:.28}
+  .orgl.l1 .orgh::before,.orgl.l1 .orgh::after{background:var(--n1)}
+  .orgl.l2 .orgh::before,.orgl.l2 .orgh::after{background:var(--n2)}
+  .orgl.l3 .orgh::before,.orgl.l3 .orgh::after{background:var(--n3)}
+  .orgl.l4 .orgh::before,.orgl.l4 .orgh::after{background:var(--n4)}
   .orgh .lb{font-size:12px;color:var(--ink-2);font-weight:600}
   .orgh .cnt{font-size:10.5px;color:var(--faint)}
   /* la rangée de cartes et sa barre de liaison */
@@ -673,29 +686,43 @@
   .orgl.l1 .orgr{padding-top:4px}
   .orgr::before{content:"";position:absolute;top:0;left:12%;right:12%;height:2px;background:var(--line-2);border-radius:2px}
   .orgl.l1 .orgr::before,.orgr.solo::before{display:none}
-  .orgcard{position:relative;width:auto;background:var(--panel);border:1px solid var(--line);border-radius:13px;
-    padding:11px 12px 10px;box-shadow:var(--shadow);cursor:grab;transition:transform .12s,box-shadow .18s,border-color .18s}
+  .orgcard{--lc:var(--n1);--ls:var(--s1);
+    position:relative;width:100%;min-width:0;max-width:360px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:13px 12px 10px;box-shadow:var(--shadow);cursor:grab;overflow:hidden;
+    transition:transform .12s,box-shadow .18s,border-color .18s}
+  .orgcard.l1{--lc:var(--n1);--ls:var(--s1)} .orgcard.l2{--lc:var(--n2);--ls:var(--s2)}
+  .orgcard.l3{--lc:var(--n3);--ls:var(--s3)} .orgcard.l4{--lc:var(--n4);--ls:var(--s4)}
+  /* Un bandeau de niveau en tête, et un voile de la même teinte dans l'angle :
+     la carte s'annonce avant d'être lue, sans que le nom perde son contraste. */
+  .orgcard::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--lc),var(--ls));z-index:2}
+  .orgcard .voile{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 86% at 100% 0%,var(--ls),transparent 62%)}
   .orgcard::before{content:"";position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--line-2)}
   .orgl.l1 .orgcard::before,.orgcard.nostub::before{display:none}
   /* carte reportée à la ligne : un simple liseré de rattachement, pas un
      trait qui monterait dans le vide. */
   .orgcard.nostub{box-shadow:var(--shadow),inset 3px 0 0 var(--line-2)}
-  .orgcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(16,42,67,.16);border-color:var(--accent)}
+  .orgcard:hover{transform:translateY(-3px);box-shadow:0 10px 24px var(--ls);border-color:var(--lc)}
   .orgcard.dragging{opacity:.5;cursor:grabbing}
   .orgcard .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;
     font-family:Archivo;font-weight:800;font-size:14.5px;letter-spacing:.02em;box-shadow:0 3px 9px rgba(0,0,0,.18)}
-  .orgcard.l1 .av{background:linear-gradient(135deg,var(--n1),#06303d)}
-  .orgcard.l2 .av{background:linear-gradient(135deg,var(--n2),var(--n1))}
-  .orgcard.l3 .av{background:linear-gradient(135deg,var(--n3),#8a4e18)}
-  .orgcard.l4 .av{background:linear-gradient(135deg,var(--n4),#145a3c)}
+  .orgcard .av{background:linear-gradient(135deg,var(--lc),var(--lc));position:relative;z-index:1}
+  .orgcard .hd,.orgcard .orgmeta,.orgcard .orgdel{position:relative;z-index:1}
+  /* Une fonction à pourvoir ne doit pas se parer des couleurs d'une fonction
+     tenue : elle reste en pointillé, grise, et son bandeau s'efface. */
   .orgcard.vide{border-style:dashed;background:var(--panel-2)}
+  .orgcard.vide::after{background:var(--line-2)}
+  .orgcard.vide .voile{display:none}
   .orgcard.vide .av{background:var(--panel-3);color:var(--faint);box-shadow:none}
+  .orgcard.vide:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
   .orgcard .hd{display:flex;gap:10px;align-items:center}
-  .orgcard .ro{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);
+  .orgcard .ro{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--lc);
     line-height:1.25;border:1px solid transparent;border-radius:5px;padding:1px 3px;margin:0 -3px}
   .orgcard .na{font-size:13px;font-weight:700;line-height:1.3;color:var(--ink);
     border:1px solid transparent;border-radius:5px;padding:1px 3px;margin:1px -3px 0}
   .orgcard.vide .na{color:var(--faint);font-style:italic;font-weight:500}
+  .orgcard.vide .ro{color:var(--muted)}
   .orgcard .ro:hover,.orgcard .na:hover{border-color:var(--line)}
   .orgcard .ro:focus,.orgcard .na:focus{border-color:var(--accent);background:var(--panel);outline:none}
   .orgcard .ft{display:flex;align-items:center;gap:6px;margin-top:9px;opacity:0;transition:opacity .15s}
@@ -1395,7 +1422,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.5';
+const APP_BUILD='2026-10-21.6';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3062,6 +3089,7 @@ function kitOrga(k){
       const vide=!String(p.name||'').trim();
       const fiche=vide?null:memTrouve(p.name);
       h+=`<div class="orgcard l${lv}${vide?' vide':''}" draggable="true" data-orgi="${i}">
+        <span class="voile"></span>
         <div class="hd"><div class="av">${esc(ORG_INI(p.name))}</div>
           <div style="flex:1;min-width:0">
             <div class="ro" contenteditable data-kp="people.${i}.role">${esc(p.role||'')}</div>
