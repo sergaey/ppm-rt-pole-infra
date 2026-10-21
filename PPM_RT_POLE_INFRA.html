@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.16 -->
+<!-- PPM_BUILD:2026-10-21.17 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.16';
+const APP_BUILD='2026-10-21.17';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2958,6 +2958,22 @@ function appliquerSeedRef(force){
       if(e.renomme && (e.alias||[]).map(norm).includes(norm(p.nom)) && norm(p.nom)!==norm(e.nom)){
         logChange('Portefeuille — '+(p.shine||e.shine),'intitulé unifié',p.nom,e.nom);
         p.nom=e.nom; n++; }
+      /* Rattachement demandé nommément : il se fait sans attendre, là où le
+         rattachement en lot reste soumis à confirmation. */
+      if(e.force && p.group!=='INFRA'){
+        const av=p.group||p.pole||'—';
+        p.pole='INFRA'; p.group='INFRA';
+        if(!String(p.secteur||'').trim()) p.secteur='INFRA';
+        logChange('Portefeuille — '+(p.shine||p.nom),'rattaché au pôle INFRA',av,'INFRA'); n++; }
+      /* Tête de liste : une seule fois. Si l'ordre est ensuite retouché à la
+         main, on ne vient pas le défaire à chaque ouverture. */
+      S.refTete=S.refTete||{};
+      if(e.tete && !S.refTete[e.shine]){
+        const j=S.projects.indexOf(p);
+        if(j>0){ S.projects.splice(j,1); S.projects.unshift(p);
+          logChange('Portefeuille — '+(p.shine||p.nom),'placé en tête de liste','rang '+(j+1),'rang 1'); n++; }
+        S.refTete[e.shine]=1;
+      }
       if(n){ comble++;
         logChange('Portefeuille — '+(p.shine||p.nom),'complété depuis le référentiel','',
           [e.shine,e.ishift].filter(Boolean).join(' · ')); }
@@ -2967,7 +2983,9 @@ function appliquerSeedRef(force){
       pole:'INFRA', group:(typeof poleGroup==='function'?poleGroup('INFRA'):'INFRA'),
       secteur:'INFRA', pm:'', pl:'', sponsor:'', statut:'Cadrage', actif:true, hoverride:null,
       c1:0, c2:0, b27:0, act:0, commit:null, refSeed:true };
-    S.projects.push(q); cree++;
+    if(e.tete){ S.projects.unshift(q); S.refTete=S.refTete||{}; S.refTete[e.shine]=1; }
+    else S.projects.push(q);
+    cree++;
     logChange('Portefeuille — '+(q.shine||q.nom),'ajouté depuis le référentiel','',
       e.nom+' · '+(e.ishift||'sans n° iShift'));
   });
