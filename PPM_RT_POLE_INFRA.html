@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.12 -->
+<!-- PPM_BUILD:2026-10-21.13 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.12';
+const APP_BUILD='2026-10-21.13';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2421,9 +2421,16 @@ function renderDash(){
   <div class="cols-dash">
     <div class="panel">
       <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span>${(()=>{ const r=refManquants(); if(!r.total) return '';
-      return `<button class="iconbtn${r.manque?' refdu':''}" id="refSeed"
-        title="Référentiel INFRA : ${r.present} des ${r.total} projets du relevé sont au portefeuille.${r.manque?' Cliquez pour ajouter les '+r.manque+' manquants et compléter les n° Shine et iShift — aucun doublon ne sera créé.':' Rien à reprendre.'}"
-        >⤓ Référentiel INFRA <b>${r.present}/${r.total}</b></button>`; })()}<button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
+      const dans=r.total-r.manque-r.hors.length;          // présents ET rattachés à INFRA
+      const du=r.manque||r.hors.length;
+      const t=[`Référentiel INFRA : ${r.total} projets au relevé.`,
+        `${dans} sont au pôle INFRA.`,
+        r.hors.length?`${r.hors.length} sont au portefeuille mais rattachés à un autre pôle — ils manquent donc à la liste INFRA.`:'',
+        r.manque?`${r.manque} sont absents du portefeuille.`:'',
+        du?'Cliquez pour régulariser : aucun doublon ne sera créé, et tout rattachement vous sera demandé.':'Rien à reprendre.'
+      ].filter(Boolean).join(' ');
+      return `<button class="iconbtn${du?' refdu':''}" id="refSeed" title="${esc(t)}"
+        >⤓ Référentiel INFRA <b>${dans}/${r.total}</b></button>`; })()}<button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -2494,11 +2501,24 @@ function renderDash(){
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
   const rs=$('#refSeed');
   if(rs) rs.addEventListener('click',()=>{
-    const n=appliquerSeedRef(true);
-    if(!n){ alert('Le portefeuille porte déjà tout ce que contient le référentiel INFRA.'); return; }
+    const n=appliquerSeedRef(true);                        // ajoute et complète
+    const r=refManquants();
+    let rat=0;
+    if(r.hors.length){
+      const liste=r.hors.slice(0,8).map(x=>'· '+(x.p.shine||'')+' '+(x.p.nom||'').slice(0,46)
+        +'  ['+(x.p.group||'—')+']').join('\n');
+      if(confirm(r.hors.length+' projet(s) du relevé sont au portefeuille mais rattachés à un autre pôle.\n'
+        +'Ils ne figurent donc pas dans la liste INFRA.\n\n'+liste
+        +(r.hors.length>8?'\n· … et '+(r.hors.length-8)+' autre(s)':'')
+        +'\n\nLes rattacher au pôle INFRA ?'))
+        rat=refRattacher(r.hors);
+    }
+    if(!n && !rat){ alert('La liste INFRA porte déjà tout ce que contient le référentiel.'); return; }
     S.filters.q=''; S.filters.pole=''; S.filters.statut=''; S.filters.dup=false; S.filters.trash=false;
     scheduleSave(); render();
-    alert(n+' projet(s) ajouté(s) ou complété(s) depuis le référentiel INFRA.\n\nLe détail est au journal des changements.');
+    alert([n?n+' projet(s) ajouté(s) ou complété(s)':'',
+           rat?rat+' projet(s) rattaché(s) au pôle INFRA':'']
+      .filter(Boolean).join('\n')+'\n\nLe détail est au journal des changements.');
   });
   const nb=$('#newProj'); if(nb) nb.addEventListener('click',nouveauProjet);
   const orst=$('#ordReset'); if(orst) orst.addEventListener('click',()=>{ S.sort={key:'c1',dir:-1}; render(); scheduleSave(); });
@@ -2861,12 +2881,32 @@ function refTrouve(e, vivants){
   const cand=vivants.filter(x=>norm(x.nom)===n);
   return cand.length===1?cand[0]:null;
 }
+/* Être au portefeuille ne suffit pas : un projet du relevé peut y figurer
+   sous un autre pôle, et il manquera alors à la liste INFRA sans manquer au
+   portefeuille. Le décompte distingue donc les deux cas — sans quoi il
+   répondrait « 43/43 » à qui n'en voit que 23. */
 function refManquants(){
-  if(!Array.isArray(SEED_REF)||!SEED_REF.length) return {total:0,present:0,manque:0};
+  if(!Array.isArray(SEED_REF)||!SEED_REF.length) return {total:0,present:0,manque:0,hors:[]};
   const vivants=(S.projects||[]).filter(x=>!x.deleted);
-  let present=0;
-  SEED_REF.forEach(e=>{ if(refTrouve(e,vivants)) present++; });
-  return {total:SEED_REF.length, present, manque:SEED_REF.length-present};
+  let present=0; const hors=[];
+  SEED_REF.forEach(e=>{ const p=refTrouve(e,vivants); if(!p) return;
+    present++; if(p.group!=='INFRA') hors.push({p,e}); });
+  return {total:SEED_REF.length, present, manque:SEED_REF.length-present, hors};
+}
+/* Rattacher au pôle INFRA les projets du relevé qui en relèvent : c'est une
+   modification de données existantes, elle ne se fait donc jamais en silence
+   — elle est demandée, et chaque changement garde la trace de son ancien
+   pôle. */
+function refRattacher(hors){
+  let n=0;
+  hors.forEach(({p,e})=>{
+    const av=p.group||p.pole||'—';
+    p.pole='INFRA'; p.group='INFRA';
+    if(!String(p.secteur||'').trim()) p.secteur='INFRA';
+    logChange('Portefeuille — '+(p.shine||p.nom),'rattaché au pôle INFRA',av,'INFRA');
+    n++;
+  });
+  return n;
 }
 function appliquerSeedRef(force){
   if(!Array.isArray(SEED_REF) || !SEED_REF.length) return 0;
