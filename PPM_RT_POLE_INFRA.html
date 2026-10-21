@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.3 -->
+<!-- PPM_BUILD:2026-10-21.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1395,7 +1395,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.3';
+const APP_BUILD='2026-10-21.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1813,10 +1813,12 @@ async function idbHydrate(){
 // Adopte un état venu du serveur (plus récent) — ne écrase jamais silencieusement.
 function adoptServerState(st,msg){
   try{ S=migrate(st); }catch(_){ return false; }
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
+  if(a||b||c||d) scheduleSave(); }
 catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
   baselineSavedAt=(S&&S._savedAt)||0; dirty=false;
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }
+  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
+  if(a||b||c||d) scheduleSave(); }
 catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
   // Aucune copie navigateur en clair quand l'auth serveur OU le verrou local est actif.
   if(!AUTH.enforced && !(typeof LOCK!=='undefined' && LOCK.active)){ try{ localStorage.setItem('ppm_vitry_state',JSON.stringify(S)); }catch(_){} }
@@ -2353,7 +2355,7 @@ function renderDash(){
 
   <div class="cols-dash">
     <div class="panel">
-      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
+      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span><button class="iconbtn" id="refSeed" title="Compléter le portefeuille depuis le référentiel INFRA : complète les n° Shine et iShift manquants, ajoute les projets absents, ne crée aucun doublon">⤓ Référentiel INFRA</button><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -2422,6 +2424,14 @@ function renderDash(){
   const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows(); armerPole();
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
+  const rs=$('#refSeed');
+  if(rs) rs.addEventListener('click',()=>{
+    const n=appliquerSeedRef(true);
+    if(!n){ alert('Le portefeuille porte déjà tout ce que contient le référentiel INFRA.'); return; }
+    S.filters.q=''; S.filters.pole=''; S.filters.statut=''; S.filters.dup=false; S.filters.trash=false;
+    scheduleSave(); render();
+    alert(n+' projet(s) ajouté(s) ou complété(s) depuis le référentiel INFRA.\n\nLe détail est au journal des changements.');
+  });
   const nb=$('#newProj'); if(nb) nb.addEventListener('click',nouveauProjet);
   const orst=$('#ordReset'); if(orst) orst.addEventListener('click',()=>{ S.sort={key:'c1',dir:-1}; render(); scheduleSave(); });
   if(S._flash) setTimeout(()=>{ S._flash=null; },2500);
@@ -2761,6 +2771,58 @@ function appliquerCorrSeed(){
     });
   });
   return n;
+}
+const SEED_REF = [];
+/* ---- Référentiel des projets INFRA ----
+   Le relevé Shine / iShift du pôle. Il ne crée jamais de doublon : on cherche
+   d'abord par code Shine, puis par n° iShift, puis par intitulé. Un projet
+   déjà là ne reçoit que ce qui lui manque — un code saisi à la main n'est
+   jamais remplacé. Un projet absent est créé, et le journal le dit. */
+function refCodes(v){ return String(v||'').split(/[\/;]/).map(x=>x.trim())
+  .filter(x=>/^INV-\d+/i.test(x)).map(x=>norm(x)); }
+function refTrouve(e, vivants){
+  const sh=norm(e.shine);
+  let p=vivants.find(x=>sh && [x.shine,x.ishift,x.id,x.code].some(v=>v&&norm(v)===sh));
+  if(p) return p;
+  const inv=refCodes(e.ishift);
+  if(inv.length){
+    p=vivants.find(x=>refCodes(x.ishift).some(c=>inv.includes(c)));
+    if(p) return p;
+  }
+  const n=norm(e.nom);
+  const cand=vivants.filter(x=>norm(x.nom)===n);
+  return cand.length===1?cand[0]:null;
+}
+function appliquerSeedRef(force){
+  if(!Array.isArray(SEED_REF) || !SEED_REF.length) return 0;
+  S.projects=S.projects||[];
+  /* Sans portefeuille, on ne déverse pas quarante projets dans une page vide :
+     la démonstration publique et un fichier neuf resteraient incohérents. */
+  if(!force && !S.projects.length) return 0;
+  let comble=0, cree=0;
+  SEED_REF.forEach(e=>{
+    const vivants=S.projects.filter(x=>!x.deleted);
+    const p=refTrouve(e, vivants);
+    if(p){
+      let n=0;
+      if(e.shine && !String(p.shine||'').trim()){ p.shine=e.shine; n++; }
+      if(e.ishift && !String(p.ishift||'').trim()){ p.ishift=e.ishift; n++; }
+      if(n){ comble++;
+        logChange('Portefeuille — '+(p.shine||p.nom),'complété depuis le référentiel','',
+          [e.shine,e.ishift].filter(Boolean).join(' · ')); }
+      return;
+    }
+    const q={ id:e.shine||uid(), shine:e.shine||'', ishift:e.ishift||'', nom:e.nom,
+      pole:'INFRA', group:(typeof poleGroup==='function'?poleGroup('INFRA'):'INFRA'),
+      secteur:'INFRA', pm:'', pl:'', sponsor:'', statut:'Cadrage', actif:true, hoverride:null,
+      c1:0, c2:0, b27:0, act:0, commit:null, refSeed:true };
+    S.projects.push(q); cree++;
+    logChange('Portefeuille — '+(q.shine||q.nom),'ajouté depuis le référentiel','',
+      e.nom+' · '+(e.ishift||'sans n° iShift'));
+  });
+  if(comble||cree) logChange('Portefeuille','référentiel INFRA','',
+    cree+' projet(s) ajouté(s) · '+comble+' complété(s)');
+  return comble+cree;
 }
 function appliquerSeedOP(){
   if(typeof SEED_OP!=='object'||!SEED_OP) return 0;
@@ -7856,7 +7918,7 @@ async function applyStateObject(obj, meta, msgEl){
   // les membres de demonstration se melangeraient aux vrais.
   if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
-  try{ appliquerSeedOP(); migrerBudgetOP(); appliquerCorrSeed(); }
+  try{ appliquerSeedOP(); migrerBudgetOP(); appliquerCorrSeed(); appliquerSeedRef(); }
   catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
@@ -8243,7 +8305,8 @@ function decorateNav(){
   document.querySelectorAll('.sb-sec[data-sec]').forEach(sec=>{ if(sec.querySelector('.nav-ic'))return; const s=document.createElement('span'); s.className='nav-ic'; s.textContent=NAV_ICONS.sec[sec.dataset.sec]||'•'; sec.insertBefore(s,sec.firstChild); });
 }
 decorateNav();
-try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(); if(a||b||c) scheduleSave(); }
+try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
+  if(a||b||c||d) scheduleSave(); }
 catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
