@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.19 -->
+<!-- PPM_BUILD:2026-10-21.20 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1124,6 +1124,14 @@
      on ne doit pas avoir à comparer une liste à un document pour s'en douter. */
   .iconbtn.refdu{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);font-weight:700}
   .iconbtn.refdu b{font-weight:800}
+  /* Le n° d'ETU se lit à côté de l'intitulé, et s'écrit au clic. */
+  .pp-etu{display:inline-flex;align-items:baseline;gap:5px;margin-left:12px;padding:2px 9px;
+    border:1px solid var(--line);border-radius:999px;background:var(--panel-2);font-size:12.5px;
+    white-space:nowrap;vertical-align:middle}
+  .pp-etu b{font-family:Archivo;font-size:10px;font-weight:800;letter-spacing:.08em;color:var(--muted)}
+  .pp-etu [contenteditable]{min-width:42px;font-weight:700;color:var(--ink);outline:none;
+    border-bottom:1px dashed var(--line-2)}
+  .pp-etu [contenteditable]:focus{border-bottom-color:var(--accent);background:var(--accent-soft)}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   /* La carte reprend le support : fond gris clair, encadrés à liseré violet
      dont l'intitulé chevauche le trait, parties variables en violet italique.
@@ -1168,7 +1176,7 @@
 
   .idcz.fin .idcbody.gap{flex:1 1 auto;min-height:34px;margin-bottom:0}
   .idcbody:empty::before,[data-idc]:empty::before,[data-idcl]:empty::before,
-  [data-tlnom]:empty::before,[data-tlab]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
+  [data-tlnom]:empty::before,[data-tlab]:empty::before,[data-pcsd]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
   .idcbody:focus,.idcappro td:focus,.idct span:focus{background:var(--accent-soft);border-radius:4px}
   /* La synthèse financière est reprise du support d'origine trait pour trait :
      trois violets d'en-tête (les exercices, les références budgétaires, les
@@ -1460,7 +1468,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.19';
+const APP_BUILD='2026-10-21.20';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2364,8 +2372,8 @@ function filtered(){
     if(f.q){
       /* Recherche par mots-clés : la requête est découpée, et chaque mot doit
          se retrouver dans au moins un des champs — l'ordre n'importe pas.
-         « baie analyse » comme « analyse baie » trouvent donc le même projet,
-         et « revamping 19S » le trouve aussi. */
+         « pompe réseau » comme « réseau pompe » trouvent donc le même projet,
+         et un code partiel le trouve aussi. */
       const champs = f.qscope==='pm' ? [p.pm]
                    : f.qscope==='pl' ? [p.pl]
                    : f.qscope==='sponsor' ? [p.sponsor]
@@ -2985,6 +2993,9 @@ function appliquerSeedRef(force){
       let n=0;
       if(e.shine && !String(p.shine||'').trim()){ p.shine=e.shine; n++; }
       if(e.ishift && !String(p.ishift||'').trim()){ p.ishift=e.ishift; n++; }
+      if(e.etu){ const c=csdOf(p.id);
+        if(!String(c.etu||'').trim()){ c.etu=e.etu;
+          logChange('Projet '+(p.shine||p.nom),'n° ETU','',e.etu); n++; } }
       /* Un même projet ne doit pas vivre sous deux intitulés. Là où le
          propriétaire a tranché, le relevé rétablit le libellé retenu — mais
          seulement si le projet porte encore l'un des anciens, jamais un nom
@@ -3017,6 +3028,7 @@ function appliquerSeedRef(force){
       pole:'INFRA', group:(typeof poleGroup==='function'?poleGroup('INFRA'):'INFRA'),
       secteur:'INFRA', pm:'', pl:'', sponsor:'', statut:'Cadrage', actif:true, hoverride:null,
       c1:0, c2:0, b27:0, act:0, commit:null, refSeed:true };
+    if(e.etu) csdOf(q.id).etu=e.etu;
     if(e.tete){ S.projects.unshift(q); S.refTete=S.refTete||{}; S.refTete[e.shine]=1; }
     else S.projects.push(q);
     cree++;
@@ -3193,7 +3205,8 @@ function kitChecklist(k){
   const p=S.projects.find(x=>x.id===S.currentProj)||{};
   /* Le classeur titre la feuille par le n° d'ETU et l'intitulé du projet ;
      sans ETU saisi, l'intitulé suffit. On lit sans rien créer au passage. */
-  const etu=((S.csd&&S.csd[p.id])||{}).etu||'';
+  const etuBrut=((S.csd&&S.csd[p.id])||{}).etu||'';
+  const etu=etuBrut?('ETU'+String(etuBrut).replace(/^ETU\s*/i,'')):'';
   let h=`<div class="kstats"><div class="kstat"><b>${all.length}</b><span>Actions</span></div>
     ${KIT_STAT.map(s=>`<div class="kstat"><b>${c(s)}</b><span>${s}</span></div>`).join('')}
     <div class="kstat"><b>${Math.round(c('Fait')/base*100)} %</b><span>Avancement</span></div></div>
@@ -6383,7 +6396,10 @@ function renderPass(){
   <div class="pp-grid">
     <div>
       <div class="panel"><div class="panel-b">
-        <div class="pp-id"><span class="c">${esc(p.ishift||p.shine||'—')}</span><h2 contenteditable data-pf="nom">${esc(p.nom)}</h2></div>
+        <div class="pp-id"><span class="c">${esc(p.ishift||p.shine||'—')}</span>
+          <h2 contenteditable data-pf="nom">${esc(p.nom)}</h2>
+          <span class="pp-etu" title="N° d'ETU du projet — cliquez pour le renseigner"><b>ETU</b><span
+            contenteditable data-pcsd="etu" data-vide="à renseigner">${esc(((S.csd&&S.csd[p.id])||{}).etu||'')}</span></span></div>
         <div class="pp-meta">
           <span><b>Code:</b> <span class="mono">${esc(p.shine||'—')}</span></span>
           <span><b>Pôle:</b> ${selPole(p,`data-ppole="${esc(p.id)}"`,'style="font-size:11.5px"')} / <span class="ppedit" contenteditable data-pf="secteur">${esc(p.secteur||'')}</span></span>
@@ -6548,6 +6564,17 @@ function ensurePP(id){
 }
 function bindEditables(){
   $$('[data-editpp]').forEach(el=>el.addEventListener('blur',()=>{const pp=ensurePP(S.currentProj); pp[el.dataset.editpp]=el.textContent.trim(); scheduleSave();}));
+  /* Le n° d'ETU vit dans la fiche de comité : on l'y écrit, de sorte que la
+     Check-list et le CSD le reprennent sans ressaisie. Un « ETU » tapé devant
+     le numéro est retiré — l'étiquette le porte déjà. */
+  $$('[data-pcsd]').forEach(el=>el.addEventListener('blur',()=>{
+    const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+    const c=csdOf(p.id), k=el.dataset.pcsd;
+    const v=el.textContent.replace(/\u00a0/g,' ').trim().replace(/^ETU\s*/i,'');
+    if(String(c[k]||'')===v) return;
+    logChange('Projet '+(p.shine||p.nom),'n° ETU',c[k]||'',v);
+    c[k]=v; scheduleSave(); renderPass();
+  }));
   $$('[data-pf]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(p){p[el.dataset.pf]=el.textContent.trim(); scheduleSave();}}));
   $$('[data-ppf]').forEach(el=>el.addEventListener('blur',()=>{const pp=ensurePP(S.currentProj); pp[el.dataset.ppf]=el.textContent.trim(); scheduleSave();}));
   $$('[data-pfn]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(!p)return; const t=el.textContent.replace(/\s/g,'').replace(',','.'); const v=t===''?null:parseFloat(t); p[el.dataset.pfn]=(v==null||isNaN(v))?null:v; scheduleSave(); renderPass();}));
