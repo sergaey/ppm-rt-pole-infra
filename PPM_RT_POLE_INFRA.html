@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.4 -->
+<!-- PPM_BUILD:2026-10-21.5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1395,7 +1395,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.4';
+const APP_BUILD='2026-10-21.5';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -6177,7 +6177,7 @@ function budgetBlock(p,pp,atter){
 }
 function milestonesBlock(p,pp){
   const ms=(pp&&pp.milestones)||[];
-  return `<div class="panel ppsec" style="--c:#E11D48;--cs:rgba(225,29,72,.13);margin-top:14px"><div class="panel-h"><h3>Key Milestones</h3><span class="meta">${ms.length} jalons</span></div>
+  return `<div class="panel ppsec" style="--c:#7C3AED;--cs:rgba(124,58,237,.13);margin-top:14px"><div class="panel-h"><h3>Key Milestones</h3><span class="meta">${ms.length} jalons</span></div>
   <div class="tblwrap"><table><thead><tr><th>Jalon</th><th style="width:96px">Initial</th><th style="width:96px">Révisé</th><th style="width:118px">Statut</th><th style="width:24px"></th></tr></thead>
   <tbody>${ms.length?ms.map((m,i)=>`<tr>
     <td class="wrap"><span class="km-done">${m.st==='Done'?'✓':'•'}</span><span contenteditable data-km="${p.id}|${i}|name">${esc(m.name)}</span></td>
