@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.13 -->
+<!-- PPM_BUILD:2026-10-21.14 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.13';
+const APP_BUILD='2026-10-21.14';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2501,6 +2501,13 @@ function renderDash(){
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
   const rs=$('#refSeed');
   if(rs) rs.addEventListener('click',()=>{
+    const av=refManquants();
+    if(av.manque){
+      const abs=SEED_REF.filter(e=>!refTrouve(e,(S.projects||[]).filter(x=>!x.deleted)));
+      const l=abs.slice(0,10).map(e=>'· '+e.shine+'  '+e.nom.slice(0,52)).join('\n');
+      if(!confirm(av.manque+' projet(s) du relevé sont absents du portefeuille :\n\n'+l
+        +(abs.length>10?'\n· … et '+(abs.length-10)+' autre(s)':'')+'\n\nLes ajouter au pôle INFRA ?')) return;
+    }
     const n=appliquerSeedRef(true);                        // ajoute et complète
     const r=refManquants();
     let rat=0;
@@ -2877,8 +2884,8 @@ function refTrouve(e, vivants){
     p=vivants.find(x=>refCodes(x.ishift).some(c=>inv.includes(c)));
     if(p) return p;
   }
-  const n=norm(e.nom);
-  const cand=vivants.filter(x=>norm(x.nom)===n);
+  const noms=[e.nom].concat(e.alias||[]).map(norm).filter(Boolean);
+  const cand=vivants.filter(x=>noms.includes(norm(x.nom)));
   return cand.length===1?cand[0]:null;
 }
 /* Être au portefeuille ne suffit pas : un projet du relevé peut y figurer
