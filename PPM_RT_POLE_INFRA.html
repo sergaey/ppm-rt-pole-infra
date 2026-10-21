@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.17 -->
+<!-- PPM_BUILD:2026-10-21.18 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.17';
+const APP_BUILD='2026-10-21.18';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1878,13 +1878,9 @@ async function idbHydrate(){
 // Adopte un état venu du serveur (plus récent) — ne écrase jamais silencieusement.
 function adoptServerState(st,msg){
   try{ S=migrate(st); }catch(_){ return false; }
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
-  if(a||b||c||d) scheduleSave(); }
-catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
+  try{ if(amorcerTout()) scheduleSave(); }catch(_){}
   baselineSavedAt=(S&&S._savedAt)||0; dirty=false;
-  try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
-  if(a||b||c||d) scheduleSave(); }
-catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
+  try{ if(amorcerTout()) scheduleSave(); }catch(_){}
   // Aucune copie navigateur en clair quand l'auth serveur OU le verrou local est actif.
   if(!AUTH.enforced && !(typeof LOCK!=='undefined' && LOCK.active)){ try{ localStorage.setItem('ppm_vitry_state',JSON.stringify(S)); }catch(_){} }
   try{ render(); }catch(_){}
@@ -2425,6 +2421,10 @@ function renderDash(){
 
   <div class="cols-dash">
     <div class="panel">
+      ${(S._seedErr&&S._seedErr.length)?`<div class="polenote" style="border-color:var(--bad);background:var(--bad-soft)">
+        <span class="pn-ic">⚠</span><div class="pn-tx"><b>Une amorce de données n'a pas pu s'exécuter.</b>
+          ${S._seedErr.map(x=>esc(x)).join(' · ')}<br>
+          Les autres ont bien tourné : chacune est désormais indépendante. Signalez ce message tel quel.</div></div>`:''}
       <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span>${(()=>{ const r=refManquants(); if(!r.total) return '';
       const dans=r.total-r.manque-r.hors.length;          // présents ET rattachés à INFRA
       const du=r.manque||r.hors.length;
@@ -2935,6 +2935,23 @@ function refRattacher(hors){
     logChange('Portefeuille — '+(p.shine||p.nom),'rattaché au pôle INFRA',av,'INFRA');
     n++;
   });
+  return n;
+}
+/* Les amorces partageaient un seul try : la première qui échouait emportait
+   les suivantes, sans que rien ne le dise. Chacune tourne désormais pour elle
+   seule, et ce qui tombe est retenu — et montré. */
+function amorcerTout(){
+  const travaux=[['One Pages',()=>appliquerSeedOP()],
+                 ['budget One Page',()=>migrerBudgetOP()],
+                 ['corrections',()=>appliquerCorrSeed()],
+                 ['référentiel INFRA',()=>appliquerSeedRef()]];
+  let n=0; const rates=[];
+  travaux.forEach(([nom,f])=>{
+    try{ n+=(f()||0); }
+    catch(e){ rates.push(nom+' : '+String((e&&e.message)||e));
+      try{ console.warn('Amorce « '+nom+' » interrompue :',e); }catch(_){} }
+  });
+  if(S) S._seedErr = rates.length?rates:null;
   return n;
 }
 function appliquerSeedRef(force){
@@ -8187,8 +8204,7 @@ async function applyStateObject(obj, meta, msgEl){
   // les membres de demonstration se melangeraient aux vrais.
   if(obj && Array.isArray(obj.members) && obj.members.length) obj.seedRoster=SEED_ROSTER_VERSION;
   try{ S=migrate(obj); }catch(e){ setDMsg(msgEl,'err','Structure inattendue : '+e.message); return; }
-  try{ appliquerSeedOP(); migrerBudgetOP(); appliquerCorrSeed(); appliquerSeedRef(); }
-  catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
+  try{ amorcerTout(); }catch(_){}
   S._savedAt=Date.now(); baselineSavedAt=S._savedAt; dirty=false;
   render();
   const ok=await doSave();
@@ -8574,9 +8590,7 @@ function decorateNav(){
   document.querySelectorAll('.sb-sec[data-sec]').forEach(sec=>{ if(sec.querySelector('.nav-ic'))return; const s=document.createElement('span'); s.className='nav-ic'; s.textContent=NAV_ICONS.sec[sec.dataset.sec]||'•'; sec.insertBefore(s,sec.firstChild); });
 }
 decorateNav();
-try{ const a=appliquerSeedOP(), b=migrerBudgetOP(), c=appliquerCorrSeed(), d=appliquerSeedRef();
-  if(a||b||c||d) scheduleSave(); }
-catch(e){ S._seedErr=String(e&&e.message||e); console.warn('Amorce des One Pages interrompue :',e); }
+try{ if(amorcerTout()) scheduleSave(); }catch(_){}
 render();
 /* Continuité multi-postes : récupère l'état partagé au démarrage, puis à chaque retour sur la fenêtre. */
 /* ---------- Ouverture directe du fichier : prévenir, faute de pouvoir relier ----------
