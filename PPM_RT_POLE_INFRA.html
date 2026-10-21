@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.20 -->
+<!-- PPM_BUILD:2026-10-21.21 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1132,6 +1132,9 @@
   .pp-etu [contenteditable]{min-width:42px;font-weight:700;color:var(--ink);outline:none;
     border-bottom:1px dashed var(--line-2)}
   .pp-etu [contenteditable]:focus{border-bottom-color:var(--accent);background:var(--accent-soft)}
+  /* Deux projets sous le même numéro : la pastille le montre sans l'effacer. */
+  .pp-etu.dup{border-color:#E9A23B;background:#FDF4E6}
+  .pp-etu .pp-etudup{font-style:normal;font-size:11px;color:#B8730A;margin-left:1px}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   /* La carte reprend le support : fond gris clair, encadrés à liseré violet
      dont l'intitulé chevauche le trait, parties variables en violet italique.
@@ -1468,7 +1471,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.20';
+const APP_BUILD='2026-10-21.21';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2443,7 +2446,15 @@ function renderDash(){
         du?'Cliquez pour régulariser : aucun doublon ne sera créé, et tout rattachement vous sera demandé.':'Rien à reprendre.'
       ].filter(Boolean).join(' ');
       return `<button class="iconbtn${du?' refdu':''}" id="refSeed" title="${esc(t)}"
-        >⤓ Référentiel INFRA <b>${dans}/${r.total}</b></button>`; })()}<button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
+        >⤓ Référentiel INFRA <b>${dans}/${r.total}</b></button>`; })()}${(()=>{
+      if(!Array.isArray(SEED_ETU)||!SEED_ETU.length) return '';
+      const reste=etuManquants(), pose=SEED_ETU.length-reste.length;
+      const t=[`Relevé des n° ETU : ${SEED_ETU.length} numéros.`,
+        `${pose} ont trouvé leur projet.`,
+        reste.length?`${reste.length} n'ont pas de projet au portefeuille — cliquez pour les voir.`
+                    :'Tous sont posés.'].join(' ');
+      return `<button class="iconbtn${reste.length?' refdu':''}" id="etuSeed" title="${esc(t)}"
+        >№ ETU <b>${pose}/${SEED_ETU.length}</b></button>`; })()}<button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -2519,6 +2530,23 @@ function renderDash(){
     const c=$('#activeTgl'); if(c) c.checked=false; scheduleSave(); render(); });
   const vc=$('#voirCorbeille');
   if(vc) vc.addEventListener('click',()=>{ S.filters.pole=''; S.filters.statut=''; S.filters.trash=true; render(); });
+  const es=$('#etuSeed');
+  if(es) es.addEventListener('click',()=>{
+    const n=appliquerSeedEtu();
+    const reste=etuManquants();
+    /* Un même numéro sur deux projets : c'est le relevé qui le dit, pas une
+       erreur de pose — on le montre plutôt que de le corriger d'office. */
+    const dbl=etuDoublons(); const paires=Object.keys(dbl).filter(k=>dbl[k].length>1);
+    const msg=[ n?n+' n° ETU posé(s).':'Tous les n° ETU que le relevé sait placer sont déjà posés.',
+      reste.length?'\n'+reste.length+' n° sans projet au portefeuille :\n'
+        +reste.map(e=>'· ETU'+e.etu+'  '+e.nom.slice(0,54)).join('\n')
+        +'\n\nOuvrez la fiche du projet concerné pour saisir son n° à la main.':'',
+      paires.length?'\n\nMême n° sur plusieurs projets : '
+        +paires.map(k=>'ETU'+k+' ('+dbl[k].length+')').join(', ')+' — c\'est ce que porte le relevé.':''
+    ].filter(Boolean).join('\n');
+    if(n){ scheduleSave(); render(); }
+    alert(msg);
+  });
   const rs=$('#refSeed');
   if(rs) rs.addEventListener('click',()=>{
     const av=refManquants();
@@ -2969,7 +2997,8 @@ function amorcerTout(){
   const travaux=[['One Pages',()=>appliquerSeedOP()],
                  ['budget One Page',()=>migrerBudgetOP()],
                  ['corrections',()=>appliquerCorrSeed()],
-                 ['référentiel INFRA',()=>appliquerSeedRef()]];
+                 ['référentiel INFRA',()=>appliquerSeedRef()],
+                 ['n° ETU',()=>appliquerSeedEtu()]];
   let n=0; const rates=[];
   travaux.forEach(([nom,f])=>{
     try{ n+=(f()||0); }
@@ -2993,9 +3022,6 @@ function appliquerSeedRef(force){
       let n=0;
       if(e.shine && !String(p.shine||'').trim()){ p.shine=e.shine; n++; }
       if(e.ishift && !String(p.ishift||'').trim()){ p.ishift=e.ishift; n++; }
-      if(e.etu){ const c=csdOf(p.id);
-        if(!String(c.etu||'').trim()){ c.etu=e.etu;
-          logChange('Projet '+(p.shine||p.nom),'n° ETU','',e.etu); n++; } }
       /* Un même projet ne doit pas vivre sous deux intitulés. Là où le
          propriétaire a tranché, le relevé rétablit le libellé retenu — mais
          seulement si le projet porte encore l'un des anciens, jamais un nom
@@ -3028,7 +3054,6 @@ function appliquerSeedRef(force){
       pole:'INFRA', group:(typeof poleGroup==='function'?poleGroup('INFRA'):'INFRA'),
       secteur:'INFRA', pm:'', pl:'', sponsor:'', statut:'Cadrage', actif:true, hoverride:null,
       c1:0, c2:0, b27:0, act:0, commit:null, refSeed:true };
-    if(e.etu) csdOf(q.id).etu=e.etu;
     if(e.tete){ S.projects.unshift(q); S.refTete=S.refTete||{}; S.refTete[e.shine]=1; }
     else S.projects.push(q);
     cree++;
@@ -3038,6 +3063,77 @@ function appliquerSeedRef(force){
   if(comble||cree) logChange('Portefeuille','référentiel INFRA','',
     cree+' projet(s) ajouté(s) · '+comble+' complété(s)');
   return comble+cree;
+}
+/* ---- Relevé des n° d'ETU ----
+   Un numéro par projet, relevé sur la feuille du pôle. Il ne vaut que pour
+   un projet reconnu sans hésitation : intitulé exact, ou l'un des intitulés
+   qu'il a portés. À défaut, on compare mot à mot — l'année comprise, qui
+   sépare deux campagnes d'un même intitulé — et on ne tranche que si un seul
+   projet répond. Deux candidats, aucun numéro posé : un numéro mis au mauvais
+   projet coûte plus cher qu'un champ resté vide. */
+const SEED_ETU = [];
+/* « VIT », « site » ou « des » ne distinguent rien : les mots vides sont
+   écartés avant la comparaison. L'année, elle, est un mot comme un autre —
+   et c'est elle qui empêche l'ETU de 2026 d'atterrir sur la campagne 2025. */
+const ETU_VIDE = ['vit','vite','site','le','la','les','de','des','du','d','l','et','a','au','aux','en','pour','vs','the','of'];
+function etuMots(v){ return norm(v).replace(/[^a-z0-9]+/g,' ').split(' ')
+  .filter(m=>m && !ETU_VIDE.includes(m)); }
+function etuSansPrefixe(v){ return String(v==null?'':v).replace(/ /g,' ').trim().replace(/^ETU\s*/i,''); }
+/* Un numéro qui vaut « néant » reste affiché — il dit que la question a été
+   posée — mais il ne préfixe pas le titre du classeur. */
+function etuRenseigne(v){ const t=etuSansPrefixe(v); return t && !/^n\s*\/?\s*a$/i.test(t) ? t : ''; }
+function etuTrouve(e, vivants){
+  const noms=[e.nom].concat(e.alias||[]).map(norm).filter(Boolean);
+  const exact=vivants.filter(x=>noms.includes(norm(x.nom)));
+  if(exact.length===1) return exact[0];
+  if(exact.length>1) return null;                 /* deux homonymes : on s'abstient */
+  const jeux=[e.nom].concat(e.alias||[]).map(etuMots).filter(m=>m.length);
+  let trouve=null;
+  for(const mots of jeux){
+    const cand=vivants.filter(x=>{ const chez=etuMots(x.nom); return mots.every(m=>chez.includes(m)); });
+    if(cand.length===1){ if(trouve && trouve!==cand[0]) return null; trouve=cand[0]; }
+    else if(cand.length>1) return null;
+  }
+  return trouve;
+}
+/* Le relevé ne comble que le vide : un numéro saisi à la main n'est jamais
+   remplacé, et un champ vidé exprès n'est pas rempli à nouveau — la pose est
+   retenue projet par projet. */
+function appliquerSeedEtu(){
+  if(!Array.isArray(SEED_ETU)||!SEED_ETU.length) return 0;
+  S.projects=S.projects||[]; S.etuSeed=S.etuSeed||{};
+  let n=0;
+  SEED_ETU.forEach(e=>{
+    const cle=norm(e.nom);
+    if(S.etuSeed[cle]) return;
+    const p=etuTrouve(e,S.projects.filter(x=>!x.deleted));
+    if(!p) return;
+    const c=csdOf(p.id);
+    if(!String(c.etu||'').trim()){
+      c.etu=e.etu;
+      logChange('Projet '+(p.shine||p.nom),'n° ETU','',e.etu);
+      n++;
+    }
+    S.etuSeed[cle]=p.id;
+  });
+  if(n) logChange('Portefeuille','relevé des n° ETU','',n+' n° posé(s)');
+  return n;
+}
+/* Ce que le relevé n'a pas pu poser : soit le projet manque au portefeuille,
+   soit deux projets lui répondaient. Le dire vaut mieux que le taire — c'est
+   la liste que l'on complète à la main, en deux clics, depuis la fiche. */
+function etuManquants(){
+  if(!Array.isArray(SEED_ETU)) return [];
+  const vivants=(S.projects||[]).filter(x=>!x.deleted);
+  return SEED_ETU.filter(e=>!etuTrouve(e,vivants));
+}
+/* Deux projets sous le même n° d'ETU : la feuille du pôle en porte, et rien
+   ne les signalait. On les compte pour que la pastille le dise. */
+function etuDoublons(){
+  const par={}; (S.projects||[]).filter(x=>!x.deleted).forEach(x=>{
+    const v=norm(etuRenseigne(((S.csd||{})[x.id]||{}).etu)); if(!v) return;
+    (par[v]=par[v]||[]).push(x); });
+  return par;
 }
 function appliquerSeedOP(){
   if(typeof SEED_OP!=='object'||!SEED_OP) return 0;
@@ -3205,8 +3301,8 @@ function kitChecklist(k){
   const p=S.projects.find(x=>x.id===S.currentProj)||{};
   /* Le classeur titre la feuille par le n° d'ETU et l'intitulé du projet ;
      sans ETU saisi, l'intitulé suffit. On lit sans rien créer au passage. */
-  const etuBrut=((S.csd&&S.csd[p.id])||{}).etu||'';
-  const etu=etuBrut?('ETU'+String(etuBrut).replace(/^ETU\s*/i,'')):'';
+  const etuBrut=etuRenseigne(((S.csd&&S.csd[p.id])||{}).etu);
+  const etu=etuBrut?('ETU'+etuBrut):'';
   let h=`<div class="kstats"><div class="kstat"><b>${all.length}</b><span>Actions</span></div>
     ${KIT_STAT.map(s=>`<div class="kstat"><b>${c(s)}</b><span>${s}</span></div>`).join('')}
     <div class="kstat"><b>${Math.round(c('Fait')/base*100)} %</b><span>Avancement</span></div></div>
@@ -6398,8 +6494,13 @@ function renderPass(){
       <div class="panel"><div class="panel-b">
         <div class="pp-id"><span class="c">${esc(p.ishift||p.shine||'—')}</span>
           <h2 contenteditable data-pf="nom">${esc(p.nom)}</h2>
-          <span class="pp-etu" title="N° d'ETU du projet — cliquez pour le renseigner"><b>ETU</b><span
-            contenteditable data-pcsd="etu" data-vide="à renseigner">${esc(((S.csd&&S.csd[p.id])||{}).etu||'')}</span></span></div>
+          ${(()=>{ const v=((S.csd&&S.csd[p.id])||{}).etu||'';
+              const part=(etuDoublons()[norm(etuRenseigne(v))]||[]).filter(x=>x.id!==p.id);
+              const t=part.length?('Ce n° ETU est aussi porté par : '+part.map(x=>x.nom).join(' · '))
+                                 :"N° d'ETU du projet — cliquez pour le renseigner";
+              return `<span class="pp-etu${part.length?' dup':''}" title="${esc(t)}"><b>ETU</b><span
+                contenteditable data-pcsd="etu" data-vide="à renseigner">${esc(v)}</span>${
+                part.length?'<i class="pp-etudup">⚠</i>':''}</span>`; })()}</div>
         <div class="pp-meta">
           <span><b>Code:</b> <span class="mono">${esc(p.shine||'—')}</span></span>
           <span><b>Pôle:</b> ${selPole(p,`data-ppole="${esc(p.id)}"`,'style="font-size:11.5px"')} / <span class="ppedit" contenteditable data-pf="secteur">${esc(p.secteur||'')}</span></span>
@@ -6570,7 +6671,7 @@ function bindEditables(){
   $$('[data-pcsd]').forEach(el=>el.addEventListener('blur',()=>{
     const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
     const c=csdOf(p.id), k=el.dataset.pcsd;
-    const v=el.textContent.replace(/\u00a0/g,' ').trim().replace(/^ETU\s*/i,'');
+    const v=etuSansPrefixe(el.textContent);
     if(String(c[k]||'')===v) return;
     logChange('Projet '+(p.shine||p.nom),'n° ETU',c[k]||'',v);
     c[k]=v; scheduleSave(); renderPass();
