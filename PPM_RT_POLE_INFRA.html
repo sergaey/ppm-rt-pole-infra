@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.10 -->
+<!-- PPM_BUILD:2026-10-21.11 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -542,7 +542,15 @@
   .kms:active{cursor:grabbing}
   .kms.libre{transform:none;flex-direction:row;align-items:center;gap:5px;padding-left:7px;opacity:.75}
   .kms.libre i{background:var(--faint)}
-  .kms i{width:13px;height:13px;background:var(--copper);transform:rotate(45deg);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .kms i{width:13px;height:13px;background:var(--mc,var(--copper));transform:rotate(45deg);
+    border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .kms span{color:var(--mc,#11202e)}
+  /* La ligne des jalons : tous au même rang, étiquettes décalées sur trois
+     hauteurs pour qu'elles ne se recouvrent pas. */
+  .krow.jalons{height:76px}
+  .krow.jlibres{height:30px;display:flex;align-items:center;gap:10px;padding-left:8px}
+  .krow.jlibres .kms{position:static;transform:none;flex-direction:row;gap:5px;opacity:.8}
+  .krow.jlibres .knodate{position:static;white-space:nowrap}
   .kms span{font-size:9.5px;color:#11202e;white-space:nowrap;margin-top:1px;font-weight:600}
   .kgantt .knodate{color:#5b4a74}
   .knodate{padding:6px 10px;font-size:11.5px;color:var(--faint);font-style:italic}
@@ -1448,7 +1456,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.10';
+const APP_BUILD='2026-10-21.11';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2982,6 +2990,9 @@ function appliquerSeedOP(){
 const KIT_STAT=['Fait','En cours','A faire','NA'];
 const KIT_LEVELS=['Sponsor','Pilotage & correspondants','Expertises techniques','Exécution & qualification'];
 const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
+/* Une couleur par jalon : le process en compte peu, et on les reconnaît mieux
+   à leur teinte qu'à leur position sur la frise. */
+const KIT_MSC=['#DC2626','#D97706','#16A34A','#0891B2','#2563EB','#7C3AED','#DB2777','#65A30D'];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
 const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['checklist','Check-list'],
                 ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
@@ -3437,10 +3448,25 @@ function kitMacro(k){
 
   let g=`<div class="kaxis">${mois.map(m=>{const n=new Date(m);n.setUTCMonth(n.getUTCMonth()+1);
       return `<div style="width:${pc(+n)-pc(+m)}%">${m.toLocaleDateString('fr-FR',{month:'short',year:'2-digit',timeZone:'UTC'})}</div>`;}).join('')}</div>`;
-  k.milestones.forEach((m,i)=>{ const pose=m.date&&Number.isFinite(dd(m.date));
-    g+=`<div class="krow" data-kms-lane="${i}">${lignesMois}${traitAuj}
-      <button class="kms${pose?'':' libre'}" data-kms="${i}" style="left:${pose?pc(dd(m.date))+'%':'0'}" title="${esc(m.name)}${pose?' · '+esc(m.date):' — sans date : glissez-le sur la frise'}">
-      <i></i><span>${esc(m.name)}${pose?' · '+new Date(dd(m.date)).toLocaleDateString('fr-FR',{timeZone:'UTC'}):''}</span></button></div>`; });
+  /* Tous les jalons sur une seule ligne, chacun à sa couleur. Leurs étiquettes
+     se chevaucheraient : on les décale sur trois hauteurs, dans l'ordre des
+     dates, de sorte que deux jalons voisins ne soient jamais au même niveau. */
+  const dates_=k.milestones.map((m,i)=>({m,i,t:dd(m.date)}));
+  const poses=dates_.filter(x=>Number.isFinite(x.t)).sort((p,q)=>p.t-q.t);
+  const libres=dates_.filter(x=>!Number.isFinite(x.t));
+  const jalon=(x,rang)=>{
+    const c=KIT_MSC[(+x.m.colorIndex||0)%KIT_MSC.length];
+    const haut=8+(rang%3)*18;
+    return `<button class="kms" data-kms="${x.i}" style="left:${pc(x.t)}%;top:${haut}px;--mc:${c}"
+      title="${esc(x.m.name)} · ${esc(x.m.date)} — glissez-le pour le dater">
+      <i></i><span>${esc(x.m.name)} · ${new Date(x.t).toLocaleDateString('fr-FR',{timeZone:'UTC'})}</span></button>`;
+  };
+  if(poses.length) g+=`<div class="krow jalons">${lignesMois}${traitAuj}
+      ${poses.map((x,r)=>jalon(x,r)).join('')}</div>`;
+  if(libres.length) g+=`<div class="krow jlibres">${lignesMois}
+      <span class="knodate">Sans date — glissez-les sur la frise :</span>
+      ${libres.map(x=>`<button class="kms libre" data-kms="${x.i}" style="--mc:${KIT_MSC[(+x.m.colorIndex||0)%KIT_MSC.length]}"
+        title="${esc(x.m.name)} — sans date"><i></i><span>${esc(x.m.name)}</span></button>`).join('')}</div>`;
   T.forEach(x=>{
     if(x.a==null||x.b==null||x.b<x.a){
       g+=`<div class="krow"><span class="knodate">${'— '.repeat(x.niv)}${esc(x.wbs)} ${esc(x.t.name)} · dates à renseigner</span></div>`; return; }
