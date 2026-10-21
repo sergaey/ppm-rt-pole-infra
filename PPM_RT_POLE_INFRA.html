@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.8 -->
+<!-- PPM_BUILD:2026-10-21.10 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -265,14 +265,17 @@
   /* Planning : le récapitulatif se lit comme une accolade, le chemin critique
      en rouge, le référentiel en trait gris sous la barre, et un filet marque
      le jour même. */
-  .kbar.recap{background:#1b2b3a;border-radius:2px;height:9px;align-self:center}
+  .kbar.recap{background:#2B1B45;border-radius:2px;height:10px;top:12px;cursor:default;
+    clip-path:polygon(0 0,100% 0,100% 100%,calc(100% - 6px) 100%,calc(100% - 6px) 45%,6px 45%,6px 100%,0 100%)}
   .kbar.recap i{display:none}
-  .kbar.recap span{top:-15px}
+  .kbar.recap span{position:absolute;top:-15px;left:0;color:#2B1B45;font-weight:800;padding:0}
+  .kbar.recap:hover{filter:none;box-shadow:none}
   /* Le chemin critique l'emporte sur le type d'activité : une gate critique
      se lit d'abord comme critique. */
-  .kgantt .kbar.crit{background:linear-gradient(90deg,#F87171,#DC2626);box-shadow:0 0 0 1px #DC2626 inset}
-  .kref{position:absolute;height:4px;bottom:3px;border-radius:2px;background:#9aa7b4;opacity:.85}
-  .ktoday{position:absolute;top:0;bottom:0;width:2px;background:var(--copper);opacity:.75;pointer-events:none}
+  .kgantt .kbar.crit{background:linear-gradient(90deg,#FFC9C9,#DC2626)}
+  .kgantt .kbar.crit span{color:#4a0a0a;font-weight:700}
+  .kref{position:absolute;height:4px;bottom:3px;border-radius:2px;background:#7d8a99;opacity:.9}
+  .ktoday{position:absolute;top:0;bottom:0;width:2px;background:#7A00E6;pointer-events:none;z-index:1}
   .kplan td{vertical-align:middle}
   .kplan .kwbs{font-variant-numeric:tabular-nums;color:var(--muted);font-size:11px;white-space:nowrap}
   .kplan tr.krecap td{background:var(--panel-2);font-weight:700}
@@ -505,25 +508,43 @@
   .kperson small{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
   .kperson .krole{font-weight:700;font-size:12px}
   /* Macroplanning */
-  .kgantt{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
-  .kaxis{display:flex;background:var(--panel-2);border-bottom:1px solid var(--line);font-size:10px;color:var(--muted)}
-  .kaxis div{padding:4px 2px;text-align:center;border-right:1px solid var(--line);white-space:nowrap;overflow:hidden}
-  .krow{position:relative;height:30px;border-bottom:1px solid var(--line)}
+  /* La frise reprend le parti du planning de l'ID Card : fond lavande, mois
+     au cordeau, barres en dégradé à bout pointu, intitulé posé à gauche contre
+     le début de la barre. Teintes fixes — c'est une frise qu'on projette et
+     qu'on imprime. */
+  .kgantt{border:2px solid #7A00E6;border-radius:4px;overflow:hidden;background:#EFEBFA;user-select:none}
+  .kaxis{display:flex;background:#7A00E6;border-bottom:0;font-size:10.5px;color:#fff;font-weight:800}
+  .kaxis div{padding:4px 2px;text-align:center;border-right:1px solid rgba(255,255,255,.45);
+    white-space:nowrap;overflow:hidden;letter-spacing:.02em}
+  .krow{position:relative;height:34px;border-bottom:1px solid #DED4F2}
   .krow:last-child{border-bottom:0}
-  .kmonth{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.7}
-  .kbar{position:absolute;top:5px;height:20px;border-radius:5px;background:linear-gradient(135deg,var(--accent),var(--accent-ink));
+  .kmonth{position:absolute;top:0;bottom:0;width:1px;background:#DED4F2}
+  .knom{position:absolute;top:50%;transform:translateY(-50%);white-space:nowrap;z-index:2;
+    padding-right:10px;font-size:11px;color:#11202e;text-align:right;max-width:44%;overflow:hidden;
+    text-overflow:ellipsis;font-weight:600}
+  .knom b{color:#5b4a74;font-weight:800;margin-right:4px}
+  .kbar{position:absolute;top:7px;height:20px;border-radius:3px;cursor:grab;
+    background:linear-gradient(90deg,var(--accent-soft),var(--accent));
     color:#fff;font-size:10.5px;display:flex;align-items:center;padding:0 7px;white-space:nowrap;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-  .kbar.coordination{background:linear-gradient(135deg,#b0651f,#8a4e18)}
-  .kbar.gate{background:linear-gradient(135deg,#7d4f9e,#5d3a76)}
-  .kbar i{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.28);border-radius:5px 0 0 5px}
-  .kbar span{position:relative}
+  .kbar.activity{background:linear-gradient(90deg,#CCEEFC,#00B0F0)}
+  .kbar.coordination,.kbar.coord{background:linear-gradient(90deg,#FFD3F0,#FF4FC3)}
+  .kbar.gate{background:linear-gradient(90deg,#E0CCFF,#9933FF)}
+  .kbar.fl{clip-path:polygon(0 0,calc(100% - 11px) 0,100% 50%,calc(100% - 11px) 100%,0 100%)}
+  .kbar i{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.42);border-radius:3px 0 0 3px}
+  .kbar span{position:relative;z-index:2;padding:0 13px 0 7px;color:#11202e;font-size:10px;font-weight:600}
+  .kbar span b{font-weight:800}
+  .kbar>u{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize;z-index:3;text-decoration:none}
+  .kbar>u.ga{left:0} .kbar>u.da{right:0}
+  .kbar.kdrag{opacity:.9;cursor:grabbing;box-shadow:0 0 0 2px #11202e inset}
+  .kbar:not(.recap):hover{filter:brightness(1.04);box-shadow:0 2px 8px rgba(17,32,46,.22)}
   .kms{position:absolute;top:3px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;
     border:0;background:transparent;cursor:grab;color:inherit;font:inherit;padding:0}
   .kms:active{cursor:grabbing}
   .kms.libre{transform:none;flex-direction:row;align-items:center;gap:5px;padding-left:7px;opacity:.75}
   .kms.libre i{background:var(--faint)}
   .kms i{width:13px;height:13px;background:var(--copper);transform:rotate(45deg);border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,.25)}
-  .kms span{font-size:9.5px;color:var(--ink-2);white-space:nowrap;margin-top:1px}
+  .kms span{font-size:9.5px;color:#11202e;white-space:nowrap;margin-top:1px;font-weight:600}
+  .kgantt .knodate{color:#5b4a74}
   .knodate{padding:6px 10px;font-size:11.5px;color:var(--faint);font-style:italic}
   .klegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-top:8px}
   .klegend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
@@ -1427,7 +1448,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.8';
+const APP_BUILD='2026-10-21.10';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3426,11 +3447,24 @@ function kitMacro(k){
     const l=pc(x.a), w=Math.max(.4, pc(x.b+KJ)-l);
     const ref=(x.ba!=null&&x.bb!=null&&x.bb>=x.ba)
       ? `<div class="kref" style="left:${pc(x.ba)}%;width:${Math.max(.4,pc(x.bb+KJ)-pc(x.ba))}%" title="Référentiel : ${kjour(x.ba)} → ${kjour(x.bb)}"></div>`:'';
+    /* Une barre qui bute sur celle qui la suit garde le bout droit ; celle qui
+       finit libre pointe. C'est le parti du planning de l'ID Card. */
+    const colle=x.succ.some(sx=>sx.a!=null && Math.abs(sx.a-(x.b+KJ))<KJ*1.5);
     g+=`<div class="krow">${lignesMois}${traitAuj}${ref}
-      <div class="kbar ${x.rec?'recap':esc(x.t.kind||'activity')}${x.crit?' crit':''}" style="left:${l}%;width:${w}%"
-        title="${esc(x.wbs)} ${esc(x.t.name)} · ${x.dur} j · marge ${x.marge==null?'—':x.marge+' j'}${x.crit?' · chemin critique':''}">
+      ${(() => {
+        /* L'intitulé se pose contre le début de la barre. Quand celle-ci part
+           du bord gauche, il n'y a pas de place : on le passe à droite. */
+        const aGauche = l >= 14;
+        const pos = aGauche ? `right:${(100-l).toFixed(3)}%`
+                            : `left:${Math.min(96,l+w).toFixed(3)}%;text-align:left;padding:0 0 0 10px`;
+        return `<span class="knom" style="${pos}"><b>${esc(x.wbs)}</b>${esc(x.t.name)}</span>`;
+      })()}
+      <div class="kbar ${x.rec?'recap':esc(x.t.kind||'activity')}${x.crit?' crit':''}${(!x.rec&&!colle)?' fl':''}"
+        data-ktb="${x.i}" style="left:${l}%;width:${w}%"
+        title="${esc(x.wbs)} ${esc(x.t.name)} · ${kjour(x.a)} → ${kjour(x.b)} · ${x.dur} j · marge ${x.marge==null?'—':x.marge+' j'}${x.crit?' · chemin critique':''}${x.rec?' · récapitulatif, dates calculées':' — glissez la barre pour la déplacer, ses bords pour l’allonger'}">
         <i style="width:${+x.t.progress||0}%"></i>
-        <span><b>${+x.t.progress||0} %</b> ${esc(x.wbs)} ${esc(x.t.name)}</span></div></div>`; });
+        <span><b>${+x.t.progress||0} %</b> ${esc(x.t.name)}</span>
+        ${x.rec?'':`<u class="ga" data-ktp="a"></u><u class="da" data-ktp="b"></u>`}</div></div>`; });
   if(!T.length && !k.milestones.length) g+=`<div class="krow"><span class="knodate">Aucune activité ni jalon — ajoutez-en ci-dessous.</span></div>`;
 
   let h=`<div class="kstats">
@@ -3552,7 +3586,7 @@ function renderKit(){
   h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   kitAjusterCellules();
-  if(t==='macro') kitArmerJalons();
+  if(t==='macro'){ kitArmerJalons(); kitArmerGantt(); }
   if(t==='orga') kitArmerOrga();
   if(t==='idcard') kitArmerIdCard();
   if(t==='onepage'){ opArmer(); bindEditables(); }
@@ -3569,6 +3603,56 @@ function kitTabsHTML(){
   const t=S.kitTab||'synthese';
   return `<div class="ktabs">${KIT_TABS.map(([i,l])=>`<button data-ktab="${i}" class="${i===t?'on':''}">${l}</button>`).join('')}</div>`;
 }
+/* Déplacer une activité à la souris : la barre suit le curseur au jour près,
+   ses bords l'allongent, et le planning se recalcule au lâcher — durée, marge
+   et chemin critique compris. Un récapitulatif ne se déplace pas : ses dates
+   viennent de ses descendants. */
+let KIT_GDOC=null;
+function kitArmerGantt(){
+  const g=$('#kitPane .kgantt'); if(!g||!kitAxe) return;
+  const k=kitOf(S.currentProj); if(!k) return;
+  const iso=t=>new Date(t).toISOString().slice(0,10);
+  let dr=null;
+  g.addEventListener('mousedown',e=>{
+    const el=e.target.closest('.kbar[data-ktb]'); if(!el||el.classList.contains('recap')) return;
+    const t=k.tasks[+el.dataset.ktb]; if(!t||!t.start||!t.end) return;
+    const r=el.parentNode.getBoundingClientRect();
+    const jours=Math.max(1,(kitAxe.end-kitAxe.start)/KJ);
+    dr={el,t,poi:e.target.dataset.ktp||'m',x0:e.clientX,
+        a0:kdd(t.start),b0:kdd(t.end),px:r.width/jours,bouge:false};
+    dr.na=dr.a0; dr.nb=dr.b0;
+    el.classList.add('kdrag'); e.preventDefault();
+  });
+  const bouger=e=>{
+    if(!dr) return;
+    const dj=Math.round((e.clientX-dr.x0)/dr.px); if(dj) dr.bouge=true;
+    const L=dr.b0-dr.a0;
+    let a=dr.a0,b=dr.b0;
+    if(dr.poi==='m'){ a=dr.a0+dj*KJ; b=a+L; }
+    else if(dr.poi==='a'){ a=Math.min(dr.b0, dr.a0+dj*KJ); }
+    else { b=Math.max(dr.a0, dr.b0+dj*KJ); }
+    dr.na=a; dr.nb=b;
+    const A=kitAxe.start, B=kitAxe.end, pc=v=>(v-A)/(B-A)*100;
+    dr.el.style.left=pc(a)+'%'; dr.el.style.width=Math.max(.4,pc(b+KJ)-pc(a))+'%';
+  };
+  const lacher=()=>{
+    if(!dr) return;
+    const c=dr; dr=null; c.el.classList.remove('kdrag');
+    if(c.bouge && (c.na!==c.a0 || c.nb!==c.b0)){
+      const av=kjour(c.a0)+' → '+kjour(c.b0);
+      c.t.start=iso(c.na); c.t.end=iso(c.nb);
+      logChange('Macroplanning — '+(c.t.name||'activité'),'dates',av,kjour(c.na)+' → '+kjour(c.nb));
+      scheduleSave();
+    }
+    renderKitGarde();
+  };
+  if(KIT_GDOC){ document.removeEventListener('mousemove',KIT_GDOC.m);
+                document.removeEventListener('mouseup',KIT_GDOC.u); }
+  KIT_GDOC={m:bouger,u:lacher};
+  document.addEventListener('mousemove',bouger);
+  document.addEventListener('mouseup',lacher);
+}
+
 /* Glisser un jalon sur la frise pour le dater : le geste de l'outil d'origine. */
 function kitArmerJalons(){
   $$('#kitPane [data-kms]').forEach(b=>{
