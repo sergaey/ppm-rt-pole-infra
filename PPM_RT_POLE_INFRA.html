@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.1 -->
+<!-- PPM_BUILD:2026-10-21.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -268,7 +268,9 @@
   .kbar.recap{background:#1b2b3a;border-radius:2px;height:9px;align-self:center}
   .kbar.recap i{display:none}
   .kbar.recap span{top:-15px}
-  .kbar.crit{background:linear-gradient(90deg,#F87171,#DC2626);box-shadow:0 0 0 1px #DC2626 inset}
+  /* Le chemin critique l'emporte sur le type d'activité : une gate critique
+     se lit d'abord comme critique. */
+  .kgantt .kbar.crit{background:linear-gradient(90deg,#F87171,#DC2626);box-shadow:0 0 0 1px #DC2626 inset}
   .kref{position:absolute;height:4px;bottom:3px;border-radius:2px;background:#9aa7b4;opacity:.85}
   .ktoday{position:absolute;top:0;bottom:0;width:2px;background:var(--copper);opacity:.75;pointer-events:none}
   .kplan td{vertical-align:middle}
@@ -1385,7 +1387,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.1';
+const APP_BUILD='2026-10-21.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2790,6 +2792,16 @@ function appliquerSeedOP(){
         if(k) pose.push(k+' zone'+(k>1?'s':'')+' de l\u2019ID Card depuis le CDO');
       }
     }
+    /* Un planning fourni ne se pose que sur un planning vide : on ne
+       remplace jamais des activités déjà saisies. */
+    if(e.plan && Array.isArray(e.plan.tasks) && e.plan.tasks.length){
+      const kk=kitOf(p.id);
+      if(!(kk.tasks||[]).length){
+        kk.tasks=e.plan.tasks.map(t=>Object.assign({id:kuid(),name:'',level:0,start:'',end:'',
+          kind:'activity',progress:0,owner:'',notes:'',pred:'',montant:0,bStart:'',bEnd:''},t));
+        pose.push(e.plan.tasks.length+' activités du macroplanning');
+      }
+    }
     if(neuf && e.op && opVierge(o)){
       const src=JSON.parse(JSON.stringify(e.op));
       o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
@@ -3204,7 +3216,13 @@ function kitPlan(k){
     const as=enf.map(e=>e.a).filter(v=>v!=null), bs=enf.map(e=>e.b).filter(v=>v!=null);
     if(as.length) x.a=Math.min.apply(null,as);
     if(bs.length) x.b=Math.max.apply(null,bs); }
-  T.forEach(x=>{ x.dur=(x.a!=null&&x.b!=null&&x.b>=x.a)?Math.round((x.b-x.a)/KJ)+1:null; });
+  T.forEach(x=>{ x.dur=(x.a!=null&&x.b!=null&&x.b>=x.a)?Math.round((x.b-x.a)/KJ)+1:null;
+    x.mt=+x.t.montant||0; });
+  /* Un récapitulatif porte la somme de ses descendants : le sous-total du
+     bordereau se retrouve sans être ressaisi. */
+  for(let n=T.length-1;n>=0;n--){ const x=T[n]; if(!x.rec) continue;
+    let m=0; for(let q=n+1;q<T.length&&T[q].niv>x.niv;q++) if(!T[q].rec) m+=(+T[q].t.montant||0);
+    x.mt=m; }
   const parWbs={}; T.forEach(x=>parWbs[x.wbs]=x);
   T.forEach(x=>{ x.pred=String(x.t.pred||'').split(/[,;]/).map(v=>v.trim()).filter(Boolean)
       .map(v=>parWbs[v]).filter(y=>y&&y!==x); x.succ=[]; });
@@ -3285,25 +3303,30 @@ function kitMacro(k){
       <th style="width:62px">WBS</th><th>Activité</th><th style="width:112px">Début</th><th style="width:112px">Fin</th>
       <th style="width:62px" class="num">Durée</th><th style="width:86px">Préd.</th>
       <th style="width:70px" class="num">Marge</th><th style="width:74px" class="num">Dérive</th>
+      <th style="width:104px" class="num">Montant HT</th>
       <th style="width:106px">Type</th><th style="width:66px" class="num">%</th><th style="width:104px">Pilote</th>
       <th style="width:58px" class="noprint"></th></tr></thead><tbody>`;
   T.forEach(x=>{ const p=`tasks.${x.i}`;
     h+=`<tr class="${x.rec?'krecap':''}${x.crit?' kcrit':''}">
       <td class="kwbs">${esc(x.wbs)}</td>
-      <td style="padding-left:${6+x.niv*17}px">${kinp(p+'.name')}</td>
+      <td style="padding-left:${6+x.niv*17}px" title="${esc(x.t.notes||'')}">${kinp(p+'.name')}</td>
       <td>${x.rec?`<span class="kcalc">${x.a!=null?kjour(x.a):'—'}</span>`:kinp(p+'.start','date','data-kr="macro"')}</td>
       <td>${x.rec?`<span class="kcalc">${x.b!=null?kjour(x.b):'—'}</span>`:kinp(p+'.end','date','data-kr="macro"')}</td>
       <td class="num">${x.dur==null?'—':x.dur+' j'}</td>
       <td>${x.rec?'':kinp(p+'.pred','text','data-kr="macro"')}</td>
       <td class="num ${x.crit?'kc':''}">${x.marge==null?'—':Math.max(0,x.marge)+' j'}</td>
       <td class="num ${x.derive>0?'kd':(x.derive<0?'kok':'')}">${x.derive==null?'—':(x.derive>0?'+':'')+x.derive+' j'}</td>
+      <td class="num">${x.rec?`<b>${keur(x.mt)}</b>`:kinp(p+'.montant','number','data-kr="macro"')}</td>
       <td><select class="kin" data-kp="${p}.kind" data-kr="macro">${KIT_KINDS.map(([v,l])=>`<option value="${v}" ${v===(x.t.kind||'activity')?'selected':''}>${l}</option>`).join('')}</select></td>
       <td>${kinp(p+'.progress','number','data-kr="macro"')}</td><td>${kinp(p+'.owner')}</td>
       <td class="noprint" style="white-space:nowrap">
         <button class="kdel" data-ka="outdent|${x.i}" title="Remonter d'un niveau" ${x.niv?'':'disabled'}>‹</button>
         <button class="kdel" data-ka="indent|${x.i}" title="Descendre d'un niveau">›</button>
         <button class="kdel" data-ka="delTask|${x.i}">✕</button></td></tr>`; });
-  if(!T.length) h+=`<tr><td colspan="12" class="empty">Aucune activité.</td></tr>`;
+  if(!T.length) h+=`<tr><td colspan="13" class="empty">Aucune activité.</td></tr>`;
+  else { const tot=T.filter(x=>!x.rec).reduce((v,x)=>v+(+x.t.montant||0),0);
+    if(tot) h+=`<tr class="ktot"><td colspan="8" style="text-align:right">MONTANT TOTAL HT</td>
+      <td class="num">${keur(tot)}</td><td colspan="4"></td></tr>`; }
   h+=`</tbody></table></div>
     <div class="xnote">Une activité dont la ligne suivante est plus indentée devient un récapitulatif : ses dates
       viennent de ses descendants. Les prédécesseurs se désignent par leur code WBS, séparés par des virgules.
