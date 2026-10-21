@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.2 -->
+<!-- PPM_BUILD:2026-10-21.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -455,6 +455,14 @@
   .xbud .xsr td{background:#fff}
   .xbud .xsr td.num{color:#375623;font-weight:700}
   .xbud .xgt td{background:#1F3864;color:#fff;font-weight:700}
+  /* Le budget initial et l'écart au chiffrage : on garde les deux chiffres
+     côte à côte, et l'écart se lit à sa couleur. */
+  .xbud .xbi td{background:#F2F2F2;font-style:italic}
+  .xbud .xbi td.num{color:#1F3864;font-weight:700;font-style:normal}
+  .xbud .xec td{background:#FFF2CC;font-weight:700}
+  .xbud .xec td.num{font-variant-numeric:tabular-nums}
+  .xbud .xec td.kd{color:#C00000}
+  .xbud .xec td.kok{color:#2F8F83}
   .xbud .xgt td.num{color:#fff}
   /* Plan de charge : les mauves du classeur, les mois en lavande, la ligne
      de total détachée. */
@@ -1387,7 +1395,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.2';
+const APP_BUILD='2026-10-21.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2802,6 +2810,18 @@ function appliquerSeedOP(){
         pose.push(e.plan.tasks.length+' activités du macroplanning');
       }
     }
+    /* Un chiffrage fourni ne se pose que si aucune ligne n'a été saisie :
+       les postes du gabarit, qui arrivent vides, ne comptent pas pour une
+       saisie. */
+    if(e.chif && Array.isArray(e.chif.postes) && e.chif.postes.length){
+      const kc=kitOf(p.id);
+      if(!(kc.budgetGroups||[]).some(g=>(g.rows||[]).length)){
+        kc.budgetGroups=e.chif.postes.map(g=>({id:kuid(),name:g.name,section:g.section,
+          rows:(g.rows||[]).map(r=>Object.assign({id:kuid(),name:'',unit:'',y1:0,y2:0,notes:''},r))}));
+        if(e.chif.dnd!=null) kc.dnd=+e.chif.dnd;
+        pose.push(e.chif.postes.reduce((n2,g)=>n2+(g.rows||[]).length,0)+' lignes de chiffrage');
+      }
+    }
     if(neuf && e.op && opVierge(o)){
       const src=JSON.parse(JSON.stringify(e.op));
       o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
@@ -3116,6 +3136,15 @@ function kitBudget(k){
   /* La synthèse du classeur : trois lignes et le total hors taxes. */
   const sr=(lb,x,y)=>`<tr class="xsr"><td>${lb}</td><td></td><td class="num">${keur(x+y)}</td>
     <td class="num">${keur(x)}</td><td class="num">${keur(y)}</td><td></td></tr>`;
+  /* Le budget initial de la fiche projet, en k€, ramené à l'euro pour être
+     comparable : on garde les deux et on montre l'écart, plutôt que de faire
+     disparaître l'un des deux chiffres. */
+  const pr=S.projects.find(x=>x.id===S.currentProj)||{};
+  const bi1=(pr.c2!=null&&pr.c2!==''?+pr.c2:+pr.c1||0)*1000, bi2=(+pr.b27||0)*1000;
+  const re1=eA+wA+dA, re2=eB+wB+dB;
+  const ec1=re1-bi1, ec2=re2-bi2;
+  const sgn=v=>(v>0?'+':'')+keur(v);
+  const cls=v=>Math.abs(v)<1?'':(v>0?'kd':'kok');
   h+=`<tr><td colspan="6" style="border:0;height:9px"></td></tr>
     <tr class="xsum"><td class="g">COST ESTIMATE SUMMARY</td><td></td><td>CAPEX (€)</td>
       <td>CAPEX ${A}</td><td>CAPEX ${B}</td><td>Remarks</td></tr>
@@ -3123,6 +3152,15 @@ function kitBudget(k){
     <tr class="xgt"><td>TOTAL COST (HT €)</td><td class="num">${uSec('Études')}</td>
       <td class="num">${keur(eA+eB+wA+wB+dA+dB)}</td><td class="num">${keur(eA+wA+dA)}</td>
       <td class="num">${keur(eB+wB+dB)}</td><td></td></tr>
+    <tr class="xsr xbi"><td>Budget initial (fiche projet)</td><td></td>
+      <td class="num">${keur(bi1+bi2)}</td><td class="num">${keur(bi1)}</td><td class="num">${keur(bi2)}</td>
+      <td>C2 ${A} et B ${B} de la fiche — avant chiffrage</td></tr>
+    <tr class="xec"><td>Écart chiffrage − budget initial</td><td></td>
+      <td class="num ${cls(ec1+ec2)}">${sgn(ec1+ec2)}</td>
+      <td class="num ${cls(ec1)}">${sgn(ec1)}</td><td class="num ${cls(ec2)}">${sgn(ec2)}</td>
+      <td>${Math.abs(ec1+ec2)<1?'Chiffrage conforme au budget initial'
+        :(ec1+ec2>0?'Dépassement à arbitrer — révision budgétaire ou optimisation du périmètre'
+                   :'Marge par rapport au budget initial')}</td></tr>
     </table></div>
     <div class="xnote">Les cellules bleues sont les saisies. Un poste porte le sous-total de ses lignes, une section
       le sous-total de ses postes, et la D.N.D. se calcule sur le total des travaux : seules les lignes de détail
