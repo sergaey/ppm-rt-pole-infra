@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.18 -->
+<!-- PPM_BUILD:2026-10-21.19 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.18';
+const APP_BUILD='2026-10-21.19';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2506,6 +2506,11 @@ function renderDash(){
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
   const vt=$('#voirTous');
   if(vt) vt.addEventListener('click',()=>{ S.filters.pole=''; S.filters.statut=''; render(); });
+  const va=$('#voirArchives');
+  if(va) va.addEventListener('click',()=>{ S.filters.pole=''; S.filters.statut=''; S.activeOnly=false;
+    const c=$('#activeTgl'); if(c) c.checked=false; scheduleSave(); render(); });
+  const vc=$('#voirCorbeille');
+  if(vc) vc.addEventListener('click',()=>{ S.filters.pole=''; S.filters.statut=''; S.filters.trash=true; render(); });
   const rs=$('#refSeed');
   if(rs) rs.addEventListener('click',()=>{
     const av=refManquants();
@@ -2626,20 +2631,32 @@ function projRows(list){
   if(S._hfilter) rows=rows.filter(p=>projHealth(p).band===S._hfilter);
   const corbeille=!!(S.filters&&S.filters.trash), DUP=doublonInfo();
   if(!rows.length){
-    /* Zéro résultat n'est pas une réponse quand un filtre est posé : on dit
-       combien de projets la même recherche trouverait dans tout le
-       portefeuille, plutôt que de laisser croire qu'ils n'existent pas. */
-    let ailleurs='';
-    if(!corbeille && S.filters && (S.filters.pole||S.filters.statut)){
-      const sans=Object.assign({},S.filters,{pole:'',statut:''});
-      const av=S.filters; S.filters=sans;
-      let n=0; try{ n=filtered().length; }catch(_){ n=0; } finally { S.filters=av; }
-      if(n) ailleurs=` <b>${n} projet(s)</b> y répondent hors du filtre posé.
-        <button class="iconbtn" id="voirTous" style="margin-left:8px">↔ Chercher dans tous les pôles</button>`;
+    /* Zéro résultat n'est pas une réponse. Trois choses peuvent masquer une
+       ligne sans se voir sur cet écran : le filtre de pôle ou de statut, la
+       case « Projets actifs » de la barre latérale — qui écarte les projets
+       archivés —, et la corbeille. On dit laquelle, et on donne le geste. */
+    let piste='';
+    if(!corbeille && S.filters && !S.filters.dup){
+      const essai=mod=>{ const f0=S.filters, a0=S.activeOnly;
+        S.filters=Object.assign({},f0,mod.f||{}); if(mod.a!==undefined) S.activeOnly=mod.a;
+        let n=0; try{ n=filtered().length; }catch(_){ } finally { S.filters=f0; S.activeOnly=a0; }
+        return n; };
+      const horsFiltre = (S.filters.pole||S.filters.statut) ? essai({f:{pole:'',statut:''}}) : 0;
+      const archives   = S.activeOnly ? essai({f:{pole:'',statut:''},a:false}) - essai({f:{pole:'',statut:''}}) : 0;
+      const poubelle   = essai({f:{pole:'',statut:'',trash:true}});
+      if(horsFiltre>0)
+        piste=` <b>${horsFiltre} projet(s)</b> y répondent hors du filtre posé.
+          <button class="iconbtn" id="voirTous" style="margin-left:8px">↔ Chercher dans tous les pôles</button>`;
+      else if(archives>0)
+        piste=` <b>${archives} projet(s) archivé(s)</b> y répondent — la case « Projets actifs » les écarte.
+          <button class="iconbtn" id="voirArchives" style="margin-left:8px">📦 Inclure les projets archivés</button>`;
+      else if(poubelle>0)
+        piste=` <b>${poubelle} projet(s)</b> y répondent, mais ils sont en corbeille.
+          <button class="iconbtn" id="voirCorbeille" style="margin-left:8px">🗑 Ouvrir la corbeille</button>`;
     }
     return `<tr><td colspan="13" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup
       ?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.'
-      :'Aucun projet ne correspond.'+ailleurs)}</td></tr>`;
+      :'Aucun projet ne correspond.'+piste)}</td></tr>`;
   }
   // Survoler la marque dit quel autre projet est en cause.
   return rows.map(p=>{const h=projHealth(p);const ec=ecartV(p);
