@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.6 -->
+<!-- PPM_BUILD:2026-10-21.8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -660,11 +660,11 @@
   .orgc .orgk b{font-family:Archivo;font-size:16px;font-weight:800;color:var(--accent-ink);margin-right:5px}
   .orgc .orgk span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
   .orgl{position:relative}
-  .orgl+.orgl{margin-top:4px}
+  .orgl+.orgl{margin-top:16px}
   /* le tronc entre deux niveaux */
-  .orgl+.orgl::before{content:"";display:block;width:2px;height:20px;margin:0 auto;
+  .orgl+.orgl::before{content:"";display:block;width:2px;height:26px;margin:0 auto;
     background:linear-gradient(var(--line-2),var(--line-2))}
-  .orgh{display:flex;align-items:center;gap:9px;justify-content:center;margin:8px 0 4px}
+  .orgh{display:flex;align-items:center;gap:9px;justify-content:center;margin:10px 0 2px}
   .orgh .tag{font-family:Archivo;font-size:9.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
     color:#fff;border-radius:999px;padding:3px 10px}
   .orgl.l1 .orgh .tag{background:var(--n1)}.orgl.l2 .orgh .tag{background:var(--n2)}
@@ -680,25 +680,30 @@
   /* la rangée de cartes et sa barre de liaison */
   /* Une grille plutôt qu'un flux : les cartes reportées à la ligne s'alignent
      sous les colonnes du dessus, au lieu de flotter seules au centre. */
-  .orgr{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));justify-content:center;
-    gap:24px 10px;position:relative;padding-top:20px;border-radius:12px;transition:background .15s}
+  .orgr{display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));justify-content:center;
+    align-items:start;gap:34px 16px;position:relative;padding-top:24px;border-radius:12px;
+    transition:background .15s}
   .orgr.over{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:4px}
   .orgl.l1 .orgr{padding-top:4px}
-  .orgr::before{content:"";position:absolute;top:0;left:12%;right:12%;height:2px;background:var(--line-2);border-radius:2px}
+  /* La barre de liaison va d'un trait de carte à l'autre, et non d'un
+     pourcentage arbitraire : elle est mesurée après le rendu, sans quoi les
+     cartes des extrémités pendraient dans le vide. */
+  .orgr::before{content:"";position:absolute;top:0;left:var(--bl,12%);right:var(--br,12%);
+    height:2px;background:var(--line-2);border-radius:2px}
   .orgl.l1 .orgr::before,.orgr.solo::before{display:none}
   .orgcard{--lc:var(--n1);--ls:var(--s1);
     position:relative;width:100%;min-width:0;max-width:360px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:13px;
-    padding:13px 12px 10px;box-shadow:var(--shadow);cursor:grab;overflow:hidden;
+    padding:13px 12px 10px;box-shadow:var(--shadow);cursor:grab;
     transition:transform .12s,box-shadow .18s,border-color .18s}
   .orgcard.l1{--lc:var(--n1);--ls:var(--s1)} .orgcard.l2{--lc:var(--n2);--ls:var(--s2)}
   .orgcard.l3{--lc:var(--n3);--ls:var(--s3)} .orgcard.l4{--lc:var(--n4);--ls:var(--s4)}
   /* Un bandeau de niveau en tête, et un voile de la même teinte dans l'angle :
      la carte s'annonce avant d'être lue, sans que le nom perde son contraste. */
-  .orgcard::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;
-    background:linear-gradient(90deg,var(--lc),var(--ls));z-index:2}
-  .orgcard .voile{position:absolute;inset:0;pointer-events:none;
+  .orgcard::after{content:"";position:absolute;top:0;left:0;right:0;height:3px;z-index:2;
+    border-radius:13px 13px 0 0;background:linear-gradient(90deg,var(--lc),var(--ls))}
+  .orgcard .voile{position:absolute;inset:0;pointer-events:none;border-radius:13px;
     background:radial-gradient(120% 86% at 100% 0%,var(--ls),transparent 62%)}
-  .orgcard::before{content:"";position:absolute;top:-20px;left:50%;width:2px;height:20px;background:var(--line-2)}
+  .orgcard::before{content:"";position:absolute;top:-24px;left:50%;width:2px;height:24px;background:var(--line-2)}
   .orgl.l1 .orgcard::before,.orgcard.nostub::before{display:none}
   /* carte reportée à la ligne : un simple liseré de rattachement, pas un
      trait qui monterait dans le vide. */
@@ -1422,7 +1427,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.6';
+const APP_BUILD='2026-10-21.8';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3113,7 +3118,25 @@ function kitOrga(k){
   return h+'</div>';
 }
 /* Rattacher une fonction à un autre niveau en déplaçant sa carte. */
+/* Les traits de rattachement se mesurent une fois les cartes posées : la
+   barre rejoint le centre de la première et de la dernière carte de la
+   première ligne, celles qui sont reportées en dessous n'y pendant pas. */
+function orgAjusterLiens(){
+  $$('#kitPane .orgr').forEach(r=>{
+    const cs=[...r.querySelectorAll('.orgcard')];
+    if(cs.length<2){ r.style.setProperty('--bl','50%'); r.style.setProperty('--br','50%'); return; }
+    const haut=Math.min.apply(null,cs.map(c=>c.offsetTop));
+    const l1=cs.filter(c=>Math.abs(c.offsetTop-haut)<3);
+    const a=l1[0], b=l1[l1.length-1], w=r.clientWidth||1;
+    if(!a||!b||l1.length<2){ r.style.setProperty('--bl','50%'); r.style.setProperty('--br','50%'); return; }
+    r.style.setProperty('--bl', ((a.offsetLeft+a.offsetWidth/2)/w*100).toFixed(2)+'%');
+    r.style.setProperty('--br', (100-(b.offsetLeft+b.offsetWidth/2)/w*100).toFixed(2)+'%');
+  });
+}
 function kitArmerOrga(){
+  orgAjusterLiens();
+  if(!orgAjusterLiens._pose){ orgAjusterLiens._pose=1;
+    window.addEventListener('resize',()=>{ try{ orgAjusterLiens(); }catch(_){} }); }
   // Les cartes reportées à la ligne ne doivent pas garder un trait de liaison
   // pointant vers le vide : seule la première ligne est reliée à la barre.
   $$('#kitPane .orgr').forEach(r=>{
