@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.15 -->
+<!-- PPM_BUILD:2026-10-21.16 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1460,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.15';
+const APP_BUILD='2026-10-21.16';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2504,6 +2504,8 @@ function renderDash(){
   const majListe=()=>{ const l=filtered(); const tb=$('#projTbl tbody'); tb.innerHTML=projRows(l); wireRows(); armerPole();
     const n=$('#fqN'); if(n) n.textContent=l.length+' / '+S.projects.length; };
   $('#fq').addEventListener('input',e=>{S.filters.q=e.target.value; majListe();});
+  const vt=$('#voirTous');
+  if(vt) vt.addEventListener('click',()=>{ S.filters.pole=''; S.filters.statut=''; render(); });
   const rs=$('#refSeed');
   if(rs) rs.addEventListener('click',()=>{
     const av=refManquants();
@@ -2632,7 +2634,8 @@ function projRows(list){
       const sans=Object.assign({},S.filters,{pole:'',statut:''});
       const av=S.filters; S.filters=sans;
       let n=0; try{ n=filtered().length; }catch(_){ n=0; } finally { S.filters=av; }
-      if(n) ailleurs=` <b>${n} projet(s)</b> y répondent hors du filtre posé — passez le pôle sur « Tous pôles ».`;
+      if(n) ailleurs=` <b>${n} projet(s)</b> y répondent hors du filtre posé.
+        <button class="iconbtn" id="voirTous" style="margin-left:8px">↔ Chercher dans tous les pôles</button>`;
     }
     return `<tr><td colspan="13" class="empty">${corbeille?'Corbeille vide.':(S.filters&&S.filters.dup
       ?'Aucun doublon : chaque code SHINE et chaque intitulé est unique.'
