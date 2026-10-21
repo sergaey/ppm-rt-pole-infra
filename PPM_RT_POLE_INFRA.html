@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-20.4 -->
+<!-- PPM_BUILD:2026-10-21.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -262,6 +262,25 @@
   .ht.g .dot{background:var(--good)} .ht.a .dot{background:var(--warn)} .ht.r .dot{background:var(--bad)}
   /* Les blocs de la synthèse prennent la couleur de ce qu'ils mesurent :
      un liseré, un en-tête teinté, et le bloc se reconnaît avant d'être lu. */
+  /* Planning : le récapitulatif se lit comme une accolade, le chemin critique
+     en rouge, le référentiel en trait gris sous la barre, et un filet marque
+     le jour même. */
+  .kbar.recap{background:#1b2b3a;border-radius:2px;height:9px;align-self:center}
+  .kbar.recap i{display:none}
+  .kbar.recap span{top:-15px}
+  .kbar.crit{background:linear-gradient(90deg,#F87171,#DC2626);box-shadow:0 0 0 1px #DC2626 inset}
+  .kref{position:absolute;height:4px;bottom:3px;border-radius:2px;background:#9aa7b4;opacity:.85}
+  .ktoday{position:absolute;top:0;bottom:0;width:2px;background:var(--copper);opacity:.75;pointer-events:none}
+  .kplan td{vertical-align:middle}
+  .kplan .kwbs{font-variant-numeric:tabular-nums;color:var(--muted);font-size:11px;white-space:nowrap}
+  .kplan tr.krecap td{background:var(--panel-2);font-weight:700}
+  .kplan tr.krecap .kin{font-weight:700}
+  .kplan tr.kcrit .kwbs{color:#DC2626;font-weight:800}
+  .kplan .kcalc{color:var(--muted);font-variant-numeric:tabular-nums}
+  .kplan td.kc{color:#DC2626;font-weight:800}
+  .kplan td.kd{color:var(--bad);font-weight:700}
+  .kplan td.kok{color:var(--good);font-weight:700}
+  .kplan .kdel[disabled]{opacity:.3;cursor:default}
   .ppsec{position:relative;border-radius:11px;overflow:hidden;border:1px solid var(--line)}
   .ppsec::before{content:'';position:absolute;inset:0 auto 0 0;width:4px;z-index:2;
     background:linear-gradient(180deg,var(--c),var(--cs))}
@@ -613,7 +632,11 @@
   .csd-f .kin{border:1px solid var(--line);background:var(--panel)}
   .csd-f.wide{grid-column:1/-1}
   /* ===== Organigramme projet : un arbre, pas une grille ===== */
-  .orgc{--n1:#0b4658;--n2:#115e75;--n3:#b0651f;--n4:#1d7a52;padding:6px 2px 10px}
+  .orgc{--n1:#0b4658;--n2:#115e75;--n3:#b0651f;--n4:#1d7a52;padding:6px 2px 10px;width:100%}
+  /* Un niveau à une seule fonction ne doit pas s'étaler sur toute la page :
+     on le centre, et on laisse les autres remplir la largeur. */
+  .orgr.solo{grid-template-columns:minmax(196px,330px)}
+  .orgcard{max-width:360px;margin:0 auto;width:100%}
   .orgc .orgtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .orgc .orgkpi{display:flex;gap:8px;flex-wrap:wrap}
   .orgc .orgk{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 11px;box-shadow:var(--shadow)}
@@ -634,7 +657,7 @@
   /* la rangée de cartes et sa barre de liaison */
   /* Une grille plutôt qu'un flux : les cartes reportées à la ligne s'alignent
      sous les colonnes du dessus, au lieu de flotter seules au centre. */
-  .orgr{display:grid;grid-template-columns:repeat(auto-fit,196px);justify-content:center;
+  .orgr{display:grid;grid-template-columns:repeat(auto-fit,minmax(196px,1fr));justify-content:center;
     gap:24px 10px;position:relative;padding-top:20px;border-radius:12px;transition:background .15s}
   .orgr.over{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:4px}
   .orgl.l1 .orgr{padding-top:4px}
@@ -1362,7 +1385,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-20.4';
+const APP_BUILD='2026-10-21.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3160,53 +3183,141 @@ function kitLoad(k){
 }
 /* ---- Macroplanning ---- */
 let kitAxe={start:0,end:0};
+/* ---- Ordonnancement : ce que le planning déduit de ce qu'on saisit ----
+   On saisit un niveau d'indentation, deux dates, des prédécesseurs. Le reste
+   se calcule : le code WBS, les dates d'un récapitulatif reprises de ses
+   descendants, la durée, la marge totale — de combien une activité peut
+   glisser sans repousser la fin du projet —, le chemin critique qui est la
+   chaîne des activités sans marge, et la dérive au référentiel. */
+const KJ=864e5;
+const kdd=s=>{ const t=Date.parse(String(s||'')+'T00:00:00Z'); return Number.isFinite(t)?t:null; };
+const kjour=t=>new Date(t).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',timeZone:'UTC'});
+function kitPlan(k){
+  const T=(k.tasks||[]).map((t,i)=>({i,t,niv:Math.max(0,Math.min(4,+t.level||0)),
+    a:kdd(t.start), b:kdd(t.end)}));
+  const cpt=[];
+  T.forEach(x=>{ cpt.length=x.niv+1; cpt[x.niv]=(cpt[x.niv]||0)+1;
+    x.wbs=cpt.slice(0,x.niv+1).map(v=>v||1).join('.'); });
+  T.forEach((x,n)=>{ x.rec = n+1<T.length && T[n+1].niv>x.niv; });
+  for(let n=T.length-1;n>=0;n--){ const x=T[n]; if(!x.rec) continue;
+    const enf=[]; for(let m=n+1;m<T.length&&T[m].niv>x.niv;m++) if(!T[m].rec) enf.push(T[m]);
+    const as=enf.map(e=>e.a).filter(v=>v!=null), bs=enf.map(e=>e.b).filter(v=>v!=null);
+    if(as.length) x.a=Math.min.apply(null,as);
+    if(bs.length) x.b=Math.max.apply(null,bs); }
+  T.forEach(x=>{ x.dur=(x.a!=null&&x.b!=null&&x.b>=x.a)?Math.round((x.b-x.a)/KJ)+1:null; });
+  const parWbs={}; T.forEach(x=>parWbs[x.wbs]=x);
+  T.forEach(x=>{ x.pred=String(x.t.pred||'').split(/[,;]/).map(v=>v.trim()).filter(Boolean)
+      .map(v=>parWbs[v]).filter(y=>y&&y!==x); x.succ=[]; });
+  T.forEach(x=>x.pred.forEach(p=>p.succ.push(x)));
+  const fins=T.map(x=>x.b).filter(v=>v!=null);
+  const fin=fins.length?Math.max.apply(null,fins):null;
+  if(fin!=null) for(let pass=0; pass<=T.length; pass++){
+    let bouge=false;
+    for(let n=T.length-1;n>=0;n--){ const x=T[n];
+      if(x.a==null||x.b==null||x.dur==null) continue;
+      const bornes=x.succ.map(s=>s.ls!=null?s.ls-KJ:(s.a!=null?s.a-KJ:fin));
+      const lf=bornes.length?Math.min.apply(null,bornes):fin;
+      const ls=lf-(x.dur-1)*KJ;
+      if(x.lf!==lf||x.ls!==ls){ x.lf=lf; x.ls=ls; bouge=true; } }
+    if(!bouge) break; }
+  T.forEach(x=>{ x.marge=(x.ls!=null&&x.a!=null)?Math.round((x.ls-x.a)/KJ):null;
+    x.crit=!x.rec && x.marge!=null && x.marge<=0;
+    const ba=kdd(x.t.bStart), bb=kdd(x.t.bEnd);
+    x.ba=ba; x.bb=bb;
+    x.derive=(bb!=null&&x.b!=null)?Math.round((x.b-bb)/KJ):null; });
+  return T;
+}
+
 function kitMacro(k){
-  const dd=s=>Date.parse(s+'T00:00:00Z');
-  const ok=k.tasks.filter(t=>t.start&&t.end&&t.end>=t.start);
-  const dates=[...ok.flatMap(t=>[dd(t.start),dd(t.end)]), ...k.milestones.filter(m=>m.date&&Number.isFinite(dd(m.date))).map(m=>dd(m.date))];
+  const T=kitPlan(k), dd=kdd;
+  const dates=[...T.flatMap(x=>[x.a,x.b,x.ba,x.bb]).filter(v=>v!=null),
+               ...k.milestones.map(m=>dd(m.date)).filter(v=>v!=null)];
   let lo,hi;
-  if(dates.length){ lo=Math.min(...dates); hi=Math.max(...dates); }
-  else { lo=Date.now(); hi=lo+864e5*365; }
+  if(dates.length){ lo=Math.min.apply(null,dates); hi=Math.max.apply(null,dates); }
+  else { lo=Date.now(); hi=lo+KJ*365; }
   const s0=new Date(lo); s0.setUTCDate(1); const e0=new Date(hi); e0.setUTCMonth(e0.getUTCMonth()+1,1);
   const A=+s0, B=+e0; kitAxe={start:A,end:B};
   const pc=v=>(v-A)/(B-A)*100;
   const mois=[]; for(let m=new Date(A); +m<B; m.setUTCMonth(m.getUTCMonth()+1)) mois.push(new Date(m));
   const lignesMois=mois.map(m=>`<i class="kmonth" style="left:${pc(+m)}%"></i>`).join('');
+  const auj=Date.now();
+  const traitAuj=(auj>A&&auj<B)?`<i class="ktoday" style="left:${pc(auj)}%"></i>`:'';
+  const nbCrit=T.filter(x=>x.crit).length, nbRef=T.filter(x=>x.bb!=null).length;
+  const derives=T.filter(x=>x.derive!=null&&x.derive>0);
+
   let g=`<div class="kaxis">${mois.map(m=>{const n=new Date(m);n.setUTCMonth(n.getUTCMonth()+1);
       return `<div style="width:${pc(+n)-pc(+m)}%">${m.toLocaleDateString('fr-FR',{month:'short',year:'2-digit',timeZone:'UTC'})}</div>`;}).join('')}</div>`;
   k.milestones.forEach((m,i)=>{ const pose=m.date&&Number.isFinite(dd(m.date));
-    g+=`<div class="krow" data-kms-lane="${i}">${lignesMois}
-      <button class="kms${pose?'':' libre'}" data-kms="${i}" style="left:${pose?pc(dd(m.date))+'%':'0'}" title="${esc(m.name)}${pose?' · '+esc(m.date):' — sans date : glissez-le sur la frise ou saisissez la date ci-dessous'}">
+    g+=`<div class="krow" data-kms-lane="${i}">${lignesMois}${traitAuj}
+      <button class="kms${pose?'':' libre'}" data-kms="${i}" style="left:${pose?pc(dd(m.date))+'%':'0'}" title="${esc(m.name)}${pose?' · '+esc(m.date):' — sans date : glissez-le sur la frise'}">
       <i></i><span>${esc(m.name)}${pose?' · '+new Date(dd(m.date)).toLocaleDateString('fr-FR',{timeZone:'UTC'}):''}</span></button></div>`; });
-  k.tasks.forEach(t=>{
-    if(!(t.start&&t.end&&t.end>=t.start)){ g+=`<div class="krow"><span class="knodate">${esc(t.name)} · dates à renseigner</span></div>`; return; }
-    const l=pc(dd(t.start)), w=Math.max(.4, pc(dd(t.end)+864e5)-l);
-    g+=`<div class="krow">${lignesMois}<div class="kbar ${esc(t.kind||'activity')}" style="left:${l}%;width:${w}%">
-      <i style="width:${+t.progress||0}%"></i><span><b>${+t.progress||0} %</b> ${esc(t.name)}</span></div></div>`; });
-  if(!k.tasks.length && !k.milestones.length) g+=`<div class="krow"><span class="knodate">Aucune activité ni jalon — ajoutez-en ci-dessous.</span></div>`;
-  let h=`<div class="kgantt">${g}</div>
+  T.forEach(x=>{
+    if(x.a==null||x.b==null||x.b<x.a){
+      g+=`<div class="krow"><span class="knodate">${'— '.repeat(x.niv)}${esc(x.wbs)} ${esc(x.t.name)} · dates à renseigner</span></div>`; return; }
+    const l=pc(x.a), w=Math.max(.4, pc(x.b+KJ)-l);
+    const ref=(x.ba!=null&&x.bb!=null&&x.bb>=x.ba)
+      ? `<div class="kref" style="left:${pc(x.ba)}%;width:${Math.max(.4,pc(x.bb+KJ)-pc(x.ba))}%" title="Référentiel : ${kjour(x.ba)} → ${kjour(x.bb)}"></div>`:'';
+    g+=`<div class="krow">${lignesMois}${traitAuj}${ref}
+      <div class="kbar ${x.rec?'recap':esc(x.t.kind||'activity')}${x.crit?' crit':''}" style="left:${l}%;width:${w}%"
+        title="${esc(x.wbs)} ${esc(x.t.name)} · ${x.dur} j · marge ${x.marge==null?'—':x.marge+' j'}${x.crit?' · chemin critique':''}">
+        <i style="width:${+x.t.progress||0}%"></i>
+        <span><b>${+x.t.progress||0} %</b> ${esc(x.wbs)} ${esc(x.t.name)}</span></div></div>`; });
+  if(!T.length && !k.milestones.length) g+=`<div class="krow"><span class="knodate">Aucune activité ni jalon — ajoutez-en ci-dessous.</span></div>`;
+
+  let h=`<div class="kstats">
+    <div class="kstat"><b>${T.length}</b><span>Activités</span></div>
+    <div class="kstat"><b>${nbCrit}</b><span>Sur le chemin critique</span></div>
+    <div class="kstat"><b>${k.milestones.filter(m=>m.date).length}/${k.milestones.length}</b><span>Jalons datés</span></div>
+    <div class="kstat"><b>${derives.length}</b><span>En retard sur le référentiel</span></div></div>
+   <div class="kgantt">${g}</div>
     <div class="klegend"><span><i style="background:var(--accent)"></i>Activité</span>
       <span><i style="background:#b0651f"></i>Coordination</span>
       <span><i style="background:#7d4f9e"></i>Gate</span>
+      <span><i style="background:#1b2b3a"></i>Récapitulatif WBS</span>
+      <span><i style="background:#DC2626"></i>Chemin critique</span>
+      <span><i style="background:#9aa7b4;height:4px"></i>Référentiel</span>
       <span><i style="background:var(--copper);transform:rotate(45deg)"></i>Jalon — glissable</span></div>
-    <div class="kbar-tools" style="margin-top:14px"><b>Activités</b>${kbtn('addTask','+ Activité')}</div>
-    <table class="ktbl"><thead><tr><th>Activité</th><th style="width:118px">Début</th><th style="width:118px">Fin</th>
-      <th style="width:120px">Type</th><th style="width:80px">Avanc. %</th><th style="width:120px">Pilote</th><th style="width:26px"></th></tr></thead><tbody>`;
-  k.tasks.forEach((t,i)=>{ const p=`tasks.${i}`;
-    h+=`<tr><td>${kinp(p+'.name')}</td><td>${kinp(p+'.start','date','data-kr="macro"')}</td><td>${kinp(p+'.end','date','data-kr="macro"')}</td>
-      <td><select class="kin" data-kp="${p}.kind" data-kr="macro">${KIT_KINDS.map(([v,l])=>`<option value="${v}" ${v===(t.kind||'activity')?'selected':''}>${l}</option>`).join('')}</select></td>
+    <div class="kbar-tools" style="margin-top:14px"><b>Activités</b>${kbtn('addTask','+ Activité')}
+      <span class="sp" style="margin-left:auto"></span>
+      ${kbtn('baseline',nbRef?'⟲ Refiger le référentiel':'⎘ Figer le référentiel')}
+      <span class="hint">${nbRef?nbRef+' activité(s) au référentiel'+(k.baselineAt?' · figé le '+esc(k.baselineAt):''):'aucun référentiel figé'}</span></div>
+    <div class="tblwrap"><table class="ktbl kplan"><thead><tr>
+      <th style="width:62px">WBS</th><th>Activité</th><th style="width:112px">Début</th><th style="width:112px">Fin</th>
+      <th style="width:62px" class="num">Durée</th><th style="width:86px">Préd.</th>
+      <th style="width:70px" class="num">Marge</th><th style="width:74px" class="num">Dérive</th>
+      <th style="width:106px">Type</th><th style="width:66px" class="num">%</th><th style="width:104px">Pilote</th>
+      <th style="width:58px" class="noprint"></th></tr></thead><tbody>`;
+  T.forEach(x=>{ const p=`tasks.${x.i}`;
+    h+=`<tr class="${x.rec?'krecap':''}${x.crit?' kcrit':''}">
+      <td class="kwbs">${esc(x.wbs)}</td>
+      <td style="padding-left:${6+x.niv*17}px">${kinp(p+'.name')}</td>
+      <td>${x.rec?`<span class="kcalc">${x.a!=null?kjour(x.a):'—'}</span>`:kinp(p+'.start','date','data-kr="macro"')}</td>
+      <td>${x.rec?`<span class="kcalc">${x.b!=null?kjour(x.b):'—'}</span>`:kinp(p+'.end','date','data-kr="macro"')}</td>
+      <td class="num">${x.dur==null?'—':x.dur+' j'}</td>
+      <td>${x.rec?'':kinp(p+'.pred','text','data-kr="macro"')}</td>
+      <td class="num ${x.crit?'kc':''}">${x.marge==null?'—':Math.max(0,x.marge)+' j'}</td>
+      <td class="num ${x.derive>0?'kd':(x.derive<0?'kok':'')}">${x.derive==null?'—':(x.derive>0?'+':'')+x.derive+' j'}</td>
+      <td><select class="kin" data-kp="${p}.kind" data-kr="macro">${KIT_KINDS.map(([v,l])=>`<option value="${v}" ${v===(x.t.kind||'activity')?'selected':''}>${l}</option>`).join('')}</select></td>
       <td>${kinp(p+'.progress','number','data-kr="macro"')}</td><td>${kinp(p+'.owner')}</td>
-      <td><button class="kdel" data-ka="delTask|${i}">✕</button></td></tr>`; });
-  if(!k.tasks.length) h+=`<tr><td colspan="7" class="empty">Aucune activité.</td></tr>`;
-  h+=`</tbody></table>
+      <td class="noprint" style="white-space:nowrap">
+        <button class="kdel" data-ka="outdent|${x.i}" title="Remonter d'un niveau" ${x.niv?'':'disabled'}>‹</button>
+        <button class="kdel" data-ka="indent|${x.i}" title="Descendre d'un niveau">›</button>
+        <button class="kdel" data-ka="delTask|${x.i}">✕</button></td></tr>`; });
+  if(!T.length) h+=`<tr><td colspan="12" class="empty">Aucune activité.</td></tr>`;
+  h+=`</tbody></table></div>
+    <div class="xnote">Une activité dont la ligne suivante est plus indentée devient un récapitulatif : ses dates
+      viennent de ses descendants. Les prédécesseurs se désignent par leur code WBS, séparés par des virgules.
+      La marge dit de combien l'activité peut glisser sans repousser la fin du projet ; marge nulle = chemin
+      critique. « Figer le référentiel » enregistre les dates du jour comme base de comparaison, et la dérive
+      mesure l'écart de la fin réelle à cette base.</div>
     <div class="kbar-tools" style="margin-top:14px"><b>Jalons du process ingénierie</b>${kbtn('addMs','+ Jalon')}</div>
-    <table class="ktbl"><thead><tr><th>Jalon</th><th style="width:140px">Date</th><th style="width:140px">Pilote</th><th>Commentaires</th><th style="width:26px"></th></tr></thead><tbody>`;
+    <div class="tblwrap"><table class="ktbl"><thead><tr><th>Jalon</th><th style="width:140px">Date</th><th style="width:140px">Pilote</th><th>Commentaires</th><th style="width:26px" class="noprint"></th></tr></thead><tbody>`;
   k.milestones.forEach((m,i)=>{ const p=`milestones.${i}`;
     h+=`<tr><td>${kinp(p+'.name','text','data-kr="macro"')}</td><td>${kinp(p+'.date','date','data-kr="macro"')}</td>
       <td>${kinp(p+'.owner')}</td><td>${kta(p+'.notes')}</td>
-      <td><button class="kdel" data-ka="delMs|${i}">✕</button></td></tr>`; });
+      <td class="noprint"><button class="kdel" data-ka="delMs|${i}">✕</button></td></tr>`; });
   if(!k.milestones.length) h+=`<tr><td colspan="5" class="empty">Aucun jalon.</td></tr>`;
-  return h+'</tbody></table>';
+  return h+'</tbody></table></div>';
 }
 /* ---- Synthèse du kit, reprise dans la fiche projet ---- */
 function kitSynthese(k){
@@ -3351,8 +3462,20 @@ document.addEventListener('click',e=>{
      delPoleRow:()=>k.groups[n[0]].rows.splice(n[1],1),
      addMonth:()=>{ k.months.push('nouveau'); k.groups.forEach(g=>g.rows.forEach(r=>r.values.push(0))); },
      delMonth:()=>{ if(M<=1) return; k.months.splice(n[0],1); k.groups.forEach(g=>g.rows.forEach(r=>r.values.splice(n[0],1))); },
-     addTask:()=>k.tasks.push({id:kuid(),name:'Nouvelle activité',start:'',end:'',kind:'activity',owner:'',progress:0,notes:''}),
+     addTask:()=>k.tasks.push({id:kuid(),name:'Nouvelle activité',start:'',end:'',kind:'activity',
+       owner:'',progress:0,notes:'',level:0,pred:'',bStart:'',bEnd:''}),
      delTask:()=>k.tasks.splice(n[0],1),
+     /* Une activité ne peut descendre que d'un cran sous celle qui la précède :
+        sans cela on créerait un niveau sans parent. */
+     indent:()=>{ const i=n[0], t=k.tasks[i]; if(!t||!i) return;
+       const max=(+k.tasks[i-1].level||0)+1; t.level=Math.min(max,(+t.level||0)+1); },
+     outdent:()=>{ const t=k.tasks[n[0]]; if(t) t.level=Math.max(0,(+t.level||0)-1); },
+     /* Figer le référentiel : les dates du jour deviennent la base de
+        comparaison. On ne fige que ce qui est daté. */
+     baseline:()=>{ let c=0;
+       k.tasks.forEach(t=>{ if(t.start&&t.end){ t.bStart=t.start; t.bEnd=t.end; c++; } });
+       k.baselineAt=new Date().toLocaleDateString('fr-FR');
+       logChange('Macroplanning','référentiel figé','',c+' activité(s) le '+k.baselineAt); },
      addMs:()=>k.milestones.push({id:kuid(),name:'Nouveau jalon',date:'',owner:'',notes:'',colorIndex:k.milestones.length}),
      delMs:()=>k.milestones.splice(n[0],1)
   }[a]||(()=>{}))();
@@ -5968,7 +6091,7 @@ function nsNorm(x){
 function pill(st){const s=norm(st); if(s==='done')return '<span class="pill g">Done</span>'; if(s.includes('progress'))return '<span class="pill a">In progress</span>'; if(s.includes('late')||s.includes('retard'))return '<span class="pill r">Late</span>'; return `<span class="pill n">${esc(st||'—')}</span>`;}
 function risksBlock(p,pp){
   const rs=(pp&&pp.risks)||[];
-  return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Risques / Problèmes</h3><span class="meta">${rs.length}</span></div>
+  return `<div class="panel ppsec" style="--c:#DC2626;--cs:rgba(220,38,38,.13);margin-top:14px"><div class="panel-h"><h3>Risques / Problèmes</h3><span class="meta">${rs.length}</span></div>
   <div class="tblwrap"><table class="rktbl"><thead><tr><th style="width:42%">Description</th><th style="width:42%">Mitigation</th><th style="width:96px">Owner</th><th style="width:96px">Date</th><th style="width:24px"></th></tr></thead>
   <tbody>${rs.length?rs.map((r,i)=>`<tr>
     <td class="rkcell" contenteditable data-rk="${p.id}|${i}|desc" data-vide="Décrire le risque ou le problème…">${esc(r.desc||'')}</td>
@@ -5981,7 +6104,7 @@ function risksBlock(p,pp){
 function nextStepsBlock(p,pp){
   const ns=((pp&&pp.nextSteps)||[]).map(nsNorm);
   const faits=ns.filter(x=>norm(x.st)==='fait').length;
-  return `<div class="panel" style="margin-top:14px"><div class="panel-h"><h3>Next Steps</h3><span class="meta">${ns.length} étape(s)${ns.length?' · '+faits+' faite(s)':''}</span></div>
+  return `<div class="panel ppsec" style="--c:#2563EB;--cs:rgba(37,99,235,.13)" ><div class="panel-h"><h3>Next Steps</h3><span class="meta">${ns.length} étape(s)${ns.length?' · '+faits+' faite(s)':''}</span></div>
   <div class="panel-b"><ul style="list-style:none;padding:0;margin:0">${ns.length?ns.map((s,i)=>`<li style="display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)">
     <span style="color:var(--accent);font-weight:700">→</span><span style="flex:1;${norm(s.st)==='fait'?'text-decoration:line-through;color:var(--muted)':''}" contenteditable data-ns="${p.id}|${i}">${esc(s.t)}</span>
     <span style="flex:0 0 118px">${stSelect('nsst',p.id+'|'+i,NS_ST,s.st)}</span>
