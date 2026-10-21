@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.11 -->
+<!-- PPM_BUILD:2026-10-21.12 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1120,6 +1120,10 @@
   .ksc .pz.att{background:var(--warn)}
   .ksc .pz.bas{background:var(--bad)}
   .ksc[data-ktab="onepage"] b{font-size:18px}
+  /* Quand il manque des projets au référentiel, le bouton le dit de lui-même :
+     on ne doit pas avoir à comparer une liste à un document pour s'en douter. */
+  .iconbtn.refdu{border-color:var(--warn);background:var(--warn-soft);color:var(--warn);font-weight:700}
+  .iconbtn.refdu b{font-weight:800}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   /* La carte reprend le support : fond gris clair, encadrés à liseré violet
      dont l'intitulé chevauche le trait, parties variables en violet italique.
@@ -1456,7 +1460,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.11';
+const APP_BUILD='2026-10-21.12';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2416,7 +2420,10 @@ function renderDash(){
 
   <div class="cols-dash">
     <div class="panel">
-      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span><button class="iconbtn" id="refSeed" title="Compléter le portefeuille depuis le référentiel INFRA : complète les n° Shine et iShift manquants, ajoute les projets absents, ne crée aucun doublon">⤓ Référentiel INFRA</button><button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
+      <div class="panel-h"><h3>Projets du portefeuille</h3><span style="display:flex;align-items:center;gap:10px"><span class="meta">clic sur une ligne → Pilotage projet · glissez la poignée ⠿ pour réordonner</span>${(()=>{ const r=refManquants(); if(!r.total) return '';
+      return `<button class="iconbtn${r.manque?' refdu':''}" id="refSeed"
+        title="Référentiel INFRA : ${r.present} des ${r.total} projets du relevé sont au portefeuille.${r.manque?' Cliquez pour ajouter les '+r.manque+' manquants et compléter les n° Shine et iShift — aucun doublon ne sera créé.':' Rien à reprendre.'}"
+        >⤓ Référentiel INFRA <b>${r.present}/${r.total}</b></button>`; })()}<button class="iconbtn" id="newProj" title="Créer un projet et l'ajouter au portefeuille">＋ Nouveau projet</button></span></div>
       <div class="panel-b">
         <div class="toolbar">
           <input class="search" id="fq" type="text" placeholder="${FQ_PLACE[S.filters.qscope||'']}" value="${esc(S.filters.q)}" title="Plusieurs noms séparés par « / » dans une même cellule sont reconnus">
@@ -2853,6 +2860,13 @@ function refTrouve(e, vivants){
   const n=norm(e.nom);
   const cand=vivants.filter(x=>norm(x.nom)===n);
   return cand.length===1?cand[0]:null;
+}
+function refManquants(){
+  if(!Array.isArray(SEED_REF)||!SEED_REF.length) return {total:0,present:0,manque:0};
+  const vivants=(S.projects||[]).filter(x=>!x.deleted);
+  let present=0;
+  SEED_REF.forEach(e=>{ if(refTrouve(e,vivants)) present++; });
+  return {total:SEED_REF.length, present, manque:SEED_REF.length-present};
 }
 function appliquerSeedRef(force){
   if(!Array.isArray(SEED_REF) || !SEED_REF.length) return 0;
