@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-22.1 -->
+<!-- PPM_BUILD:2026-10-22.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1135,6 +1135,87 @@
   /* Deux projets sous le même numéro : la pastille le montre sans l'effacer. */
   .pp-etu.dup{border-color:#E9A23B;background:#FDF4E6}
   .pp-etu .pp-etudup{font-style:normal;font-size:11px;color:#B8730A;margin-left:1px}
+  /* ---- Action Tracker ----
+     Un suivi qui se lit d'un coup d'œil : l'état porte sa couleur, du
+     bandeau de tuiles jusqu'au filet de gauche de chaque ligne. */
+  .trk{--t-fait:#1d7a52;--t-fait-s:#e0f0e8;--t-cours:#1d6fa5;--t-cours-s:#e2eef7;
+    --t-retard:#c0392b;--t-retard-s:#f8e3e0;--t-focus:#6d3fb0;--t-focus-s:#ede5f9;
+    --t-risque:#bd8413;--t-risque-s:#f7edd7;--t-neutre:#5e7485;--t-neutre-s:#eef3f7}
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .trk{
+    --t-fait:#57c394;--t-fait-s:#113026;--t-cours:#5bb6dd;--t-cours-s:#0e2b38;
+    --t-retard:#e8766a;--t-retard-s:#381e1b;--t-focus:#b492ea;--t-focus-s:#241a3a;
+    --t-risque:#e0b45a;--t-risque-s:#33280f;--t-neutre:#8ba1ad;--t-neutre-s:#17262f} }
+  :root[data-theme="dark"] .trk{
+    --t-fait:#57c394;--t-fait-s:#113026;--t-cours:#5bb6dd;--t-cours-s:#0e2b38;
+    --t-retard:#e8766a;--t-retard-s:#381e1b;--t-focus:#b492ea;--t-focus-s:#241a3a;
+    --t-risque:#e0b45a;--t-risque-s:#33280f;--t-neutre:#8ba1ad;--t-neutre-s:#17262f}
+  .trkbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .trkbar .tquoi{font-family:Archivo;font-weight:800;color:var(--ink)}
+  .trkbar .tsearch{flex:1;min-width:150px;max-width:280px}
+  /* Les tuiles : un chiffre, son état, sa couleur — et elles filtrent. */
+  .trktiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:9px;margin-bottom:13px}
+  .trktile{border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--panel);
+    cursor:pointer;position:relative;overflow:hidden;transition:transform .12s,box-shadow .12s,border-color .12s}
+  .trktile:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+  .trktile b{display:block;font-family:Archivo;font-size:23px;line-height:1.05;color:var(--ink);
+    font-variant-numeric:tabular-nums}
+  .trktile span{display:block;font-size:11px;color:var(--muted);margin-top:2px;font-weight:600}
+  .trktile::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--line-2))}
+  .trktile.on{border-color:var(--c,var(--accent));background:var(--cs,var(--accent-soft))}
+  .trktile.on b{color:var(--c,var(--accent))}
+  .trkprog{height:8px;border-radius:999px;background:var(--panel-3);overflow:hidden;margin:0 0 13px}
+  .trkprog i{display:block;height:100%;border-radius:999px;
+    background:linear-gradient(90deg,var(--t-cours),var(--t-fait));transition:width .35s}
+  .trkprogl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-bottom:4px}
+  /* Le tableau : filet coloré à gauche, lignes aérées, survol marqué. */
+  .trktbl{width:100%;border-collapse:separate;border-spacing:0 5px;font-size:12.5px}
+  .trktbl th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);
+    text-align:left;padding:0 9px 3px;font-weight:700;white-space:nowrap;cursor:pointer;user-select:none}
+  .trktbl th .fl{opacity:.35;font-size:9px}
+  .trktbl th.on{color:var(--accent)} .trktbl th.on .fl{opacity:1}
+  .trktbl td{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:7px 9px;vertical-align:middle}
+  .trktbl td:first-child{border-left:1px solid var(--line);border-radius:10px 0 0 10px;
+    border-left:4px solid var(--c,var(--line-2))}
+  .trktbl td:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+  .trktbl tr.l:hover td{background:var(--panel-2)}
+  .trktbl tr.fini td{background:var(--t-fait-s)}
+  .trktbl tr.fini .tact{text-decoration:line-through;color:var(--muted)}
+  .trktbl tr.grp td{background:transparent;border:0;padding:12px 2px 2px}
+  .trktbl tr.grp b{font-family:Archivo;font-size:12px;letter-spacing:.03em;color:var(--ink-2);text-transform:uppercase}
+  .trk .tact{font-weight:600;color:var(--ink);outline:none;min-height:17px;white-space:pre-wrap}
+  .trk .tcom{color:var(--ink-2);outline:none;min-height:17px;white-space:pre-wrap;font-size:12px}
+  .trk [contenteditable]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
+  .trk [contenteditable]:focus{background:var(--accent-soft);border-radius:4px;box-shadow:0 0 0 2px var(--accent-soft)}
+  /* Date : le texte en clair, le calendrier natif sous le chevron. */
+  .trk .tdt{position:relative;display:inline-flex;align-items:center;max-width:132px;width:100%}
+  .trk .tdtx{border:1px solid var(--line);border-radius:7px;padding:3px 19px 3px 7px;font-size:11.5px;
+    background:var(--panel);color:var(--ink);font-family:inherit;width:100%;
+    font-variant-numeric:tabular-nums;letter-spacing:.01em}
+  .trk .tdtx:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .trk .tcal{position:absolute;right:3px;border:0;background:transparent;color:var(--faint);
+    cursor:pointer;font-size:11px;padding:2px 3px;border-radius:5px;line-height:1}
+  .trk .tcal:hover{color:var(--accent);background:var(--accent-soft)}
+  .trk .tdtp{position:absolute;right:0;width:1px;height:1px;opacity:0;pointer-events:none;border:0;padding:0}
+  .trk td.tard .tdtx{border-color:var(--t-retard);background:var(--t-retard-s);color:var(--t-retard);font-weight:700}
+  /* La case à cocher : cocher, c'est terminer. */
+  .trk .tck{width:18px;height:18px;border-radius:6px;border:1.5px solid var(--line-2);background:var(--panel);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;padding:0}
+  .trk .tck.on{background:var(--t-fait);border-color:var(--t-fait);color:#fff}
+  /* Le statut est un menu déroulant qui porte sa couleur. */
+  .trk .tst{border:1px solid var(--c,var(--line-2));background:var(--cs,var(--panel));color:var(--c,var(--ink));
+    border-radius:999px;padding:3px 9px;font-size:11.5px;font-weight:700;font-family:inherit;
+    cursor:pointer;appearance:none;text-align:center;min-width:94px}
+  .trk .tst:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .trk .timp{border:1px solid var(--line-2);background:var(--panel);color:var(--ink-2);border-radius:7px;
+    padding:2px 6px;font-size:11px;font-family:inherit;cursor:pointer;margin-bottom:3px;width:100%;max-width:104px}
+  .trk .timp.i3{border-color:var(--t-risque);color:var(--t-risque);background:var(--t-risque-s);font-weight:700}
+  .trk .timp.i4{border-color:var(--t-retard);color:var(--t-retard);background:var(--t-retard-s);font-weight:700}
+  .trk .tdel{border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:14px;padding:2px 4px;border-radius:6px}
+  .trk .tdel:hover{color:var(--bad);background:var(--bad-soft)}
+  .trk .tflag{font-size:10.5px;color:var(--t-retard);font-weight:700;white-space:nowrap}
+  .trkvide{text-align:center;padding:34px 16px;color:var(--muted);font-size:13px}
+  .trkvide b{display:block;font-size:15px;color:var(--ink);margin-bottom:4px}
   /* ---- Passage Gate : les supports de passage, au format des gabarits ----
      Les teintes sont celles des gabarits eux-mêmes : violet profond des
      bandeaux, mauve poussiéreux des entêtes de tableaux, lavande des lignes,
@@ -1600,7 +1681,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-22.1';
+const APP_BUILD='2026-10-22.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1679,6 +1760,7 @@ function buildFromSeed(){
     cers:{},
     gates:{},
     gatedoc:{},
+    trk:{},
     hse:{},
     actions: seedActions(),
     gateFilter:'',
@@ -1838,7 +1920,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3375,7 +3457,7 @@ const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
 const KIT_MSC=['#DC2626','#D97706','#16A34A','#0891B2','#2563EB','#7C3AED','#DB2777','#65A30D'];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
 const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['gate','Passage Gate'],['checklist','Check-list'],
-                ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
+                ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning'],['actions','Action Tracker']];
 const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
 const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
 const ksum=a=>a.reduce((x,y)=>x+(+y||0),0);
@@ -3903,60 +3985,69 @@ function gNomChamp(c){
 }
 function kitArmerGate(){
   const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+  /* Même précaution que pour le suivi : un rendu demandé pendant un « blur »
+     écrirait dans un panneau en cours de remplacement. */
+  const rr=()=>setTimeout(()=>renderKit(),0);
   const d=()=>gPack();
   const trace=(q,av,ap)=>{ logChange('Passage Gate — '+(p.shine||p.nom),
     (GATE_PACKS.find(([i])=>i===gPackId())||[,''])[1]+' · '+q, av, ap); };
   $$('#kitPane [data-gpack]').forEach(b=>b.addEventListener('click',()=>{
-    S.gatePack=b.dataset.gpack; scheduleSave(); renderKit(); }));
+    S.gatePack=b.dataset.gpack; scheduleSave(); rr(); }));
   $$('#kitPane [data-g]').forEach(b=>b.addEventListener('click',()=>{
     const f=d().f, av=f['_gate']||'';
     if(av===b.dataset.g) return;
-    f['_gate']=b.dataset.g; trace('gate présentée',av,f['_gate']); scheduleSave(); renderKit(); }));
+    f['_gate']=b.dataset.g; trace('gate présentée',av,f['_gate']); scheduleSave(); rr(); }));
   /* L'entité, elle, ne dépend ni du projet ni du pack : on la saisit une
      fois et toutes les pages la portent. */
   $$('#kitPane [data-gg]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
     const k='gate'+el.dataset.gg.charAt(0).toUpperCase()+el.dataset.gg.slice(1);
     const v=el.textContent.replace(/\u00a0/g,' ').trim();
     if(String(S[k]||'')===v) return;
     logChange('Passage Gate','entité du support',S[k]||'',v);
-    S[k]=v; scheduleSave(); renderKit(); }));
+    S[k]=v; scheduleSave(); rr(); }));
   $$('#kitPane [data-gf]').forEach(el=>el.addEventListener('blur',()=>{
+    /* Remplacer le panneau fait perdre le focus : le « blur » part alors avec
+       la valeur d'avant le rendu et écraserait ce qui vient d'être écrit.
+       Pendant un rendu, un blur ne dicte donc rien. */
+    if(KIT_EN_COURS || !el.isConnected) return;
     const f=d().f, c=el.dataset.gf, v=el.textContent.replace(/ /g,' ').trim();
     if(String(f[c]||'')===v) return;
     trace(gNomChamp(c), f[c]||'', v); f[c]=v; scheduleSave();
     /* Un écart, une marche ou un intitulé de gate changent le dessin de la
        page : on la redessine plutôt que d'attendre le prochain passage. */
-    if(/^(fs\.|br\.)/.test(c)) renderKit(); }));
+    if(/^(fs\.|br\.)/.test(c)) rr(); }));
   $$('#kitPane [data-gc]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
     const [cle,i,k]=el.dataset.gc.split('|');
     const r=gRows(cle)[+i]; if(!r) return;
     const v=el.textContent.replace(/ /g,' ').trim();
     if(String(r[k]||'')===v) return;
     trace(gNomChamp(cle)+' · ligne '+(+i+1), r[k]||'', v); r[k]=v; scheduleSave();
-    if(cle==='br') renderKit();
+    if(cle==='br') rr();
   }));
   /* Les pastilles d'impact tournent sur le code couleur du gabarit. */
   const suivant=v=>v==='v'?'j':v==='j'?'r':v==='r'?'':'v';
   $$('#kitPane [data-gi]').forEach(el=>el.addEventListener('click',()=>{
     const [cle,i,k]=el.dataset.gi.split('|');
     const r=gRows(cle)[+i]; if(!r) return;
-    r[k]=suivant(r[k]||''); scheduleSave(); renderKit(); }));
+    r[k]=suivant(r[k]||''); scheduleSave(); rr(); }));
   $$('#kitPane [data-gs]').forEach(el=>el.addEventListener('click',()=>{
     const f=d().f, c=el.dataset.gs;
-    f[c]=suivant(f[c]||''); scheduleSave(); renderKit(); }));
+    f[c]=suivant(f[c]||''); scheduleSave(); rr(); }));
   $$('#kitPane [data-gadd]').forEach(b=>b.addEventListener('click',()=>{
-    gRows(b.dataset.gadd).push({}); scheduleSave(); renderKit(); }));
+    gRows(b.dataset.gadd).push({}); scheduleSave(); rr(); }));
   $$('#kitPane [data-gdel]').forEach(b=>b.addEventListener('click',()=>{
     const [cle,i]=b.dataset.gdel.split('|');
     const rs=gRows(cle); if(rs.length<=0) return;
-    rs.splice(+i,1); trace(gNomChamp(cle),'ligne '+(+i+1),'supprimée'); scheduleSave(); renderKit(); }));
+    rs.splice(+i,1); trace(gNomChamp(cle),'ligne '+(+i+1),'supprimée'); scheduleSave(); rr(); }));
   const lier=(s,ev,f)=>{ const el=$('#kitPane '+s); if(el) el.addEventListener(ev,f); };
   lier('#gateMaj','click',()=>{
     const f=d().f;
     [['id.t',p.nom],['id.sh',p.shine||p.ishift],['id.sp',p.sponsor],['id.pl',p.pm||p.pl],
      ['ri.t',p.nom],['ri.sh',p.shine||p.ishift],['ri.sp',p.sponsor],['ri.pm',p.pm||p.pl]]
       .forEach(([c,v])=>{ if(v) f[c]=String(v); });
-    trace('reprise de la fiche','',p.shine||p.nom); scheduleSave(); renderKit(); });
+    trace('reprise de la fiche','',p.shine||p.nom); scheduleSave(); rr(); });
   lier('#gatePrint','click',()=>gateDiffuser(p));
 }
 /* Diffuser le pack : les pages telles qu'elles sont à l'écran, une par
@@ -3979,6 +4070,288 @@ function gateDiffuser(p){
     '</style></head><body><div class="gate">'+el.innerHTML+'</div></body></html>');
   w.document.close();
   setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },420);
+}
+/* ===================== Action Tracker =====================
+   Le suivi des actions d'un projet : une ligne par action, l'état au menu
+   déroulant, la case qui barre ce qui est fait, et des tuiles qui comptent
+   et qui filtrent. La vue « portefeuille » reprend les mêmes lignes pour
+   tous les projets, rangées par pôle.
+   Les actions vivent dans S.trk, par projet — le suivi transverse de la
+   barre latérale garde le sien, les deux ne se marchent pas dessus. */
+const TRK_ST=[['Fait','fait'],['En cours','cours'],['En retard','retard'],['Focus','focus'],['À risque','risque']];
+const TRK_CLS=o=>(TRK_ST.find(([l])=>l===o)||[,'neutre'])[1];
+const TRK_IMP=['—','Faible','Moyen','Fort','Critique'];
+const TRK_COLS=[['act','Action','32%'],['lead','Leader','11%'],['d1','Date de début','10%'],
+  ['d2','Date de fin','10%'],['maj','Date mise à jour','10%'],['st','Statut','11%'],
+  ['imp','Impact','11%'],['com','Commentaires','15%']];
+function trkOf(id){ S.trk=S.trk||{}; if(!Array.isArray(S.trk[id])) S.trk[id]=[]; return S.trk[id]; }
+const trkJour=()=>new Date().toISOString().slice(0,10);
+/* ISO ⇄ français. On accepte ce qui s'écrit vite : 9/10/26, 09-10-2026,
+   09102026, et l'ISO lui-même. Une date illisible n'écrase rien. */
+const trkFr=v=>{ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v||'')); 
+  return m?(m[3]+'/'+m[2]+'/'+m[1]):''; };
+function trkIso(t){
+  const v=String(t||'').trim(); if(!v) return '';
+  let m=/^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(v);
+  if(m) return m[1]+'-'+String(+m[2]).padStart(2,'0')+'-'+String(+m[3]).padStart(2,'0');
+  m=/^(\d{1,2})[\/.\- ](\d{1,2})[\/.\- ](\d{2}|\d{4})$/.exec(v) || /^(\d{2})(\d{2})(\d{4})$/.exec(v);
+  if(!m) return null;
+  const j=+m[1], mo=+m[2]; let an=+m[3];
+  if(an<100) an+=2000;
+  if(j<1||j>31||mo<1||mo>12) return null;
+  /* Un 31 février se tape aussi vite qu'un 28 : la date doit exister. */
+  const d=new Date(Date.UTC(an,mo-1,j));
+  if(d.getUTCDate()!==j||d.getUTCMonth()!==mo-1||d.getUTCFullYear()!==an) return null;
+  return an+'-'+String(mo).padStart(2,'0')+'-'+String(j).padStart(2,'0');
+}
+const trkUid=()=>'t'+Math.random().toString(36).slice(2,9);
+function trkNouvelle(){ return {id:trkUid(),act:'',lead:'',d1:'',d2:'',maj:trkJour(),
+  st:'En cours',imp:'—',com:'',fait:false}; }
+/* Une action dont la date de fin est passée et qui n'est pas faite est en
+   retard, que son statut le dise ou non : le tableau le signale, et un
+   bouton met les statuts d'accord d'un coup. */
+function trkEnRetard(a){ return !a.fait && a.st!=='Fait' && a.d2 && a.d2 < trkJour(); }
+function trkLignes(){
+  if(S.trkVue==='portefeuille'){
+    const out=[];
+    (S.projects||[]).filter(p=>!p.deleted).forEach(p=>trkOf(p.id).forEach(a=>out.push({a,p})));
+    return out;
+  }
+  const p=S.projects.find(x=>x.id===S.currentProj);
+  return p?trkOf(p.id).map(a=>({a,p})):[];
+}
+function trkFiltre(l){
+  const f=S.trkF||{};
+  return l.filter(({a,p})=>{
+    if(f.st && a.st!==f.st) return false;
+    if(f.retard && !trkEnRetard(a)) return false;
+    if(f.q){ const foin=norm([a.act,a.lead,a.com,a.imp,p&&p.nom,p&&p.shine].join(' ¦ '));
+      if(!norm(f.q).split(/[\s,;]+/).filter(Boolean).every(m=>foin.includes(m))) return false; }
+    return true;
+  });
+}
+function trkTri(l){
+  const t=S.trkTri||{k:'',d:1};
+  if(!t.k) return l;
+  const v=({a,p})=>{
+    if(t.k==='st') return String(TRK_ST.findIndex(([x])=>x===a.st));
+    if(t.k==='imp') return String(TRK_IMP.indexOf(a.imp||'—'));
+    if(t.k==='proj') return norm((p&&p.nom)||'');
+    return norm(a[t.k]||'');
+  };
+  return l.slice().sort((x,y)=>{ const A=v(x),B=v(y); return A<B?-t.d:A>B?t.d:0; });
+}
+function trkTuiles(l){
+  const n=l.length, fait=l.filter(({a})=>a.fait||a.st==='Fait').length;
+  const par=o=>l.filter(({a})=>a.st===o).length;
+  const retard=l.filter(({a})=>trkEnRetard(a)).length;
+  const f=S.trkF||{};
+  const t=(cle,lab,val,cls,actif)=>`<button class="trktile${actif?' on':''}" data-trkt="${cle}"
+    style="--c:var(--t-${cls});--cs:var(--t-${cls}-s)"><b>${val}</b><span>${lab}</span></button>`;
+  return `<div class="trktiles">
+    ${t('','Toutes les actions',n,'neutre',!f.st&&!f.retard)}
+    ${TRK_ST.map(([lab,cls])=>t(lab,lab,par(lab),cls,f.st===lab)).join('')}
+    ${t('!retard','Échéance dépassée',retard,'retard',!!f.retard)}
+  </div>
+  <div class="trkprogl"><span>${fait} action(s) terminée(s) sur ${n}</span>
+    <b>${n?Math.round(fait/n*100):0} %</b></div>
+  <div class="trkprog"><i style="width:${n?Math.round(fait/n*100):0}%"></i></div>`;
+}
+function trkLigne({a,p}){
+  const cls=TRK_CLS(a.st), fini=a.fait||a.st==='Fait', tard=trkEnRetard(a);
+  /* Le champ natif prend le format de la langue du navigateur : sur un poste
+     configuré en anglais, « 09/10 » ne veut plus dire le 9 octobre. La date
+     se lit donc en clair, en français, et le calendrier natif reste à un
+     clic — c'est lui qui écrit la valeur, au format ISO, dessous. */
+  const date=(k,v)=>`<span class="tdt">
+    <input type="text" class="tdtx" data-trkx="${a.id}|${k}" value="${esc(trkFr(v))}" placeholder="jj/mm/aaaa">
+    <button class="tcal" data-trkcal="${a.id}|${k}" title="Choisir dans le calendrier">▾</button>
+    <input type="date" class="tdtp" data-trkd="${a.id}|${k}" value="${esc(v||'')}" tabindex="-1" aria-hidden="true">
+  </span>`;
+  const li=TRK_IMP.indexOf(a.imp||'—');
+  return `<tr class="l${fini?' fini':''}" style="--c:var(--t-${cls})">
+    <td style="--c:var(--t-${cls})"><div style="display:flex;gap:9px;align-items:flex-start">
+      <button class="tck${fini?' on':''}" data-trkck="${a.id}" title="${fini?'Rouvrir l’action':'Marquer l’action faite'}">✓</button>
+      <div style="flex:1;min-width:0"><div class="tact" contenteditable data-trkf="${a.id}|act"
+        data-vide="Décrivez l'action — quoi, pour qui, pour quand">${esc(a.act||'')}</div>
+        ${tard?'<div class="tflag">⚠ échéance dépassée</div>':''}</div></div></td>
+    <td><div class="tcom" contenteditable data-trkf="${a.id}|lead" data-vide="Pilote">${esc(a.lead||'')}</div></td>
+    <td>${date('d1',a.d1)}</td>
+    <td class="${tard?'tard':''}">${date('d2',a.d2)}</td>
+    <td>${date('maj',a.maj)}</td>
+    <td><select class="tst" data-trks="${a.id}" style="--c:var(--t-${cls});--cs:var(--t-${cls}-s)">
+      ${TRK_ST.map(([o])=>`<option${a.st===o?' selected':''}>${o}</option>`).join('')}</select></td>
+    <td><select class="timp i${li<0?0:li}" data-trki="${a.id}">
+        ${TRK_IMP.map(o=>`<option${(a.imp||'—')===o?' selected':''}>${o}</option>`).join('')}</select>
+      <div class="tcom" contenteditable data-trkf="${a.id}|impt" data-vide="Impact constaté">${esc(a.impt||'')}</div></td>
+    <td><div style="display:flex;gap:6px;align-items:flex-start">
+      <div class="tcom" style="flex:1" contenteditable data-trkf="${a.id}|com" data-vide="Commentaire">${esc(a.com||'')}</div>
+      <button class="tdel" data-trkdel="${a.id}" title="Supprimer cette action">✕</button></div></td>
+  </tr>`;
+}
+function kitActions(){
+  const p=S.projects.find(x=>x.id===S.currentProj);
+  const vue=S.trkVue==='portefeuille'?'portefeuille':'projet';
+  if(vue==='projet' && !p) return '<div class="hint">Aucun projet sélectionné.</div>';
+  const f=S.trkF=S.trkF||{};
+  const toutes=trkLignes(), vues=trkTri(trkFiltre(toutes));
+  const t=S.trkTri||{k:'',d:1};
+  const fl=k=>t.k===k?(t.d>0?'▲':'▼'):'⇅';
+  const cols=(vue==='portefeuille'?[['proj','Projet','14%']]:[]).concat(TRK_COLS);
+  const entete=cols.map(([k,l,w])=>`<th class="${t.k===k?'on':''}" style="width:${w}" data-trktri="${k}">${l} <span class="fl">${fl(k)}</span></th>`).join('');
+  let corps='';
+  if(!vues.length){
+    corps=`<tr><td colspan="${cols.length}"><div class="trkvide">
+      <b>${toutes.length?'Aucune action ne répond à ce filtre.':'Aucune action pour l’instant.'}</b>
+      ${toutes.length?'Retirez le filtre pour revoir les '+toutes.length+' action(s).'
+        :'Ajoutez la première : une action, un pilote, une échéance.'}</div></td></tr>`;
+  } else if(vue==='portefeuille'){
+    const par={};
+    vues.forEach(l=>{ const g=(l.p&&l.p.group)||'—'; (par[g]=par[g]||[]).push(l); });
+    corps=Object.keys(par).sort().map(g=>`<tr class="grp"><td colspan="${cols.length}">
+        <b>${esc(g)}</b> <span class="hint">· ${par[g].length} action(s)</span></td></tr>`+
+      par[g].map(l=>trkLigne(l).replace('<td style="--c',
+        `<td class="tcom" style="font-weight:600">${esc((l.p&&(l.p.shine||l.p.nom))||'')}</td><td style="--c`)).join('')).join('');
+  } else {
+    corps=vues.map(trkLigne).join('');
+  }
+  const retards=toutes.filter(({a})=>trkEnRetard(a) && a.st!=='En retard').length;
+  return `<div class="trk">
+    <div class="trkbar">
+      <span class="tquoi">Action Tracker</span>
+      <button class="iconbtn${vue==='projet'?' on':''}" data-trkvue="projet">◧ Ce projet</button>
+      <button class="iconbtn${vue==='portefeuille'?' on':''}" data-trkvue="portefeuille">▦ Portefeuille</button>
+      <input class="search tsearch" id="trkQ" type="text" placeholder="Rechercher une action, un pilote…" value="${esc(f.q||'')}">
+      <span class="sp" style="flex:1"></span>
+      ${retards?`<button class="iconbtn" id="trkSync" title="Passer au statut « En retard » les actions dont l'échéance est dépassée">⏱ ${retards} à requalifier</button>`:''}
+      ${vue==='projet'?'<button class="iconbtn" id="trkAdd">＋ Action</button>':''}
+      <button class="iconbtn" id="trkPrint">⎙ Imprimer</button>
+    </div>
+    ${trkTuiles(toutes)}
+    ${vue==='portefeuille'?'<div class="hint" style="margin-bottom:8px">Vue transverse : les actions de tous les projets, rangées par pôle. L’ajout se fait depuis la fiche du projet concerné.</div>':''}
+    <div class="tblwrap"><table class="trktbl"><thead><tr>${entete}</tr></thead><tbody>${corps}</tbody></table></div>
+  </div>`;
+}
+function kitArmerActions(){
+  /* Un rendu demandé depuis un « blur » arriverait en plein remplacement du
+     panneau : on le repousse d'un tour de boucle. */
+  const rr=()=>setTimeout(()=>renderKit(),0);
+  const trouve=id=>{
+    let out=null;
+    Object.keys(S.trk||{}).forEach(k=>{ const a=(S.trk[k]||[]).find(x=>x.id===id); if(a) out={a,pid:k}; });
+    return out;
+  };
+  const nomProj=pid=>{ const p=(S.projects||[]).find(x=>x.id===pid); return p?(p.shine||p.nom):pid; };
+  const trace=(pid,q,av,ap)=>logChange('Actions — '+nomProj(pid),q,av,ap);
+  /* Toute retouche d'une ligne en date la mise à jour : c'est ce que la
+     colonne promet, elle ne peut pas rester en arrière. */
+  const toucher=(o,pid,q,av,ap)=>{ o.maj=trkJour(); trace(pid,q,av,ap); scheduleSave(); };
+  $$('#kitPane [data-trkvue]').forEach(b=>b.addEventListener('click',()=>{
+    S.trkVue=b.dataset.trkvue; scheduleSave(); rr(); }));
+  $$('#kitPane [data-trkt]').forEach(b=>b.addEventListener('click',()=>{
+    const v=b.dataset.trkt, f=S.trkF=S.trkF||{};
+    if(v==='!retard'){ f.retard=!f.retard; f.st=''; }
+    else { f.st=(f.st===v?'':v); f.retard=false; }
+    scheduleSave(); rr(); }));
+  $$('#kitPane [data-trktri]').forEach(th=>th.addEventListener('click',()=>{
+    const k=th.dataset.trktri, t=S.trkTri||{k:'',d:1};
+    S.trkTri=(t.k===k)?{k:k,d:-t.d}:{k:k,d:1};
+    scheduleSave(); rr(); }));
+  $$('#kitPane [data-trkf]').forEach(el=>el.addEventListener('blur',()=>{
+    /* Remplacer le panneau fait perdre le focus : le « blur » part alors avec
+       la valeur d'avant le rendu et écraserait ce qui vient d'être écrit.
+       Pendant un rendu, un blur ne dicte donc rien. */
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const [id,k]=el.dataset.trkf.split('|'); const o=trouve(id); if(!o) return;
+    const v=el.textContent.replace(/ /g,' ').trim();
+    if(String(o.a[k]||'')===v) return;
+    const av=o.a[k]||''; o.a[k]=v;
+    toucher(o.a,o.pid,({act:'action',lead:'pilote',com:'commentaire',impt:'impact'}[k]||k),av,v);
+    if(k==='act') rr();
+  }));
+  $$('#kitPane [data-trkx]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const [id,k]=el.dataset.trkx.split('|'); const o=trouve(id); if(!o) return;
+    const iso=trkIso(el.value);
+    if(iso===null){ el.value=trkFr(o.a[k]); return; }   // saisie illisible : on rend la valeur d'avant
+    if(String(o.a[k]||'')===iso) return;
+    const av=o.a[k]||''; o.a[k]=iso;
+    if(k==='maj'){ trace(o.pid,'date de mise à jour',av,iso); scheduleSave(); }
+    else toucher(o.a,o.pid,({d1:'date de début',d2:'date de fin'}[k]||k),av,iso);
+    rr();
+  }));
+  $$('#kitPane [data-trkcal]').forEach(b=>b.addEventListener('click',()=>{
+    const el=$('#kitPane .tdtp[data-trkd="'+b.dataset.trkcal+'"]'); if(!el) return;
+    try{ el.showPicker(); }catch(e){ el.focus(); el.click(); }
+  }));
+  $$('#kitPane [data-trkd]').forEach(el=>el.addEventListener('change',()=>{
+    const [id,k]=el.dataset.trkd.split('|'); const o=trouve(id); if(!o) return;
+    const av=o.a[k]||''; o.a[k]=el.value;
+    if(k==='maj'){ trace(o.pid,'date de mise à jour',av,el.value); scheduleSave(); }
+    else toucher(o.a,o.pid,({d1:'date de début',d2:'date de fin'}[k]||k),av,el.value);
+    rr();
+  }));
+  $$('#kitPane [data-trks]').forEach(sel=>sel.addEventListener('change',()=>{
+    const o=trouve(sel.dataset.trks); if(!o) return;
+    const av=o.a.st; o.a.st=sel.value; o.a.fait=(sel.value==='Fait');
+    toucher(o.a,o.pid,'statut',av,sel.value); rr();
+  }));
+  $$('#kitPane [data-trki]').forEach(sel=>sel.addEventListener('change',()=>{
+    const o=trouve(sel.dataset.trki); if(!o) return;
+    const av=o.a.imp||'—'; o.a.imp=sel.value;
+    toucher(o.a,o.pid,'impact',av,sel.value); rr();
+  }));
+  /* Cocher, c'est terminer : la ligne se barre et le statut suit. */
+  $$('#kitPane [data-trkck]').forEach(b=>b.addEventListener('click',()=>{
+    const o=trouve(b.dataset.trkck); if(!o) return;
+    const av=o.a.st; o.a.fait=!(o.a.fait||o.a.st==='Fait');
+    o.a.st=o.a.fait?'Fait':(trkEnRetard(o.a)?'En retard':'En cours');
+    toucher(o.a,o.pid,'statut',av,o.a.st); rr();
+  }));
+  $$('#kitPane [data-trkdel]').forEach(b=>b.addEventListener('click',()=>{
+    const o=trouve(b.dataset.trkdel); if(!o) return;
+    const l=trkOf(o.pid), i=l.indexOf(o.a); if(i<0) return;
+    l.splice(i,1); trace(o.pid,'action supprimée',o.a.act||'sans intitulé','');
+    scheduleSave(); rr();
+  }));
+  const lier=(s,ev,f)=>{ const el=$('#kitPane '+s); if(el) el.addEventListener(ev,f); };
+  lier('#trkAdd','click',()=>{
+    const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+    const a=trkNouvelle(); trkOf(p.id).unshift(a);
+    trace(p.id,'action ajoutée','','nouvelle ligne'); scheduleSave(); rr();
+    setTimeout(()=>{ const el=$('#kitPane [data-trkf="'+a.id+'|act"]'); if(el) el.focus(); },30);
+  });
+  lier('#trkSync','click',()=>{
+    let n=0;
+    Object.keys(S.trk||{}).forEach(pid=>(S.trk[pid]||[]).forEach(a=>{
+      if(trkEnRetard(a) && a.st!=='En retard'){ const av=a.st; a.st='En retard'; a.maj=trkJour();
+        trace(pid,'statut',av,'En retard'); n++; } }));
+    if(n){ scheduleSave(); rr(); }
+  });
+  lier('#trkQ','input',e=>{ (S.trkF=S.trkF||{}).q=e.target.value;
+    clearTimeout(window._trkQT); window._trkQT=setTimeout(()=>{ const v=e.target.value; renderKit();
+      const el=$('#kitPane #trkQ'); if(el){ el.focus(); el.setSelectionRange(v.length,v.length); } },260); });
+  lier('#trkPrint','click',()=>trkImprimer());
+}
+/* Le suivi s'imprime tel qu'il est filtré : mêmes couleurs, sans les outils. */
+function trkImprimer(){
+  const el=document.querySelector('#kitPane .trk');
+  if(!el){ alert("Le suivi n'est pas affiché."); return; }
+  const p=S.projects.find(x=>x.id===S.currentProj);
+  const w=window.open('','_blank');
+  if(!w){ alert('Autorisez les fenêtres pop-up pour imprimer le suivi.'); return; }
+  const styles=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  const titre='Action Tracker — '+(S.trkVue==='portefeuille'?'portefeuille':((p&&(p.shine||p.nom))||''));
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>'+esc(titre)+
+    '</title><style>'+styles+
+    'body{margin:0;padding:12mm;background:#fff;color:#11202e;font-family:Inter,Segoe UI,Arial,sans-serif}'+
+    '.trkbar,.tdel,.tck,.noprint{display:none!important}'+
+    '.trk input[type=date],.trk .tst,.trk .timp{border:0;background:transparent;padding:0}'+
+    'h1{font-size:16px;margin:0 0 10px}'+
+    '@page{size:A4 landscape;margin:8mm}'+
+    '</style></head><body><h1>'+esc(titre)+'</h1>'+el.outerHTML+'</body></html>');
+  w.document.close();
+  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },380);
 }
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
@@ -4542,16 +4915,28 @@ function kitResumeHTML(){
     ${carte('🚩','macro','#E11D48','rgba(225,29,72,.13)',r.jal,'/'+r.nbJal,'Jalons datés · '+r.taches+' activité(s)',jl)}
     ${carte('⎙','onepage','#0891B2','rgba(8,145,178,.13)','One Page','','Revue de projet — vue à imprimer',null)}</div>`;
 }
+let KIT_EN_COURS=false;
 function renderKit(){
   const h=document.getElementById('kitPane'); if(!h) return;
+  /* Remplacer le panneau retire le champ qui a le focus : son « blur » part
+     aussitôt, et s'il redemandait un rendu on écrirait dans un nœud déjà
+     détaché. Le rendu imbriqué est donc écarté — celui qui l'englobe porte
+     déjà la valeur que le blur vient d'enregistrer. */
+  if(KIT_EN_COURS) return;
+  KIT_EN_COURS=true;
+  try{ renderKitCorps(h); } finally { KIT_EN_COURS=false; }
+}
+function renderKitCorps(h){
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
-  h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='gate'?kitGate() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+  h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='gate'?kitGate()
+              : t==='actions'?kitActions() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   kitAjusterCellules();
   if(t==='macro'){ kitArmerJalons(); kitArmerGantt(); }
   if(t==='orga') kitArmerOrga();
   if(t==='idcard') kitArmerIdCard();
   if(t==='gate') kitArmerGate();
+  if(t==='actions') kitArmerActions();
   if(t==='onepage'){ opArmer(); bindEditables(); }
 }
 /* Dans les tableaux repris des classeurs, une cellule ne tronque pas : elle
@@ -7355,6 +7740,7 @@ function bindEditables(){
      Check-list et le CSD le reprennent sans ressaisie. Un « ETU » tapé devant
      le numéro est retiré — l'étiquette le porte déjà. */
   $$('[data-pcsd]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
     const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
     const c=csdOf(p.id), k=el.dataset.pcsd;
     const v=etuSansPrefixe(el.textContent);
