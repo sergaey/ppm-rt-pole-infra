@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-22.2 -->
+<!-- PPM_BUILD:2026-10-22.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1135,6 +1135,75 @@
   /* Deux projets sous le même numéro : la pastille le montre sans l'effacer. */
   .pp-etu.dup{border-color:#E9A23B;background:#FDF4E6}
   .pp-etu .pp-etudup{font-style:normal;font-size:11px;color:#B8730A;margin-left:1px}
+  /* ---- Achats : la page d'un projet ----
+     Le même écran pour tous les projets de tous les pôles : l'entête du
+     projet, les compteurs, ses sous-projets et leurs budgets, puis les
+     lignes de commande, de demande d'achat et d'imputation. */
+  .achhead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+  .achhead .retour{flex:0 0 auto}
+  .achhead h2{margin:0;font-family:Archivo;font-size:19px;font-weight:800;color:var(--ink);line-height:1.15}
+  .achhead .achmeta{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .achhead .sp{flex:1}
+  .tile.acc{border-top:3px solid var(--c,var(--accent))}
+  .tile.acc .big{color:var(--c,var(--ink))}
+  /* Les sous-projets : une carte par lot, son budget et sa consommation. */
+  .achspwrap{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel-2);
+    padding:11px 13px;margin-bottom:14px}
+  .achsph{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px;font-size:12px;color:var(--muted)}
+  .achsph b{font-family:Archivo;font-size:13px;color:var(--ink)}
+  .achsph .chipr{border-radius:999px;padding:2px 9px;font-size:11px;font-weight:700;
+    background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn)}
+  .achsph .chipr.ok{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+  .achsp{display:grid;grid-template-columns:repeat(auto-fit,minmax(318px,1fr));gap:11px}
+  .achspc{border:1px solid var(--line);border-left:3px solid var(--good);border-radius:var(--radius);
+    background:var(--panel);padding:10px 12px}
+  .achspc.chaud{border-left-color:var(--warn)} .achspc.plein{border-left-color:var(--bad)}
+  .achspc .h{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .achspc .h .nom{flex:1;font-weight:700;font-size:12.5px;color:var(--ink);outline:none;min-width:0}
+  .achspc .h .nom:empty::before{content:'Nom du sous-projet';color:var(--faint);font-style:italic;font-weight:400}
+  .achetu{font-size:10.5px;font-weight:800;letter-spacing:.03em;background:var(--accent-soft);
+    color:var(--accent-ink);border:1px solid var(--accent);border-radius:6px;padding:2px 7px;outline:none;white-space:nowrap}
+  .achetu:empty::before{content:'ETU';color:var(--faint);font-weight:600}
+  .achspc .m{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-items:start}
+  .achspc .m .lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
+  .achspc .m .val{font-family:Archivo;font-size:12.5px;font-weight:800;color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap}
+  .achspc .m .val.dispo{color:var(--good)} .achspc .m .val.dispo.neg{color:var(--bad)}
+  .achspbud{width:100%;max-width:108px;border:1px solid var(--line-2);border-radius:7px;padding:2px 6px;
+    font-size:12px;font-family:inherit;background:var(--panel);color:var(--ink);
+    font-variant-numeric:tabular-nums;margin-top:2px}
+  .achspbud:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .achspf{display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11px;color:var(--muted)}
+  .achspf .sp{flex:1}
+  .achspc .achbar{margin-top:8px}
+  /* Bandeaux : création de sous-projets, rapprochement avec le suivi financier. */
+  .achnote{display:flex;align-items:center;gap:10px;border:1px solid var(--accent);background:var(--accent-soft);
+    border-radius:var(--radius);padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--accent-ink)}
+  .achnote .sp{flex:1}
+  .achrec{display:flex;align-items:center;gap:10px;border:1px solid var(--warn);background:var(--warn-soft);
+    border-radius:var(--radius);padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--ink-2)}
+  .achrec.ok{border-color:var(--good);background:var(--good-soft)}
+  .achrec .sp{flex:1}
+  .achadds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}
+  .achfiltres{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:9px;margin-bottom:11px}
+  .achfiltres label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
+  .achfiltres select{width:100%;margin-top:3px}
+  .achfiltres .aide{grid-column:1/-1;font-size:11px;color:var(--faint)}
+  /* La table du projet : objet sur deux lignes, actions au bout. */
+  .achtbl.lines{table-layout:fixed;min-width:1570px}
+  .achtbl.lines .act{white-space:nowrap}
+  .achtbl.lines td,.achtbl.lines th{white-space:normal;word-break:break-word}
+  .achtbl.lines .achsel{max-width:100%}
+  .achtbl .obj{font-size:12px;color:var(--ink)}
+  .achtbl .obj .sous{display:block;font-size:10px;color:var(--faint);margin-top:1px;letter-spacing:.02em}
+  .achtbl .act{white-space:nowrap;text-align:right}
+  .achtbl .act button{border:0;background:transparent;cursor:pointer;color:var(--faint);
+    font-size:13px;padding:2px 3px;border-radius:6px}
+  .achtbl .act button:hover{color:var(--accent);background:var(--accent-soft)}
+  .achtbl .act button.sup:hover{color:var(--bad);background:var(--bad-soft)}
+  .achnum{width:100%;border:1px solid var(--line-2);border-radius:6px;padding:2px 6px;font-size:12px;
+    font-family:inherit;background:var(--panel);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  .achnum:focus{outline:none;border-color:var(--accent)}
   /* ---- Action Tracker ----
      Un suivi qui se lit d'un coup d'œil : l'état porte sa couleur, du
      bandeau de tuiles jusqu'au filet de gauche de chaque ligne. */
@@ -1681,7 +1750,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-22.2';
+const APP_BUILD='2026-10-22.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1761,6 +1830,7 @@ function buildFromSeed(){
     gates:{},
     gatedoc:{},
     trk:{},
+    achSP:{},
     hse:{},
     actions: seedActions(),
     gateFilter:'',
@@ -1920,7 +1990,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.achSP=r.achSP||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -6363,6 +6433,10 @@ const ACH_FIELDS={projId:'Projet',type:'Type',statut:'Statut',numDA:'N° DA',num
   compte:'Compte / nature comptable',nature:'CAPEX / OPEX',demandeur:'Demandeur',commentaire:'Commentaire'};
 
 const achEur=v=>v==null?'—':(+v||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
+/* Sur la page d'un projet, les montants gardent leurs centimes : c'est ce que
+   porte la commande, et c'est ce que le contrôle de gestion rapproche. */
+const achEurC=v=>v==null?'—':(+v||0).toLocaleString('fr-FR',
+  {style:'currency',currency:'EUR',minimumFractionDigits:0,maximumFractionDigits:2});
 function achNum(v){ if(v==null||v==='')return 0; if(typeof v==='number')return isFinite(v)?v:0;
   const s=String(v).replace(/[^0-9,.\-]/g,'').replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
   const n=parseFloat(s); return isFinite(n)?n:0; }
@@ -6420,6 +6494,7 @@ function achFiltre(l){
   }
   if(f.four && norm(l.fournisseur)!==norm(f.four)) return false;
   if(f.nature && l.nature!==f.nature) return false;
+  if(f.sp){ if(f.sp==='__non'){ if(l.sp) return false; } else if(String(l.sp||'')!==f.sp) return false; }
   const q=norm(S.ach.q||'').trim();
   if(q.length>1){
     const foin=norm([achLibelle(l),l.numDA,l.numCmd,l.fournisseur,l.objet,l.wbs,l.compte,l.demandeur,l.commentaire].join(' '));
@@ -6431,13 +6506,15 @@ function achLignes(){ return S.achats.filter(achFiltre); }
 function achNouvelle(projId){
   const l={id:'ach'+Math.random().toString(36).slice(2,9), projId:projId||S.ach.pid||'', type:'Commande',
     statut:'Commandée', numDA:'', numCmd:'', fournisseur:'', objet:'', montant:0, recu:0, facture:0,
-    dateDA:'', dateCmd:achToday(), dateLiv:'', dateRecep:'', wbs:'', compte:'', nature:'CAPEX', demandeur:S.user||'', commentaire:''};
+    dateDA:'', dateCmd:achToday(), dateLiv:'', dateRecep:'', wbs:'', compte:'', nature:'CAPEX', sp:'', demandeur:S.user||'', commentaire:''};
   S.achats.unshift(l); logChange('Achats','création','', (l.objet||'nouvelle ligne')); return l;
 }
 
 function renderAch(){
   S.ach=S.ach||{view:'synth',pid:'',pole:'',q:'',f:{type:'',statut:'',four:'',nature:''},sort:{k:'pct',d:-1},avecSeuls:false};
   if(S.ach.pid && !achProj(S.ach.pid)) S.ach.pid='';
+  S.ach.f=S.ach.f||{}; if(S.ach.f.sp===undefined) S.ach.f.sp='';
+  S.achSP=S.achSP||{}; S.ach.pin=S.ach.pin||[];
   const lignes=achLignes(), tout=achSomme(lignes);
   const poles=[...new Set(achProjets().map(p=>p.group).filter(Boolean))].sort();
   const fours=[...new Set(S.achats.map(l=>l.fournisseur).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'fr'));
@@ -6449,6 +6526,10 @@ function renderAch(){
   const statuts=[...new Set(Object.values(ACH_ST).flat())];
   const vue=S.ach.view;
 
+  /* Un projet désigné ouvre sa propre page : son entête, ses compteurs, ses
+     sous-projets et ses lignes. Sans projet, on reste sur la vue portefeuille
+     et ses quatre lectures. */
+  if(pSel){ view.innerHTML=achPageProjet(pSel); } else {
   view.innerHTML=`
   <div class="sec-title"><h2>Achats &amp; Engagements</h2><span class="hint">demandes d'achat · commandes · imputations — montants en € HT, budget projet converti des k€</span></div>
   <div class="kpis">
@@ -6479,6 +6560,7 @@ function renderAch(){
       ${vue==='synth'?achVueProjets(lignes):vue==='lines'?achVueLignes(lignes):vue==='four'?achVueFournisseurs(lignes):achVueMois(lignes)}
     </div></div>
   ${footHTML('ach',`Achats &amp; Engagements · Réalisé = réceptionné + imputé · Engagé = commandé non reçu · Disponible = budget C2 (C1 à défaut) − Réalisé − Engagé. L'écart ⚠ signale un projet dont les achats saisis ne recoupent pas les colonnes Actuals / Open Commitments.`)}`;
+  }
 
   const rr=()=>renderGardeFocus(()=>renderAch());
   $$('[data-achv]').forEach(b=>b.onclick=()=>{S.ach.view=b.dataset.achv;scheduleSave();rr();});
@@ -6519,6 +6601,80 @@ function renderAch(){
   $$('[data-achsort]').forEach(th=>th.onclick=()=>{
     const k=th.dataset.achsort; if(S.ach.sort.k===k)S.ach.sort.d*=-1; else {S.ach.sort.k=k;S.ach.sort.d=k==='projet'?1:-1;} rr();});
   $$('[data-achnew]').forEach(b=>b.onclick=()=>{achNouvelle(b.dataset.achnew);S.ach.pid=b.dataset.achnew;S.ach.view='lines';scheduleSave();rr();});
+
+  /* ---- Page d'un projet ---- */
+  lier('#achTous','click',()=>{ S.ach.pid=''; S.ach.f.sp=''; S.ach.note=''; scheduleSave(); rr(); window.scrollTo(0,0); });
+  lier('#achSP','change',e=>{ S.ach.f.sp=e.target.value; rr(); });
+  lier('#achNew','click',()=>{ const l=achNouvelle(S.ach.pid); scheduleSave(); rr();
+    setTimeout(()=>achFicheDlg(l&&l.id),40); });
+  lier('#achImpP','click',()=>achImportDlg());
+  lier('#achExp','click',()=>achExport());
+  lier('#achNoteOk','click',()=>{ S.ach.note=''; rr(); });
+  lier('#achPin','click',()=>{
+    const pin=S.ach.pin=S.ach.pin||[], i=pin.indexOf(S.ach.pid);
+    if(i>=0) pin.splice(i,1); else pin.unshift(S.ach.pid);
+    scheduleSave(); rr(); });
+  /* Reporter : le suivi financier du projet prend ce que disent les achats,
+     en k€ comme le reste du portefeuille. Jamais sans le demander. */
+  lier('#achRep','click',()=>{
+    const p=achProj(S.ach.pid); if(!p) return;
+    const s2=achProjSomme(p,S.achats.filter(l=>l.projId===p.id));
+    if(!confirm('Reporter dans le suivi financier du projet ?\n\n'
+      +'Actuals : '+achEur(s2.finA)+'  ⇒  '+achEur(s2.real)+'\n'
+      +'Commitments : '+achEur(s2.finC)+'  ⇒  '+achEur(s2.eng))) return;
+    logChange('Projet '+(p.shine||p.nom),'Actuals (report achats)',p.act,s2.real/1000);
+    logChange('Projet '+(p.shine||p.nom),'Commitments (report achats)',p.commit,s2.eng/1000);
+    p.act=s2.real/1000; p.commit=s2.eng/1000;
+    scheduleSave(); rr(); });
+  $$('[data-achnewt]').forEach(b=>b.onclick=()=>{
+    const l=achNouvelle(S.ach.pid); if(l){ l.type=b.dataset.achnewt; l.statut=ACH_ST_DEF[l.type]; }
+    scheduleSave(); rr(); setTimeout(()=>achFicheDlg(l&&l.id),40); });
+  $$('[data-achnewsp]').forEach(b=>b.onclick=()=>{
+    const [sp,t]=b.dataset.achnewsp.split('|');
+    const l=achNouvelle(S.ach.pid); if(l){ l.sp=sp; l.type=t; l.statut=ACH_ST_DEF[t]; }
+    scheduleSave(); rr(); setTimeout(()=>achFicheDlg(l&&l.id),40); });
+  $$('[data-achedit]').forEach(b=>b.onclick=()=>achFicheDlg(b.dataset.achedit));
+  $$('[data-achdup]').forEach(b=>b.onclick=()=>{
+    const l=S.achats.find(x=>x.id===b.dataset.achdup); if(!l) return;
+    const c=JSON.parse(JSON.stringify(l));
+    c.id='a'+Math.random().toString(36).slice(2,9);
+    c.numCmd=''; c.numDA=''; c.recu=0; c.facture=0;
+    const i=S.achats.indexOf(l); S.achats.splice(i+1,0,c);
+    logChange('Achats','ligne dupliquée',(l.objet||l.numCmd||l.id),'');
+    scheduleSave(); rr(); });
+  /* ---- Sous-projets ---- */
+  lier('#achSPAdd','click',()=>{
+    const p=achProj(S.ach.pid); if(!p) return;
+    const sp=achSPNouveau(p.id,'','',0);
+    S.ach.note='Sous-projet créé. Donnez-lui son n° d’ETU, son intitulé et son budget ci-dessous, '
+      +'puis rattachez-lui ses lignes d’achat dans la colonne « Sous-projet ».';
+    scheduleSave(); rr();
+    setTimeout(()=>{ const el=$('[data-achspf="'+sp.id+'|etu"]'); if(el) el.focus(); },40); });
+  $$('[data-achspf]').forEach(el=>el.addEventListener('blur',()=>{
+    const p=achProj(S.ach.pid); if(!p) return;
+    const [id,k]=el.dataset.achspf.split('|'); const sp=achSPTrouve(p.id,id); if(!sp) return;
+    const v=el.textContent.replace(/\u00a0/g,' ').trim().replace(/^ETU\s*/i,'');
+    if(String(sp[k]||'')===v) return;
+    logChange('Achats — '+(p.shine||p.nom),'sous-projet · '+(k==='etu'?'n° ETU':'intitulé'),sp[k]||'',v);
+    sp[k]=v; scheduleSave(); rr(); }));
+  $$('[data-achspb]').forEach(el=>el.addEventListener('blur',()=>{
+    const p=achProj(S.ach.pid); if(!p) return;
+    const sp=achSPTrouve(p.id,el.dataset.achspb); if(!sp) return;
+    const v=achNum(el.value);
+    if(achNum(sp.budget)===v) return;
+    logChange('Achats — '+(p.shine||p.nom),'budget du sous-projet '+(sp.etu?'ETU'+sp.etu:(sp.nom||'')),
+      achEur(achNum(sp.budget)),achEur(v));
+    sp.budget=v; scheduleSave(); rr(); }));
+  $$('[data-achspdel]').forEach(b=>b.onclick=()=>{
+    const p=achProj(S.ach.pid); if(!p) return;
+    const sp=achSPTrouve(p.id,b.dataset.achspdel); if(!sp) return;
+    const n=achSPLignes(p.id,sp.id).length;
+    if(!confirm('Supprimer ce sous-projet ?\n\n'+((sp.etu?'ETU'+sp.etu+' — ':'')+(sp.nom||'sans intitulé'))
+      +(n?'\n\n'+n+' ligne(s) d’achat repasseront en « non réparti » — aucune n’est supprimée.':''))) return;
+    S.achSP[p.id]=achSPs(p.id).filter(x=>x.id!==sp.id);
+    S.achats.forEach(l=>{ if(l.projId===p.id && String(l.sp||'')===sp.id) l.sp=''; });
+    logChange('Achats — '+(p.shine||p.nom),'sous-projet supprimé',(sp.etu?'ETU'+sp.etu:'')+' '+(sp.nom||''),'');
+    scheduleSave(); rr(); });
 }
 
 function achBarre(s){
@@ -6531,6 +6687,263 @@ function achBarre(s){
 }
 function achLegende(){
   return `<div class="achleg"><span><i class="r"></i>Réalisé</span><span><i class="e"></i>Engagé</span><span><i class="d"></i>DA en attente</span><span><i class="f"></i>Disponible</span></div>`;
+}
+/* ---- Sous-projets d'achat ----
+   Un projet porte une enveloppe ; ses lots la découpent. Chaque sous-projet
+   a son n° d'ETU, son intitulé et son budget, et chaque ligne d'achat se
+   rattache à l'un d'eux. Le reste non réparti est dit, jamais deviné. */
+function achSPs(pid){ S.achSP=S.achSP||{}; if(!Array.isArray(S.achSP[pid])) S.achSP[pid]=[]; return S.achSP[pid]; }
+function achSPTrouve(pid,id){ return id?(achSPs(pid).find(x=>x.id===id)||null):null; }
+function achSPNom(pid,id){ const sp=achSPTrouve(pid,id); return sp?((sp.etu?'ETU'+sp.etu+' — ':'')+(sp.nom||'sans intitulé')):''; }
+function achSPLignes(pid,id,lignes){ return (lignes||S.achats.filter(l=>l.projId===pid)).filter(l=>String(l.sp||'')===String(id)); }
+function achSPSomme(pid,sp,lignes){
+  const s=achSomme(achSPLignes(pid,sp.id,lignes));
+  const base=achNum(sp.budget), dispo=base?base-s.real-s.eng:null;
+  return {...s, base, dispo, pct:base>0?(s.real+s.eng)/base*100:null};
+}
+function achSPNouveau(pid,etu,nom,budget){
+  const sp={id:'sp'+Math.random().toString(36).slice(2,9), etu:String(etu||''), nom:nom||'', budget:achNum(budget)};
+  achSPs(pid).push(sp);
+  logChange('Achats — '+((achProj(pid)||{}).shine||pid),'sous-projet créé','',
+    (sp.etu?'ETU'+sp.etu+' · ':'')+(sp.nom||'sans intitulé')+' · '+achEur(sp.budget));
+  return sp;
+}
+/* La somme des lots ne doit pas dépasser l'enveloppe, et ce qui reste non
+   réparti se voit : c'est la première question posée en revue. */
+function achSPBilan(p){
+  const sps=achSPs(p.id), base=achBase(p);
+  const somme=sps.reduce((a,x)=>a+achNum(x.budget),0);
+  return {sps, somme, base, reste:base==null?null:base-somme};
+}
+const achPct=(a,b)=>b>0?Math.max(0,Math.min(100,a/b*100)):0;
+/* ---- Page d'un projet ---- */
+function achTuile(lab,sous,val,cls,coul){
+  return '<div class="tile acc '+(cls||'')+'"'+(coul?' style="--c:'+coul+'"':'')+
+    '><div class="lab">'+lab+(sous?'<span class="bmini">'+sous+'</span>':'')+'</div>'+
+    '<div class="big">'+val+'</div></div>';
+}
+function achPageProjet(p){
+  const lignes=achLignes();                       // déjà filtrées sur ce projet
+  const toutes=S.achats.filter(l=>l.projId===p.id);
+  const s=achProjSomme(p,toutes), f=S.ach.f, b=achSPBilan(p);
+  const apres=s.dispo==null?null:s.dispo-s.dem;
+  const pctCons=s.base>0?Math.round((s.real+s.eng)/s.base*100):null;
+  const fours=[...new Set(toutes.map(l=>l.fournisseur).filter(Boolean))].sort((a,b2)=>a.localeCompare(b2,'fr'));
+  const statuts=[...new Set(Object.values(ACH_ST).flat())];
+  const epingle=(S.ach.pin||[]).includes(p.id);
+  /* Rapprochement : ce que le suivi financier porte, et ce que les achats
+     disent. Tant que les deux diffèrent, on le montre et on propose le report. */
+  const ecart=achEcart(s);
+  const tuiles=[
+    achTuile('Budget C2','Baseline', s.base==null?'—':achEurC(s.base),'','var(--accent)'),
+    achTuile('Commandé','Commandes passées', achEurC(s.cmd),'','var(--ink-2)'),
+    achTuile('Réalisé','Réceptionné + imputé', achEurC(s.real),'','var(--good)'),
+    achTuile('Engagé','Reste à réceptionner', achEurC(s.eng),'','var(--copper)'),
+    achTuile('Disponible', pctCons==null?'budget non renseigné':(pctCons+' % consommé'),
+      s.dispo==null?'—':achEurC(s.dispo),'', s.dispo!=null&&s.dispo<0?'var(--bad)':'var(--good)'),
+    achTuile('Après DA en attente', achEurC(s.dem)+' de DA',
+      apres==null?'—':achEurC(apres),'', apres!=null&&apres<0?'var(--bad)':'var(--muted)'),
+    achTuile('Facturé','Factures reçues', achEurC(s.fact),'','var(--accent)'),
+    achTuile('Livraisons en retard','Commandes', String(s.retard),'', s.retard?'var(--bad)':'var(--line-2)')
+  ].join('');
+  const cartes=b.sps.map(sp=>{
+    const z=achSPSomme(p.id,sp,toutes), n=achSPLignes(p.id,sp.id,toutes).length;
+    const cls=z.pct==null?'':(z.pct>=100?'plein':(z.pct>=80?'chaud':''));
+    return '<div class="achspc '+cls+'" data-achspc="'+esc(sp.id)+'">'+
+      '<div class="h"><span class="achetu" contenteditable data-achspf="'+esc(sp.id)+'|etu">'+esc(sp.etu||'')+'</span>'+
+        '<span class="nom" contenteditable data-achspf="'+esc(sp.id)+'|nom">'+esc(sp.nom||'')+'</span>'+
+        '<button class="iconbtn mini" data-achspdel="'+esc(sp.id)+'" title="Supprimer ce sous-projet — ses lignes repassent en non réparti">✕</button></div>'+
+      '<div class="m">'+
+        '<div><div class="lab">Budget</div><input class="achspbud" data-achspb="'+esc(sp.id)+'" value="'+esc(z.base?fmt(z.base,0):'')+'" placeholder="0"></div>'+
+        '<div><div class="lab">Réalisé</div><div class="val">'+achEurC(z.real)+'</div></div>'+
+        '<div><div class="lab">Engagé</div><div class="val">'+achEurC(z.eng)+'</div></div>'+
+        '<div><div class="lab">DA</div><div class="val">'+achEurC(z.dem)+'</div></div>'+
+        '<div><div class="lab">Disponible</div><div class="val dispo'+(z.dispo!=null&&z.dispo<0?' neg':'')+'">'+
+          (z.dispo==null?'—':achEurC(z.dispo))+'</div></div>'+
+      '</div>'+
+      achBarre(z)+
+      '<div class="achspf"><span>'+(z.pct==null?'budget non renseigné':Math.round(z.pct)+' %')+' · '+n+' ligne'+(n>1?'s':'')+'</span>'+
+        '<span class="sp"></span>'+
+        ACH_TYPES.map(t=>'<button class="iconbtn mini" data-achnewsp="'+esc(sp.id)+'|'+esc(t)+'">+ '+
+          (t==='Commande'?'Cde':t==="Demande d'achat"?'DA':'Imput.')+'</button>').join('')+
+      '</div></div>';
+  }).join('');
+  const sousProjets='<div class="achspwrap">'+
+    '<div class="achsph"><span>🧩</span><b>'+b.sps.length+' sous-projet'+(b.sps.length>1?'s':'')+'</b>'+
+      (b.sps.length?'<span>Budget des sous-projets '+achEurC(b.somme)+' · Budget C2 du projet '+
+        (b.base==null?'—':achEurC(b.base))+'</span>'+
+        (b.reste==null?'':'<span class="chipr'+(b.reste>=0?' ok':'')+'">'+
+          (b.reste>=0?achEurC(b.reste)+' non répartis':achEurC(-b.reste)+' au-delà de l’enveloppe')+'</span>'):
+        '<span>Découpez l’enveloppe en lots : chacun porte son n° d’ETU, son budget et ses commandes.</span>')+
+      '<span class="sp" style="flex:1"></span>'+
+      '<button class="iconbtn" id="achSPAdd">+ Sous-projet</button></div>'+
+    (b.sps.length?'<div class="achsp">'+cartes+'</div>':'')+
+    '</div>';
+  const optSP='<option value="">— non réparti —</option>'+
+    b.sps.map(sp=>'<option value="'+esc(sp.id)+'">'+esc((sp.etu?'ETU'+sp.etu+' — ':'')+(sp.nom||'sans intitulé'))+'</option>').join('');
+  const filtre=(id,lab,opts,val)=>'<div><label>'+lab+'</label><select id="'+id+'">'+
+    opts.map(([v,l2])=>'<option value="'+esc(v)+'"'+(String(val||'')===String(v)?' selected':'')+'>'+esc(l2)+'</option>').join('')+'</select></div>';
+  return '<div class="sec-title"><h2>Suivi des achats, commandes et imputations</h2>'+
+      '<span class="hint">demandes d’achat, commandes, réceptions et imputations par projet · baseline Budget C2 (règle du suivi financier)</span></div>'+
+    '<div class="achhead"><button class="iconbtn retour" id="achTous">← Tous les projets</button>'+
+      '<div><h2>'+esc(p.nom||'')+'</h2><div class="achmeta">'+
+        esc([p.group||'—',p.secteur||'',p.shine||p.ishift||'',p.statut||'',p.pm||''].filter(Boolean).join(' · '))+
+      '</div></div><span class="sp"></span>'+
+      '<button class="iconbtn'+(epingle?' on':'')+'" id="achPin" title="Garder ce projet en tête de la liste des achats">'+
+        (epingle?'📌 Épinglé':'📌 Épingler')+'</button>'+
+      '<button class="iconbtn" id="achNew">+ Nouvelle ligne</button>'+
+      '<button class="iconbtn" id="achImpP">⤓ Importer pour ce projet</button>'+
+      '<button class="iconbtn" id="achExp">⤒ Exporter (CSV Excel)</button></div>'+
+    '<div class="kpis">'+tuiles+'</div>'+
+    achLegende()+achBarre(s)+
+    (S.ach.note?'<div class="achnote" style="margin-top:12px"><span>🧩</span><span class="sp">'+esc(S.ach.note)+
+      '</span><button class="iconbtn mini" id="achNoteOk">OK</button></div>':'<div style="height:12px"></div>')+
+    sousProjets+
+    '<div class="achrec'+(ecart?'':' ok')+'"><span>'+(ecart?'⚠':'✓')+'</span><span class="sp">'+
+      'Suivi financier du projet : Actuals '+(p.act==null||p.act===''?'—':achEurC(s.finA))+
+      ' · Commitments '+(p.commit==null||p.commit===''?'—':achEurC(s.finC))+
+      (ecart?' — <b>différent</b> des achats (Réalisé '+achEurC(s.real)+', Engagé '+achEurC(s.eng)+')'
+            :' — cohérent avec les achats')+'</span>'+
+      (ecart?'<button class="iconbtn" id="achRep">⇅ Reporter dans le suivi financier</button>':'')+'</div>'+
+    '<div class="panel"><div class="panel-h"><h3>Lignes d’achat</h3>'+
+      '<span class="meta">'+lignes.length+' ligne'+(lignes.length>1?'s':'')+' sur '+toutes.length+'</span></div>'+
+      '<div class="panel-b">'+
+      '<div class="achadds">'+ACH_TYPES.map(t=>'<button class="iconbtn" data-achnewt="'+esc(t)+'">+ '+
+          (t==='Commande'?'Commande':t)+'</button>').join('')+'</div>'+
+      '<div class="achfiltres">'+
+        filtre('achType','Type',[['','Tous']].concat(ACH_TYPES.map(t=>[t,t])),f.type)+
+        filtre('achSt','Statut',[['','Tous'],['__ouvert','— engagements ouverts —'],['__retard','— livraisons en retard —']]
+          .concat(statuts.map(t=>[t,t])),f.statut)+
+        filtre('achFour','Fournisseur',[['','Tous']].concat(fours.map(t=>[t,t])),f.four)+
+        filtre('achNat','CAPEX / OPEX',[['','Tous']].concat(ACH_NATURES.map(t=>[t,t])),f.nature)+
+        filtre('achSP','Sous-projet',[['','Tous'],['__non','— non réparti —']]
+          .concat(b.sps.map(sp=>[sp.id,(sp.etu?'ETU'+sp.etu+' — ':'')+(sp.nom||'sans intitulé')])),f.sp)+
+        '<div class="aide">Recherche plein texte : le champ en haut de l’écran — n° de commande, n° de DA, fournisseur, objet, WBS, demandeur.</div>'+
+      '</div>'+
+      achTableProjet(lignes,p,optSP)+
+      '</div></div>'+
+    footHTML('ach','Achats &amp; Engagements · Réalisé = réceptionné + imputé · Engagé = commandé non reçu · Disponible = Budget C2 − Réalisé − Engagé · une DA ne devient un engagement qu’une fois transformée en commande.');
+}
+function achTableProjet(lignes,p,optSP){
+  /* De la plus récente à la plus ancienne : c'est l'ordre dans lequel on
+     passe les commandes en revue. */
+  const quand=l=>l.type==="Demande d'achat"?(l.dateDA||'') : (l.dateCmd||l.dateRecep||'');
+  lignes=lignes.slice().sort((a,b)=>String(quand(b)).localeCompare(String(quand(a))));
+  const sel=(id,k,opts,val)=>'<select class="achsel" data-achf="'+esc(id)+'|'+k+'">'+
+    opts.map(o=>'<option'+(val===o?' selected':'')+'>'+esc(o)+'</option>').join('')+'</select>';
+  const txt=(id,k,v,cls)=>'<td class="'+(cls||'')+'" contenteditable data-achf="'+esc(id)+'|'+k+'">'+esc(v==null?'':v)+'</td>';
+  const tot=achSomme(lignes);
+  return '<div class="tblwrap"><table class="achtbl lines"><thead><tr>'+
+    '<th style="width:100px">Type</th><th style="width:150px">Sous-projet</th>'+
+    '<th style="width:86px">N° DA</th><th style="width:104px">N° CDE</th><th style="width:140px">Fournisseur</th>'+
+    '<th style="width:300px">Objet / imputation</th><th style="width:104px">Montant HT</th>'+
+    '<th style="width:104px">Réceptionné</th><th style="width:100px">Engagé</th>'+
+    '<th style="width:92px">Date</th><th style="width:92px">Livraison</th>'+
+    '<th style="width:124px">Statut</th><th style="width:74px"></th></tr></thead><tbody>'+
+    (lignes.length?lignes.map(l=>{
+      const c=achCalc(l), rt=achRetard(l);
+      const dat=l.type==="Demande d'achat"?l.dateDA:(l.type==='Imputation'?(l.dateRecep||l.dateCmd):l.dateCmd);
+      return '<tr class="'+(c.mort?'achmort':'')+'">'+
+        '<td>'+sel(l.id,'type',ACH_TYPES,l.type)+'</td>'+
+        '<td><select class="achsel" data-achf="'+esc(l.id)+'|sp">'+
+          optSP.replace('value="'+esc(l.sp||'')+'"','value="'+esc(l.sp||'')+'" selected')+'</select></td>'+
+        txt(l.id,'numDA',l.numDA,'code')+txt(l.id,'numCmd',l.numCmd,'code')+
+        txt(l.id,'fournisseur',l.fournisseur)+
+        '<td class="wrap"><div class="obj" contenteditable data-achf="'+esc(l.id)+'|objet">'+esc(l.objet||'')+'</div>'+
+          '<span class="sous">'+esc([l.nature||'CAPEX',l.wbs||''].filter(Boolean).join(' · '))+'</span></td>'+
+        '<td class="num" contenteditable data-achf="'+esc(l.id)+'|montant">'+(l.montant?fmt(achNum(l.montant),2):'')+'</td>'+
+        '<td><input class="achnum" data-achf="'+esc(l.id)+'|recu" value="'+esc(l.recu?fmt(achNum(l.recu),2):'')+'" placeholder="0 €"></td>'+
+        '<td class="num">'+(c.eng?achEurC(c.eng):'—')+'</td>'+
+        '<td class="num">'+esc(achFR(dat)||'—')+'</td>'+
+        '<td class="num">'+(l.dateLiv?esc(achFR(l.dateLiv))+(rt?' <span class="achwarn late" title="Livraison dépassée de '+(-achJours(l.dateLiv))+' j">⏱</span>':''):'—')+'</td>'+
+        '<td>'+sel(l.id,'statut',ACH_ST[l.type]||[],l.statut)+'</td>'+
+        '<td class="act"><button data-achedit="'+esc(l.id)+'" title="Ouvrir la fiche complète de la ligne">✎</button>'+
+          '<button data-achdup="'+esc(l.id)+'" title="Dupliquer cette ligne">⧉</button>'+
+          '<button class="sup" data-achdel="'+esc(l.id)+'" title="Supprimer cette ligne">🗑</button></td></tr>';
+    }).join('')
+    :'<tr><td colspan="13" class="empty">Aucune ligne dans ce périmètre. « + Commande », « + Demande d’achat » ou « ⤓ Importer pour ce projet ».</td></tr>')+
+    '</tbody><tfoot><tr><th colspan="6">Total · '+tot.n+' ligne'+(tot.n>1?'s':'')+'</th>'+
+    '<th class="num">'+achEurC(tot.cmd+tot.dem)+'</th><th class="num">'+achEurC(tot.real)+'</th>'+
+    '<th class="num">'+achEurC(tot.eng)+'</th><th colspan="4"></th></tr></tfoot></table></div>';
+}
+/* La fiche complète d'une ligne : tout ce que la table ne montre pas —
+   dates, compte, demandeur, commentaire, montant facturé. */
+function achFicheDlg(id){
+  const l=S.achats.find(x=>x.id===id); if(!l) return;
+  if(document.getElementById('afBox')) return;
+  const p=achProj(l.projId), sps=p?achSPs(p.id):[];
+  const champ=(k,lb,type,larg)=>'<label style="flex:'+(larg||'1 1 30%')+';min-width:140px;font-size:11.5px;color:var(--muted)">'+lb+
+    '<input id="af_'+k+'" type="'+(type||'text')+'" value="'+esc(l[k]==null?'':l[k])+
+    '" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit"></label>';
+  const liste=(k,lb,opts,val,larg)=>'<label style="flex:'+(larg||'1 1 30%')+';min-width:140px;font-size:11.5px;color:var(--muted)">'+lb+
+    '<select id="af_'+k+'" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit">'+
+    opts.map(([v,t])=>'<option value="'+esc(v)+'"'+(String(val||'')===String(v)?' selected':'')+'>'+esc(t)+'</option>').join('')+'</select></label>';
+  const zone=(k,lb)=>'<label style="flex:1 1 100%;font-size:11.5px;color:var(--muted)">'+lb+
+    '<textarea id="af_'+k+'" rows="2" style="width:100%;margin-top:3px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font-family:inherit">'+
+    esc(l[k]||'')+'</textarea></label>';
+  const ov=document.createElement('div'); ov.className='dmodal'; ov.id='afBox';
+  ov.innerHTML='<div class="dbox" style="width:min(760px,96vw)">'+
+    '<div class="dhead"><span class="af-mk">'+(ACH_TICON[l.type]||'🧾')+'</span><h4>Ligne d’achat</h4>'+
+    '<button class="dclose" data-afc title="Fermer">×</button></div>'+
+    '<div class="dbody" style="padding:16px"><div style="display:flex;flex-wrap:wrap;gap:12px">'+
+      liste('type','TYPE',ACH_TYPES.map(t=>[t,t]),l.type)+
+      liste('statut','STATUT',(ACH_ST[l.type]||[]).map(t=>[t,t]),l.statut)+
+      liste('sp','SOUS-PROJET',[['','— non réparti —']].concat(sps.map(sp=>[sp.id,(sp.etu?'ETU'+sp.etu+' — ':'')+(sp.nom||'sans intitulé')])),l.sp)+
+      liste('nature','CAPEX / OPEX',ACH_NATURES.map(t=>[t,t]),l.nature||'CAPEX')+
+      champ('numDA','N° DA')+champ('numCmd','N° COMMANDE')+champ('fournisseur','FOURNISSEUR','text','1 1 36%')+
+      champ('wbs','WBS | INV')+champ('compte','COMPTE')+champ('demandeur','DEMANDEUR')+
+      champ('montant','MONTANT HT')+champ('recu','MONTANT RÉCEPTIONNÉ')+champ('facture','MONTANT FACTURÉ')+
+      champ('dateDA','DATE DA','date')+champ('dateCmd','DATE COMMANDE','date')+
+      champ('dateLiv','LIVRAISON PRÉVUE','date')+champ('dateRecep','DATE RÉCEPTION','date')+
+      zone('objet','OBJET | IMPUTATION')+zone('commentaire','COMMENTAIRE')+
+    '</div></div>'+
+    '<div style="padding:0 16px 16px;display:flex;gap:8px;justify-content:flex-end">'+
+      '<button class="iconbtn" data-afc>Annuler</button>'+
+      '<button class="savebtn" style="width:auto;padding:9px 20px" id="af_ok">Enregistrer</button></div></div>';
+  document.body.appendChild(ov);
+  const fermer=()=>ov.remove();
+  ov.querySelectorAll('[data-afc]').forEach(b=>b.onclick=fermer);
+  ov.onclick=e=>{ if(e.target===ov) fermer(); };
+  ov.addEventListener('keydown',e=>{ if(e.key==='Escape') fermer(); });
+  ov.querySelector('#af_type').onchange=e=>{
+    const st=ov.querySelector('#af_statut');
+    st.innerHTML=(ACH_ST[e.target.value]||[]).map(t=>'<option>'+t+'</option>').join('');
+  };
+  ov.querySelector('#af_ok').onclick=()=>{
+    ['type','statut','sp','nature','numDA','numCmd','fournisseur','wbs','compte','demandeur',
+     'montant','recu','facture','dateDA','dateCmd','dateLiv','dateRecep','objet','commentaire'].forEach(k=>{
+      const el=ov.querySelector('#af_'+k); if(!el) return;
+      let v=el.value;
+      if(['montant','recu','facture'].includes(k)) v=achNum(v);
+      if(String(l[k]==null?'':l[k])===String(v)) return;
+      logChange('Achat '+(l.numCmd||l.numDA||l.objet||l.id), ACH_FIELDS[k]||k, l[k], v);
+      l[k]=v;
+    });
+    if(!(ACH_ST[l.type]||[]).includes(l.statut)) l.statut=ACH_ST_DEF[l.type];
+    fermer(); scheduleSave(); renderAch();
+  };
+}
+/* Export : un CSV que l'Excel français ouvre d'un double-clic — séparateur
+   point-virgule, BOM, dates en clair. */
+function achExport(){
+  const lignes=achLignes();
+  const p=achProj(S.ach.pid);
+  const cols=[['Projet',l=>achLibelle(l)],['Sous-projet',l=>achSPNom(l.projId,l.sp)],['Type',l=>l.type],
+    ['Statut',l=>l.statut],['N° DA',l=>l.numDA],['N° commande',l=>l.numCmd],['Fournisseur',l=>l.fournisseur],
+    ['Objet',l=>l.objet],['Montant HT',l=>achNum(l.montant)],['Réceptionné',l=>achNum(l.recu)],
+    ['Facturé',l=>achNum(l.facture)],['Engagé',l=>achCalc(l).eng],
+    ['Date DA',l=>achFR(l.dateDA)],['Date commande',l=>achFR(l.dateCmd)],
+    ['Livraison prévue',l=>achFR(l.dateLiv)],['Date réception',l=>achFR(l.dateRecep)],
+    ['WBS | INV',l=>l.wbs],['Compte',l=>l.compte],['CAPEX / OPEX',l=>l.nature],
+    ['Demandeur',l=>l.demandeur],['Commentaire',l=>l.commentaire]];
+  const cell=v=>{ const t=(v==null?'':String(v)).replace(/"/g,'""');
+    return /[;"\n]/.test(t)?'"'+t+'"':t; };
+  const csv=[cols.map(c=>cell(c[0])).join(';')]
+    .concat(lignes.map(l=>cols.map(c=>cell(c[1](l))).join(';'))).join('\r\n');
+  const nom='achats_'+(p?norm(p.shine||p.nom).replace(/[^a-z0-9]+/g,'_').slice(0,40):'portefeuille')+'_'+achToday()+'.csv';
+  saveFile(nom,'﻿'+csv).then(r=>{
+    if(!r||!r.ok) alert("L'export n'a pas pu être enregistré.");
+  });
 }
 function achVueProjets(lignes){
   const par={}; lignes.forEach(l=>{ (par[l.projId]=par[l.projId]||[]).push(l); });
