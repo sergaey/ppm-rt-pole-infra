@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-22.3 -->
+<!-- PPM_BUILD:2026-10-22.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1750,7 +1750,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-22.3';
+const APP_BUILD='2026-10-22.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1990,7 +1990,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.achSP=r.achSP||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3280,7 +3280,8 @@ function amorcerTout(){
                  ['budget One Page',()=>migrerBudgetOP()],
                  ['corrections',()=>appliquerCorrSeed()],
                  ['référentiel INFRA',()=>appliquerSeedRef()],
-                 ['n° ETU',()=>appliquerSeedEtu()]];
+                 ['n° ETU',()=>appliquerSeedEtu()],
+                 ['achats du pôle',()=>appliquerSeedAch()]];
   let n=0; const rates=[];
   travaux.forEach(([nom,f])=>{
     try{ n+=(f()||0); }
@@ -6721,6 +6722,50 @@ function achTuile(lab,sous,val,cls,coul){
   return '<div class="tile acc '+(cls||'')+'"'+(coul?' style="--c:'+coul+'"':'')+
     '><div class="lab">'+lab+(sous?'<span class="bmini">'+sous+'</span>':'')+'</div>'+
     '<div class="big">'+val+'</div></div>';
+}
+/* ---- Reprise des achats déjà passés ----
+   Les lots et les commandes relevés sur le suivi du pôle. Ils ne se posent
+   que sur un projet qui ne les a pas : un n° de commande déjà présent n'est
+   jamais redoublé, et un lot déjà créé n'est jamais recréé. Les montants
+   sont en euros HT, tels qu'ils figurent sur les commandes. */
+const SEED_ACH = {};
+function achSeedProjet(code){
+  const c=norm(code);
+  return (S.projects||[]).find(p=>!p.deleted &&
+    [p.shine,p.ishift,p.id,p.code].some(v=>v&&norm(v)===c)) || null;
+}
+function appliquerSeedAch(){
+  if(typeof SEED_ACH!=='object'||!SEED_ACH) return 0;
+  S.achats=S.achats||[]; S.achSP=S.achSP||{}; S.achSeeded=S.achSeeded||{};
+  let n=0;
+  Object.keys(SEED_ACH).forEach(code=>{
+    const p=achSeedProjet(code); if(!p) return;            // projet absent de ce portefeuille
+    const e=SEED_ACH[code];
+    /* Les lots : on ne recrée pas un n° d'ETU déjà présent, et l'on ne
+       touche pas au budget d'un lot que le propriétaire a retouché. */
+    const lots=achSPs(p.id);
+    (e.sp||[]).forEach(x=>{
+      if(lots.some(y=>norm(y.etu)===norm(x.etu))) return;
+      achSPNouveau(p.id,x.etu,x.nom,x.budget); n++;
+    });
+    const parEtu={}; achSPs(p.id).forEach(y=>{ if(y.etu) parEtu[norm(y.etu)]=y.id; });
+    /* Les commandes : le n° de commande fait foi. Une ligne déjà saisie,
+       même retouchée depuis, n'est ni doublée ni écrasée. */
+    (e.lignes||[]).forEach(x=>{
+      const cle=norm(x.numCmd||x.numDA);
+      if(!cle) return;
+      if(S.achats.some(l=>norm(l.numCmd)===cle||norm(l.numDA)===norm(x.numDA||'\u0000'))) return;
+      if(S.achSeeded[cle]) return;
+      const l=achNouvelle(p.id);
+      Object.assign(l,{type:x.type,statut:x.statut,numDA:x.numDA||'',numCmd:x.numCmd||'',
+        fournisseur:x.fournisseur||'',objet:x.objet||'',montant:x.montant||0,
+        dateCmd:x.dateCmd||'',nature:x.nature||'CAPEX',wbs:x.wbs||'',
+        sp:parEtu[norm(x.etu)]||''});
+      S.achSeeded[cle]=p.id; n++;
+    });
+  });
+  if(n) logChange('Achats','reprise du suivi du pôle','',n+' élément(s) repris');
+  return n;
 }
 function achPageProjet(p){
   const lignes=achLignes();                       // déjà filtrées sur ce projet
