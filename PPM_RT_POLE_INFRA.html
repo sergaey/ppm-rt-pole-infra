@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-21.21 -->
+<!-- PPM_BUILD:2026-10-22.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1135,6 +1135,135 @@
   /* Deux projets sous le même numéro : la pastille le montre sans l'effacer. */
   .pp-etu.dup{border-color:#E9A23B;background:#FDF4E6}
   .pp-etu .pp-etudup{font-style:normal;font-size:11px;color:#B8730A;margin-left:1px}
+  /* ---- Passage Gate : les supports de passage, au format des gabarits ----
+     Les teintes sont celles des gabarits eux-mêmes : violet profond des
+     bandeaux, mauve poussiéreux des entêtes de tableaux, lavande des lignes,
+     et les quatre couleurs de pastilles du bandeau de gates. */
+  .gate{--g-ink:#23004C;--g-violet:#7A00E6;--g-dust:#776B8F;--g-lav:#DCDEED;
+    --g-pale:#EFEFF7;--g-grey:#6B747B;--g-red:#C4141E;--g-line:#C9C4D4;
+    --g-ok:#00B050;--g-warn:#F6C243;--g-bad:#FF0000;
+    --g-g0:#ED6C4E;--g-g1:#F6C243;--g-g2:#62D488;--g-g3:#00B0F0;
+    font-family:Arial,Helvetica,sans-serif;color:#000}
+  .gatebar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+  .gatebar .gquoi{font-family:Archivo;font-weight:800;letter-spacing:.02em;color:var(--ink)}
+  .gpackbtn{border:1px solid var(--line);background:var(--panel);border-radius:999px;
+    padding:6px 14px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer}
+  .gpackbtn.on{background:#23004C;border-color:#23004C;color:#fff}
+  /* Une page = une diapositive du gabarit, au format 16/9. */
+  .gslide{position:relative;background:#fff;border:1px solid var(--g-line);border-radius:4px;
+    padding:14px 18px 34px;margin-bottom:16px;min-height:560px;
+    box-shadow:0 1px 3px rgba(16,24,40,.06)}
+  .ghead{display:flex;align-items:flex-start;gap:12px;min-height:44px}
+  /* Le losange rouge du gabarit, posé à l'angle, portant le n° de gate. */
+  .gdiam{flex:0 0 46px;width:46px;height:46px;background:var(--g-red);
+    transform:rotate(45deg);display:flex;align-items:center;justify-content:center;margin:2px 6px 0 0}
+  .gdiam span{transform:rotate(-45deg);color:#fff;font-size:10px;line-height:1.05;
+    font-weight:700;text-align:center;letter-spacing:.01em}
+  .ghead h3{margin:0;font-size:25px;line-height:1.15;font-weight:400;color:var(--g-ink);font-family:Arial,Helvetica,sans-serif}
+  .ghead h3 b{font-weight:700}
+  .ghead .gsous{font-size:14.5px;font-weight:700;color:var(--g-ink);margin-top:1px}
+  .ghead .gsousl{font-size:12.5px;font-weight:700;color:var(--g-ink);display:flex;gap:5px;line-height:1.45}
+  .gate .ginl{display:inline-block;min-width:80px;vertical-align:baseline}
+  .ghead .gmark{margin-left:auto;text-align:right;font-size:8px;letter-spacing:.22em;
+    color:var(--g-grey);line-height:1.5;text-transform:uppercase;padding-top:4px}
+  .ghead .gmark b{display:block;font-size:9px;letter-spacing:.18em;color:var(--g-ink)}
+  .ghead .gmark .gf{display:block;min-height:12px;font-size:8px;letter-spacing:.22em;text-align:right}
+  .ghead .gmark b.gf{font-size:9px;letter-spacing:.18em}
+  /* Le bandeau des gates : la gate présentée est en relief, les autres pâlies. */
+  .gchips{display:flex;flex-direction:column;gap:3px;margin-left:14px;padding-top:2px}
+  .gchips .r{display:flex;gap:5px}
+  .gchip{border:0;border-radius:7px;padding:2px 9px;font-size:12.5px;font-weight:700;
+    color:#1b1b1b;cursor:pointer;opacity:.42;transition:opacity .12s,transform .12s}
+  .gchip.on{opacity:1;transform:translateY(-1px);box-shadow:0 1px 4px rgba(35,0,76,.28)}
+  .gchip[data-g="G0"]{background:var(--g-g0)} .gchip[data-g="G1"],.gchip[data-g="OC"]{background:var(--g-g1)}
+  .gchip[data-g="G2"],.gchip[data-g="SF"]{background:var(--g-g2)}
+  .gchip[data-g="G3"],.gchip[data-g="G3.X"],.gchip[data-g="PV"],.gchip[data-g="SC"]{background:var(--g-g3)}
+  .gleg{font-size:10px;color:var(--g-grey);margin-left:14px;line-height:1.5}
+  .gfoot{position:absolute;left:18px;right:18px;bottom:9px;display:flex;align-items:flex-end;
+    font-size:9.5px;color:var(--g-ink);letter-spacing:.04em}
+  .gfoot .c{flex:1;text-align:center;text-transform:uppercase}
+  .gfoot .l{min-width:120px}
+  .gfoot .r{min-width:120px;text-align:right;text-transform:uppercase}
+  .gfoot .l [contenteditable]{display:inline-block;min-width:96px;border-bottom:1px dashed var(--g-line);
+    color:var(--g-grey);font-size:10px}
+  .gbody{padding-top:10px}
+  /* Champs : tout ce qui est blanc dans le gabarit s'écrit ici. */
+  .gate .gf{outline:none;min-height:17px;white-space:pre-wrap;font-size:12.5px;line-height:1.45}
+  .gate .gf:empty::before{content:attr(data-vide);color:#A9A2B6;font-style:italic}
+  .gate .gf:focus{background:#F3ECFD;border-radius:3px;box-shadow:0 0 0 1px var(--g-violet)}
+  .gate .gf.gbig{min-height:58px}
+  .gate .gf.gmini{min-height:15px;font-size:12px}
+  /* Tableaux repris des gabarits : entête plein, lignes alternées. */
+  .gtbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+  .gtbl th{background:var(--g-dust);color:#fff;font-weight:700;text-align:left;
+    padding:6px 8px;border:1px solid #fff;font-size:12px;vertical-align:middle;text-transform:none;white-space:normal}
+  .gtbl.sombre th{background:var(--g-ink)}
+  .gtbl td{border:1px solid var(--g-line);padding:5px 8px;vertical-align:top;background:#fff;white-space:normal}
+  .gtbl tbody tr:nth-child(even) td{background:var(--g-pale)}
+  .gtbl td.lav{background:var(--g-lav)!important;font-weight:700;color:var(--g-ink)}
+  /* Dans une cellule lavande, seul l'intitulé est gras : la consigne reprise
+     du gabarit garde sa graisse de texte courant. */
+  .gtbl td.lav .gfix{font-weight:400}
+  .gtbl td.lav .gfix b{font-weight:700}
+  .gtbl td.tot{font-weight:800;color:var(--g-ink)}
+  .gtbl .num{text-align:right}
+  .gtbl .gx{border:0;background:transparent;color:#B7B0C2;cursor:pointer;font-size:13px;padding:0 2px}
+  .gtbl .gx:hover{color:var(--g-bad)}
+  .gaddrow{margin-top:5px}
+  /* Pastilles d'impact : vert, jaune, rouge — le code couleur du gabarit. */
+  .gimp{display:block;width:100%;height:20px;border:1px solid var(--g-line);border-radius:2px;
+    cursor:pointer;background:#fff}
+  .gimp.v{background:var(--g-ok);border-color:var(--g-ok)}
+  .gimp.j{background:#FFFF00;border-color:#E3D400}
+  .gimp.r{background:var(--g-bad);border-color:var(--g-bad)}
+  /* Bandeaux titrés : la barre violette pleine du gabarit, et sa boîte. */
+  .gband{background:var(--g-violet);color:#fff;font-weight:700;font-size:13px;
+    padding:5px 12px;border-radius:3px}
+  .gband.dust{background:var(--g-dust)}
+  .gband.lav{background:var(--g-lav);color:var(--g-ink)}
+  .gbox{border:1px solid var(--g-violet);background:#F7F5FA;border-radius:3px;padding:8px 11px}
+  .gbox.plain{border-color:var(--g-line);background:#fff}
+  .grow{display:grid;grid-template-columns:168px 1fr;gap:9px;align-items:stretch;margin-bottom:7px}
+  .gpill{display:flex;align-items:center;gap:8px}
+  .gpill .gic{flex:0 0 38px;height:38px;border-radius:50%;border:2px solid var(--g-violet);
+    display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--g-violet)}
+  .gpill .gl{flex:1;background:var(--g-violet);color:#fff;font-weight:700;font-size:12.5px;
+    text-align:center;padding:7px 6px;border-radius:3px;line-height:1.2}
+  /* Sur la page d'objectif de séance, l'intitulé est violet sur blanc — pas
+     une barre pleine : le gabarit distingue les deux. */
+  .gpill .gt{flex:1;color:var(--g-violet);font-weight:700;font-size:13px;text-align:center;line-height:1.25}
+  /* Frise des trimestres de l'Executive Summary. */
+  .gruler{border:1px solid var(--g-line);border-radius:3px;padding:7px 9px;background:#fff}
+  .gran{display:grid;gap:3px}
+  .gran .an{text-align:center;font-weight:700;font-size:12px;color:var(--g-ink);
+    border-bottom:1px solid var(--g-ink);padding-bottom:1px}
+  .gqs{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-top:3px}
+  .gqs span{text-align:center;font-size:10.5px;color:var(--g-grey)}
+  .gphases{display:flex;gap:3px;margin-top:6px}
+  .gphases .ph{flex:1;border-radius:9px;padding:3px 6px;font-size:11px;font-weight:700;
+    text-align:center;color:#1b1b1b}
+  .gphases .gf:empty::before{color:rgba(0,0,0,.55)}
+  /* Pont vide : la silhouette du graphique reste lisible, en pointillé. */
+  .gstep.vide .bar{background:transparent!important;border:1px dashed var(--g-line)}
+  /* Pont budgétaire du Gate 4 : marches entre deux budgets. */
+  .gbridge{display:flex;align-items:flex-end;gap:7px;height:168px;padding:8px 4px 0;
+    border-bottom:1px solid var(--g-ink)}
+  .gstep{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+  .gstep .v{font-size:12px;font-weight:700;color:var(--g-ink);margin-bottom:3px}
+  .gstep .bar{width:100%;max-width:62px;background:#7A00E6;border-radius:2px 2px 0 0;min-height:3px}
+  .gstep.marche .bar{background:#F79544;max-width:46px;min-height:14px}
+  .gstep.fin .bar{background:#C4145A}
+  .gstep .lb{font-size:10px;color:var(--g-grey);text-align:center;margin-top:4px;line-height:1.25;width:100%}
+  .gcols2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .gcols3{display:grid;grid-template-columns:238px 196px 1fr;gap:0}
+  .gnote{font-size:11px;color:var(--g-grey);font-style:italic;margin-top:5px}
+  .gcheck{list-style:none;margin:6px 0 0;padding:0;font-size:12.5px;color:var(--g-ink)}
+  .gcheck li{display:flex;gap:8px;margin-bottom:5px;align-items:flex-start}
+  .gcheck li::before{content:'❑';color:var(--g-grey);font-size:12px;line-height:1.3}
+  .gfix{font-size:12px;color:var(--g-ink);line-height:1.4}
+  .gfix b{display:block;margin-bottom:2px}
+  .gfix ul{margin:2px 0 0;padding-left:15px}
+  .gfix li{margin-bottom:1px}
   .idctools{display:flex;align-items:center;gap:8px;margin-bottom:11px}
   /* La carte reprend le support : fond gris clair, encadrés à liseré violet
      dont l'intitulé chevauche le trait, parties variables en violet italique.
@@ -1471,7 +1600,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-21.21';
+const APP_BUILD='2026-10-22.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1549,6 +1678,7 @@ function buildFromSeed(){
     navKey:'ppole',
     cers:{},
     gates:{},
+    gatedoc:{},
     hse:{},
     actions: seedActions(),
     gateFilter:'',
@@ -1708,7 +1838,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3244,9 +3374,9 @@ const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
    à leur teinte qu'à leur position sur la frise. */
 const KIT_MSC=['#DC2626','#D97706','#16A34A','#0891B2','#2563EB','#7C3AED','#DB2777','#65A30D'];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
-const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['checklist','Check-list'],
+const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['gate','Passage Gate'],['checklist','Check-list'],
                 ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning']];
-const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards Sanofi STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
+const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
 const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
 const ksum=a=>a.reduce((x,y)=>x+(+y||0),0);
 const keur=v=>(+v||0).toLocaleString('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0});
@@ -3295,6 +3425,561 @@ const kta=p=>`<textarea class="kin" data-kp="${p}" rows="1">${esc(kGet(p))}</tex
 const kbtn=(a,l,cls)=>`<button class="${cls||'kadd'}" data-ka="${a}">${l}</button>`;
 
 /* ---- Check-list ---- */
+/* ===================== Passage Gate =====================
+   Les supports de passage, au format des gabarits : Gate 0-1-2-3, Gate 4 et
+   Gate 5. On n'invente ni rubrique ni ordre — chaque page reprend la
+   structure, les bandeaux et les couleurs de son gabarit, et tout ce qui y
+   est laissé blanc est ici un champ qui s'écrit au clic.
+   Le contenu vit par projet dans S.gatedoc : « f » pour les champs simples,
+   « t » pour les tableaux dont les lignes s'ajoutent et se retirent. */
+const GATE_PACKS=[['g0123','Gate 0-1-2-3'],['g4','Gate 4'],['g5','Gate 5']];
+const GATE_CHIPS=[['G0','G1','G2','G3','G3.X'],['','OC','SF','PV','SC']];
+const GATE_PIED={ g0123:['GATE 0-1-2-3 : PROJECT REVIEW','TEMPLATE 2025'],
+                  g4:['GATE 4 : PROJECT RISKS/ISSUES','TEMPLATE FEB. 2022'],
+                  g5:['GATE 5 : CLOSURE','TEMPLATE JAN. 2023'] };
+function gdOf(id){
+  S.gatedoc=S.gatedoc||{};
+  const g=S.gatedoc[id]=S.gatedoc[id]||{};
+  GATE_PACKS.forEach(([k])=>{ g[k]=g[k]||{}; g[k].f=g[k].f||{}; g[k].t=g[k].t||{}; });
+  return g;
+}
+function gPackId(){ const k=S.gatePack||'g0123';
+  return GATE_PACKS.some(([i])=>i===k)?k:'g0123'; }
+function gPack(){ return gdOf(S.currentProj)[gPackId()]; }
+const gV=c=>String((gPack().f||{})[c]==null?'':gPack().f[c]);
+const gField=(c,vide,cls)=>'<div class="gf '+(cls||'')+'" contenteditable data-gf="'+esc(c)+
+  '" data-vide="'+esc(vide||'')+'">'+esc(gV(c))+'</div>';
+function gRows(cle,min){
+  const t=gPack().t;
+  if(!Array.isArray(t[cle])){ t[cle]=[]; for(let i=0;i<(min||1);i++) t[cle].push({}); }
+  return t[cle];
+}
+const gCell=(cle,i,k,vide,cls)=>{
+  const r=gRows(cle)[i]||{};
+  return '<div class="gf '+(cls||'gmini')+'" contenteditable data-gc="'+esc(cle)+'|'+i+'|'+esc(k)+
+    '" data-vide="'+esc(vide||'')+'">'+esc(r[k]==null?'':r[k])+'</div>';
+};
+function gTbl(cle,cols,opts){
+  opts=opts||{};
+  const rows=gRows(cle,opts.min||3), fige=opts.ajout===false;
+  const th=cols.map(c=>'<th'+(c.w?' style="width:'+c.w+'"':'')+(c.cs?' colspan="'+c.cs+'"':'')+'>'+c.l+'</th>').join('');
+  const corps=rows.map((r,i)=>'<tr>'+cols.map(c=>{
+      if(c.t==='imp') return '<td style="padding:3px 5px"><span class="gimp '+esc(r[c.k]||'')+
+        '" data-gi="'+esc(cle)+'|'+i+'|'+esc(c.k)+'" title="Clic : vert → jaune → rouge → vide"></span></td>';
+      if(c.t==='fixe') return '<td class="'+(c.cls||'lav')+'">'+(c.v?c.v(i):'')+'</td>';
+      /* Une consigne du gabarit ne se répète pas ligne après ligne : elle
+         n'invite que la première, les suivantes restent nues. */
+      const vide = Array.isArray(c.vide) ? (c.vide[i]||'') : (c.p1 && i>0 ? '' : c.vide);
+      return '<td class="'+(c.cls||'')+'">'+gCell(cle,i,c.k,vide)+'</td>';
+    }).join('')+(fige?'':'<td class="noprint" style="width:3%;border:0;background:transparent;padding:0 0 0 3px">'+
+      '<button class="gx" data-gdel="'+esc(cle)+'|'+i+'" title="Supprimer cette ligne">✕</button></td>')+'</tr>').join('');
+  const croix=fige?'':'<th class="noprint" rowspan="'+(opts.head?2:1)+
+    '" style="width:3%;border:0;background:transparent"></th>';
+  const entete=opts.head?opts.head(croix):('<tr>'+th+croix+'</tr>');
+  return '<table class="gtbl '+(opts.cls||'')+'"><thead>'+entete+
+    '</thead><tbody>'+corps+'</tbody></table>'+
+    (fige?'':'<div class="gaddrow noprint"><button class="iconbtn mini" data-gadd="'+esc(cle)+'">+ Ligne</button></div>');
+}
+/* Le bloc d'identité du projet, commun aux pages de garde Gate 4 et Gate 5. */
+function gIdent(){
+  const L=[['t','Project/Program Title:'],['sh','Shine #:'],['sp','Sponsor:'],
+           ['pl','Project Leader:'],['d1','Planned Start Date:'],['d2','Planned End Date:']];
+  return '<div style="background:var(--g-lav);border-radius:3px;padding:11px 13px">'+
+    L.map(([k,l])=>'<div style="display:grid;grid-template-columns:142px 1fr;gap:8px;margin-bottom:9px">'+
+      '<b style="font-size:12.5px;color:var(--g-ink)">'+l+'</b>'+gField('id.'+k,'…','gmini')+'</div>').join('')+
+    '</div>';
+}
+/* Le tableau financier de la page de garde : coût estimé, Strat Plan, budget
+   et les écarts, avec la colonne « couvert par le budget site ». */
+function gFinCover(){
+  const lignes=['Total','Ext. Capex','Int. Capex','Ext. Opex','Int. Opex'];
+  const cols=[['ce','Cost Est'],['sp','SP'],['bu','B'],['vsp','Var. SP'],['vbu','Var. Bud.'],['cov','Var. covered by Site Budget']];
+  return '<table class="gtbl"><thead><tr><th style="width:13%">In [M€]</th>'+
+    '<th style="width:12%">Cost Est</th>'+
+    '<th style="width:10%">SP'+'<span class="gf gmini" contenteditable data-gf="fin.ansp" data-vide="YY" style="display:inline-block;min-width:22px;color:#fff">'+esc(gV('fin.ansp'))+'</span></th>'+
+    '<th style="width:10%">B'+'<span class="gf gmini" contenteditable data-gf="fin.anbu" data-vide="YY" style="display:inline-block;min-width:22px;color:#fff">'+esc(gV('fin.anbu'))+'</span></th>'+
+    '<th style="width:11%">Var. SP</th><th style="width:11%">Var. Bud.</th>'+
+    '<th>Var. covered by Site Budget</th></tr></thead><tbody>'+
+    lignes.map((l,i)=>'<tr><td class="lav">'+l+'</td>'+
+      cols.map(([k])=>'<td class="num">'+gField('fin.'+i+'.'+k,'','gmini')+'</td>').join('')+
+      '</tr>').join('')+
+    '</tbody></table>';
+}
+/* ---- Pages du pack Gate 0-1-2-3 ---- */
+function gpCheck0123(){
+  const act=[
+    ['Gate Site Review',['Timeline and resources for execution are accurate and approved.',
+      'Risks and assumptions are correctly reflected.',
+      'Project cost is within site budget. If not, escalate.',
+      'If Planning &amp; Budget have moved since last Gate, explain why']],
+    ['<b>[Only if product impact]</b> IPT review before Gates 1, 2 &amp; 3',
+      ['Business driver and project assumptions are aligned with Product Strategy / Roadmap',
+       'Business assumptions (for NPV calculations, COGs estimates, etc.) are accurate.']],
+    ['<b>[Only if CAPEX + external OPEX ≥ 1M€]</b><br>Gate Engineering/Project Controls Checklist',
+      ['Recommendation to proceed, with attention points for next phase']],
+    ['Gate Operational Project Review (OPR)',[]]];
+  return '<p style="font-size:14px;color:var(--g-grey);margin:0 0 10px">The items below must be completed prior to Gate review at the Decision Committee.</p>'+
+    '<table class="gtbl sombre"><thead><tr><th style="width:36%">Activity</th>'+
+    '<th style="width:15%">Completion date</th><th style="width:14%">Who</th><th>Comment/Outcome</th></tr></thead><tbody>'+
+    act.map(([t,b],i)=>'<tr><td class="'+(i%2?'lav':'')+'"><div class="gfix"><b>'+t+'</b>'+
+      (b.length?'<ul>'+b.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'</div></td>'+
+      ['d','w','c'].map(k=>'<td>'+gField('chk.'+i+'.'+k,'','gmini')+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>';
+}
+function gpObjectif(){
+  return '<div class="gbox" style="border-radius:999px;padding:9px 20px;display:flex;align-items:center;gap:12px;margin-bottom:16px">'+
+      '<span style="font-size:20px;color:var(--g-violet)">◎</span>'+
+      '<b style="font-size:16px;color:var(--g-ink)">SESSION OBJECTIVE:</b>'+
+      '<div style="flex:1">'+gField('obj.titre','Overall Project Update','')+'</div></div>'+
+    '<div class="gcols2">'+
+      '<div><div class="gpill" style="margin-bottom:9px"><span class="gic">📢</span>'+
+        '<span class="gt">WHAT ARE THE 1-3 THINGS THE AUDIENCE NEED TO KNOW?</span></div>'+
+        gField('obj.audience','1- …\n2- …\n3- …','gbig')+'</div>'+
+      '<div><div class="gpill" style="margin-bottom:9px"><span class="gic">🗒</span>'+
+        '<span class="gt">WHAT IS EXPECTED FROM THE SLT ? <sup>(*)</sup></span></div>'+
+        gField('obj.slt','…','gbig')+
+        '<div class="gnote">(*) Get informed on […] ; Debate &amp; decide on […] ; Validate/endorse […] ; Align on […] ; Agree on immediate next steps : (a) […], (b) […], (c) […]…</div>'+
+      '</div></div>';
+}
+function gpExec(){
+  const R=[['🎯','Objectives','exec.obj','Objectif du projet — ce qu\'il vise, et ce qu\'il réduit ou apporte'],
+           ['❓','Why now','exec.why','Pourquoi maintenant : le constat, le risque encouru à ne rien faire'],
+           ['📋','Scope','exec.scope','Périmètre, phases, ressources'],
+           ['📅','Timeline<br>Execution','',''],
+           ['€','Financial','exec.fin','Coût total projet, VAN, retour sur le premier euro dépensé, indice de profitabilité']];
+  const an=[0,1,2,3].map(i=>'<div class="gran"><div class="an">'+gField('exec.an'+i,String(new Date().getFullYear()+i),'gmini')+
+      '</div><div class="gqs"><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span></div></div>').join('');
+  const PH=[['Conceptual','var(--g-g0)'],['Basic','var(--g-g1)'],['Execution','var(--g-g2)'],
+            ['Validation','var(--g-g2)'],['Commercial activity','var(--g-g2)']];
+  const frise='<div class="gruler"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:9px">'+an+'</div>'+
+    '<div class="gphases">'+PH.map(([l,c],i)=>'<span class="ph" style="background:'+c+'">'+
+      '<span class="gf gmini" contenteditable data-gf="exec.ph'+i+'" data-vide="'+l+'" style="color:#1b1b1b;text-align:center">'+
+      esc(gV('exec.ph'+i))+'</span></span>').join('')+'</div></div>';
+  return R.map(([ic,l,c,vide])=>'<div class="grow"><div class="gpill"><span class="gic">'+ic+'</span>'+
+      '<span class="gl">'+l+'</span></div>'+
+      (c?'<div class="gbox">'+gField(c,vide,'gbig')+'</div>':frise)+'</div>').join('');
+}
+function gpBC(){
+  const B=[['📈','Business or Operational Need','bc.need','Level of demand risk\nDemand alternative scenario'],
+           ['⚙','Project Answer to the need','bc.ans','…'],
+           ['🧮','NPV Assumptions','bc.npv','Lost Sales / additional sales\nCOGS : X €\nGross margin :\nSensitivity']];
+  return '<div class="gcols2">'+
+    '<div>'+B.map(([ic,t,c,v])=>'<div style="margin-bottom:12px">'+
+        '<div class="gband" style="display:flex;align-items:center;gap:8px"><span>'+ic+'</span>'+
+        '<span style="flex:1;text-align:center">'+t+'</span></div>'+
+        '<div style="background:var(--g-pale);padding:7px 10px;border-radius:0 0 3px 3px">'+gField(c,v,'gbig')+'</div>'+
+      '</div>').join('')+'</div>'+
+    '<div><div style="display:flex;align-items:center;gap:8px;border-bottom:1.5px solid var(--g-violet);padding-bottom:4px">'+
+        '<span style="font-size:17px">📊</span><i style="flex:1;text-align:center;font-size:15px;color:var(--g-violet)">Illustration of operational need</i></div>'+
+      '<div style="min-height:230px;padding:10px 4px">'+gField('bc.illu','Add one graph to illustrate the most relevant driver of Business case.','gbig')+'</div>'+
+    '</div></div>'+
+    '<div style="border-top:1.5px solid var(--g-violet);margin-top:8px;padding-top:6px">'+
+      '<i style="display:block;text-align:center;font-size:14px;color:var(--g-violet);margin-bottom:4px">Key Messages</i>'+
+      '<div style="background:var(--g-pale);padding:7px 10px;border-radius:3px">'+gField('bc.key','A\nB','')+'</div></div>';
+}
+function gpFin0123(){
+  const an=i=>gField('fin.an'+i,String(new Date().getFullYear()+i),'gmini');
+  const l1=['Capex','Opex','TOTAL'];
+  const l2=['Capex','Opex','TOTAL','Var.'];
+  return '<table class="gtbl" style="margin-bottom:16px"><thead><tr>'+
+    '<th style="width:30%">Total project cost (k€)</th><th>'+an(0)+'</th><th>'+an(1)+'</th><th>'+an(2)+'</th></tr></thead><tbody>'+
+    l1.map((l,i)=>'<tr><td class="lav'+(l==='TOTAL'?' tot':'')+'" style="text-align:right">'+l+'</td>'+
+      [0,1,2].map(j=>'<td class="num">'+gField('fc.'+i+'.'+j,'','gmini')+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>'+
+    '<table class="gtbl"><thead><tr><th style="width:30%">Strat plan Budget (k€)</th>'+
+    '<th>'+gField('fin.c1','B/C1/C2 Y','gmini')+'</th><th>'+gField('fin.c2','H/B Y+1','gmini')+'</th><th>Total</th></tr></thead><tbody>'+
+    l2.map((l,i)=>'<tr><td class="lav'+(l==='TOTAL'?' tot':'')+'" style="text-align:right">'+l+'</td>'+
+      [0,1,2].map(j=>{
+        /* L'écart se teinte de lui-même : au-dessus du budget il passe au
+           saumon, en dessous au vert — le code du gabarit. */
+        const v=l==='Var.'?gV('fs.'+i+'.'+j).trim():'';
+        const f=v?(/^[-−]/.test(v)?'#C9F4D8':'#FAC8BC'):'';
+        return '<td class="num"'+(f?' style="background:'+f+'"':'')+'>'+
+          gField('fs.'+i+'.'+j,l==='Var.'?'± k€':'','gmini')+'</td>';}).join('')+'</tr>').join('')+
+    '</tbody></table>'+
+    '<div style="margin-top:12px"><b style="font-size:12.5px;color:var(--g-ink)">Explain how budget variation is covered</b>'+
+      gField('fin.expl','…','gbig')+'</div>';
+}
+function gpRO(){
+  return '<div class="gband lav" style="margin-bottom:0;display:flex;align-items:center">'+
+      '<b style="flex:1">R &amp; O</b><span style="font-size:17px">⚠</span></div>'+
+    gTbl('ro',[
+      {k:'r',l:'',w:'28%',cls:'lav',vide:['R1, description','R2, description','R3, description',
+        'R4, description','R#nn, description','Op 1, description','Op#nn, description']},
+      {k:'sc',l:'',w:'7%',t:'imp'},{k:'sh',l:'',w:'7%',t:'imp'},{k:'co',l:'',w:'7%',t:'imp'},
+      {k:'pr',l:'',w:'12%'},{k:'mi',l:'',w:'21%'},{k:'ow',l:'',w:'10%'}],
+      {min:6, head:croix=>'<tr>'+
+        '<th rowspan="2" style="width:28%;vertical-align:middle;text-align:center">Main risks and opportunities identified</th>'+
+        '<th colspan="3" style="text-align:center">Impact (Red, Yellow, Green)</th>'+
+        '<th rowspan="2" style="width:12%;vertical-align:middle;text-align:center">Probability<br>(High/Med/Low)</th>'+
+        '<th rowspan="2" style="width:21%;vertical-align:middle;text-align:center">Mitigation action</th>'+
+        '<th rowspan="2" style="width:10%;vertical-align:middle;text-align:center">Action owner</th>'+croix+'</tr>'+
+        '<tr><th style="width:7%;text-align:center">Scope</th><th style="width:7%;text-align:center">Schedule</th>'+
+        '<th style="width:7%;text-align:center">Cost</th></tr>'})+
+    '<div class="gnote">Impact : cliquez une case pour la passer au vert, au jaune, au rouge, puis au blanc — le code couleur du gabarit.</div>';
+}
+function gpAct(){
+  return gTbl('act',[{k:'d',l:'Log Date',w:'10%'},{k:'a',l:'Actions',w:'36%'},
+    {k:'o',l:'Owner',w:'13%'},{k:'du',l:'Due date',w:'10%'},{k:'s',l:'Status'}],
+    {min:6,cls:'sombre'});
+}
+/* La remontée de risque ou de problème : même page au Gate 0-1-2-3 et au
+   Gate 4, chacun dans son pack. */
+function gpRisk(){
+  const G=[['t','Project Title:'],['sh','SHINE #:'],['tp','Project Tier &amp; Phase:'],
+           ['sp','Sponsor:'],['pm','Project Manager:']];
+  const Q=[['q1','What is the issue?','Provide a description of the issue/challenge.'],
+           ['q2','Why did it occur?','Provide an explanation of the root cause and any associated causal factors.'],
+           ['q3','What is the impact?','Provide details around the current and future potential impact (schedule, resources, budget, etc.) of the projects and potential associated projects.']];
+  return '<div style="display:grid;grid-template-columns:200px 1fr;gap:9px;margin-bottom:12px">'+
+    '<div>'+G.map(([k,l])=>'<div style="margin-bottom:5px">'+
+        '<div style="background:var(--g-dust);color:#fff;font-size:12px;padding:4px 9px">'+l+'</div>'+
+        '<div style="border:1px solid var(--g-line);border-top:0;padding:5px 9px">'+gField('ri.'+k,'xxx','gmini')+'</div>'+
+      '</div>').join('')+'</div>'+
+    '<div>'+Q.map(([k,t,s])=>'<div style="display:grid;grid-template-columns:215px 1fr;border:1px solid var(--g-line);border-bottom:0">'+
+        '<div style="background:var(--g-dust);color:#fff;padding:7px 9px">'+
+          '<b style="font-size:12.5px">'+t+'</b><div style="font-size:11px;line-height:1.35;margin-top:2px">'+s+'</div></div>'+
+        '<div style="padding:7px 9px">'+gField('ri.'+k,'…','gbig')+'</div>'+
+      '</div>').join('')+'<div style="border:1px solid var(--g-line);border-top:0;height:4px"></div></div></div>'+
+    gTbl('cm',[{k:'c',l:'Countermeasure',w:'17%',cls:'lav',p1:true,vide:'Provide an explanation of corrective action to be taken to mitigate the immediate and future issue; action with a clear WHAT, WHO and WHEN.'},
+      {k:'a',l:'Top 5 Action Items <i style="font-weight:400">(with Shine #, if applicable)</i>',w:'27%'},
+      {k:'o',l:'Owned By',w:'11%'},{k:'d',l:'Due Date',w:'10%'},
+      {k:'r',l:'Comments/Updates/Confirmation of acceptance'}],{min:5,cls:'sombre'});
+}
+/* ---- Pages du pack Gate 4 ---- */
+function gpCover(pack){
+  const but = pack==='g5'
+    ? '<b style="font-size:13px;color:var(--g-ink)">Purpose of this deck is to communicate project closure at Portfolio Governance Forum(s).</b>'+
+      '<p style="font-size:12.5px;margin:9px 0 4px">Project closure has been approved by the site, demonstrating that:</p>'+
+      '<ul class="gcheck"><li>All aspects of projects are closed with respect to commercial and technical matters</li>'+
+      '<li>Lessons learned has been performed</li>'+
+      '<li>Defined Benefit realization proposal which may continue beyond project closure</li></ul>'
+    : '<b style="font-size:13px;color:var(--g-ink)">Purpose of Gate 4 is to gain approval for significant changes from Gate 3:</b>'+
+      '<ul class="gcheck"><li>Project baseline cost (110% or higher)</li><li>Schedule (schedule delay)</li>'+
+      '<li>Resources (increase)</li></ul>'+
+      '<div class="gnote">If there is not significant change from Gate 3, this is an inform.</div>';
+  return '<div style="display:flex;gap:10px;align-items:baseline;margin-bottom:10px">'+
+      '<b style="font-size:12.5px;color:var(--g-ink)">Date:</b><div style="width:150px">'+gField('cov.date','…','gmini')+'</div></div>'+
+    '<div class="gcols2" style="grid-template-columns:1.25fr 1fr">'+
+      '<div><div style="display:grid;grid-template-columns:1fr;gap:10px">'+gIdent()+gFinCover()+'</div></div>'+
+      '<div class="gbox plain" style="border:1px solid var(--g-ink);border-radius:14px;padding:14px 16px">'+but+'</div>'+
+    '</div>';
+}
+function gpBudget4(){
+  const steps=gRows('br',5);
+  const dep=+gV('br.dep')||0, fin=+gV('br.fin')||0, sub=+gV('br.sub')||0;
+  const cum=dep+steps.reduce((a,s)=>a+(+s.v||0),0);
+  const vierge=!dep && !fin && !sub && !steps.some(x=>+x.v);
+  const haut=Math.max(dep,fin||cum,sub,1);
+  /* Rien de saisi : on dessine la silhouette du gabarit en pointillé, pour
+     que la page se lise avant d'être remplie. */
+  const pc=v=>vierge?'0%':Math.max(3,Math.round((+v||0)/haut*100))+'%';
+  const sil=(h)=>vierge?('height:'+h+'%'):'';
+  return '<div class="gbox" style="padding:12px 14px;margin-bottom:14px">'+
+    '<b style="font-size:13px;color:var(--g-ink);text-decoration:underline">'+
+      gField('br.titre','YYYY Budget : + XXX k€ (mention if Opex or Capex costs concerned)','gmini')+'</b>'+
+    '<div class="gbridge">'+
+      '<div class="gstep'+(vierge?' vide':'')+'"><span class="v">'+esc(gV('br.dep')||'—')+'</span>'+
+        '<span class="bar" style="'+(vierge?sil(56):'height:'+pc(dep))+'"></span>'+
+        '<span class="lb">Budget from previous Gate</span></div>'+
+      steps.map((s,i)=>'<div class="gstep marche'+(vierge?' vide':'')+'"><span class="v">'+gCell('br',i,'v','0','gmini')+'</span>'+
+        '<span class="bar" style="'+(vierge?sil(14+i*5):'height:'+pc(s.v))+'"></span>'+
+        '<span class="lb">'+gCell('br',i,'l','Activities','gmini')+'</span></div>').join('')+
+      '<div class="gstep'+(vierge?' vide':'')+'"><span class="v">'+esc(gV('br.fin')||String(cum||''))+'</span>'+
+        '<span class="bar" style="'+(vierge?sil(80):'height:'+pc(fin||cum))+'"></span>'+
+        '<span class="lb">New budget</span></div>'+
+      '<div class="gstep fin'+(vierge?' vide':'')+'"><span class="v">'+esc(gV('br.sub')||'—')+'</span>'+
+        '<span class="bar" style="'+(vierge?sil(92):'height:'+pc(sub))+'"></span>'+
+        '<span class="lb">T1 or T2 submitted budget</span></div>'+
+    '</div>'+
+    '<div class="noprint" style="display:flex;gap:14px;align-items:center;margin-top:9px;flex-wrap:wrap">'+
+      '<label style="font-size:11.5px;color:var(--g-grey)">Budget précédent '+gField('br.dep','650','gmini')+'</label>'+
+      '<label style="font-size:11.5px;color:var(--g-grey)">Nouveau budget '+gField('br.fin',String(cum||'930'),'gmini')+'</label>'+
+      '<label style="font-size:11.5px;color:var(--g-grey)">Budget soumis T1/T2 '+gField('br.sub','1 000','gmini')+'</label>'+
+      '<button class="iconbtn mini" data-gadd="br">+ Marche</button>'+
+      '<button class="iconbtn mini" data-gdel="br|'+Math.max(0,steps.length-1)+'">− Marche</button>'+
+      '<span class="hint">Cumul des marches : '+esc(String(cum))+'</span></div>'+
+    '</div>'+
+    '<table class="gtbl"><thead><tr><th style="width:22%">Gate by gate synthesis (k€)</th>'+
+      '<th>Gate 0</th><th>Gate 1</th><th>Gate 2</th><th>Gate 3</th><th>Gate 4</th></tr></thead><tbody>'+
+    ['Ext. Capex','Ext. Opex','TOTAL'].map((l,i)=>'<tr><td class="lav'+(l==='TOTAL'?' tot':'')+'">'+l+'</td>'+
+      [0,1,2,3,4].map(j=>'<td class="num">'+gField('gg.'+i+'.'+j,'','gmini')+'</td>').join('')+'</tr>').join('')+
+    '</tbody></table>';
+}
+/* ---- Pages du pack Gate 5 ---- */
+function gpCheck5(){
+  return '<p style="font-size:14px;color:var(--g-grey);margin:0 0 10px">The items below must be completed prior to Gate 5 review at the Operational Project Review (OPR)</p>'+
+    '<table class="gtbl sombre"><thead><tr><th style="width:40%">Activity</th>'+
+    '<th style="width:15%">Completion date</th><th style="width:14%">Who</th><th>Comment/Outcome</th></tr></thead><tbody>'+
+    '<tr><td><div class="gfix"><b>Gate 5 Site Review</b><ul>'+
+      '<li>Gate 5 Closure form approved if required by the site/function</li>'+
+      '<li>Site close-out forms (if any)</li></ul></div></td>'+
+      ['d','w','c'].map(k=>'<td>'+gField('chk5.'+k,'','gmini')+'</td>').join('')+'</tr>'+
+    '</tbody></table>';
+}
+function gpExec5(){
+  const need=[['ob','Objective – Why invest'],['wn','Why Now'],['sc','Scope']];
+  const an=['22','23','24','25','26'];
+  const lig=['Total','Ext. Capex','Int. Capex','Ext. Opex','Int. Opex'];
+  return '<div style="display:flex;gap:10px;align-items:baseline;margin-bottom:9px">'+
+      '<b style="font-size:12.5px;color:var(--g-ink)">Date:</b><div style="width:150px">'+gField('x5.date','…','gmini')+'</div></div>'+
+    '<div class="gcols2" style="gap:16px">'+
+    '<div>'+
+      '<div class="gband lav" style="display:flex;align-items:center;gap:8px"><span>📈</span><b>Business or Operational Need</b></div>'+
+      '<div style="border:1px solid var(--g-line);border-top:0;padding:8px 10px;margin-bottom:12px">'+
+        need.map(([k,l])=>'<div style="display:grid;grid-template-columns:118px 1fr;gap:8px;margin-bottom:7px">'+
+          '<b style="font-size:12px;color:var(--g-ink)">'+l+'</b>'+gField('x5.'+k,'…','gmini')+'</div>').join('')+'</div>'+
+      '<div class="gcols2" style="gap:9px">'+
+        '<div><div class="gband lav" style="display:flex;align-items:center;gap:7px"><span>🏁</span>'+
+            '<div><b>Key Milestones</b><div style="font-size:10px;font-weight:400">Bold if project does not impact other programs</div></div></div>'+
+          gTbl('ms',[{k:'t',l:'Task',w:'60%',p1:true,vide:'Xxx'},
+            {k:'d',l:'Date',p1:true,vide:'Q1 YY'}],{min:4})+'</div>'+
+        '<div><div class="gband lav" style="display:flex;align-items:center;gap:7px"><span>🏃</span>'+
+            '<div><b>Action Items</b><div style="font-size:10px;font-weight:400">Items required to move forward</div></div></div>'+
+          '<div style="border:1px solid var(--g-line);border-top:0;padding:7px 9px">'+gField('x5.act','…','gbig')+'</div></div>'+
+      '</div></div>'+
+    '<div>'+
+      '<div class="gband lav" style="display:flex;align-items:center;gap:8px"><span>💶</span>'+
+        '<div><b>Project Budget</b> <span style="font-size:10px;font-weight:400">Ensure funding for required digitalization included.</span></div></div>'+
+      '<table class="gtbl" style="margin-bottom:5px"><thead><tr><th style="width:14%">M€</th>'+
+        an.map(a=>'<th style="width:9%">'+a+'’</th>').join('')+
+        '<th style="width:11%">SP YY</th><th style="width:11%">Bud’</th><th>Variance</th></tr></thead><tbody>'+
+        lig.map((l,i)=>'<tr><td class="lav'+(l==='Total'?' tot':'')+'">'+l+'</td>'+
+          [0,1,2,3,4,5,6,7].map(j=>'<td class="num">'+gField('pb.'+i+'.'+j,'','gmini')+'</td>').join('')+'</tr>').join('')+
+        '</tbody></table>'+
+      '<div style="display:grid;grid-template-columns:86px 1fr;gap:8px;margin-bottom:12px">'+
+        '<b style="font-size:12px;color:var(--g-ink)">Rationale if</b>'+gField('x5.rat','…','gmini')+'</div>'+
+      '<div class="gband lav" style="display:flex;align-items:center;gap:8px"><span>👥</span>'+
+        '<div><b>Resource Needs</b> <span style="font-size:10px;font-weight:400">Color Green if resource availability is confirmed</span></div></div>'+
+      gTbl('rn',[{k:'f',l:'Function',w:'42%',p1:true,vide:'MSAT'},{k:'v',l:'FTE’s',w:'25%'},
+        {k:'ok',l:'Confirmed',w:'25%',t:'imp'}],{min:4})+
+      '<div class="gband lav" style="display:flex;align-items:center;gap:8px;margin-top:12px"><span>👍</span>'+
+        '<div><b>Outcome</b> <span style="font-size:10px;font-weight:400">Bold Approved or Not Approved</span></div></div>'+
+      '<div style="border:1px solid var(--g-line);border-top:0;padding:8px 10px;display:grid;grid-template-columns:150px 1fr;gap:10px">'+
+        '<div>'+gField('x5.out','Approved – Not Approved','gmini')+'</div>'+
+        '<div><b style="font-size:12px;color:var(--g-ink)">Comments:</b>'+gField('x5.com','…','gmini')+'</div></div>'+
+    '</div></div>';
+}
+function gpBenef(){
+  const cols=[{k:'d',l:'Description of Benefit <i style="font-weight:400">(e.g. KPI, financial savings, manhours savings, quality metrics, etc.)</i>',w:'42%',vide:['Improve…','Increase…','Reduce…']},
+    {k:'m',l:'Metric <i style="font-weight:400">(e.g. # of days, # hours, # of deviations, etc.)</i>',w:'22%'},
+    {k:'c',l:'Current Value',w:'15%'},{k:'t',l:'Target Value <i style="font-weight:400">(after implementation)</i>'}];
+  return '<div class="gband" style="margin-bottom:0">Quantifiable Benefits <i style="font-weight:400">(Copy from Gate 3)</i></div>'+
+    gTbl('bg3',cols,{min:3})+
+    '<div class="gband" style="margin:16px 0 0">Quantifiable Benefits <i style="font-weight:400">(Actual Benefits)</i></div>'+
+    gTbl('bac',cols,{min:3});
+}
+function gpDeliv(){
+  const Q=['Project goal achieved?','No negative impacts created by this project?',
+    'Are benefits realized? If no, indicate date when benefits will be realized.',
+    'Is the owning department positioned to deliver benefits? Indicate the owning department.',
+    'Project executed within +/- 10% of Gate 3 schedule',
+    'Project executed within +/- 10% of Gate 3 budget',
+    'Project executed within +/- 10% of Gate 3 resource plan',
+    'All risks and opportunities mitigated or captured'];
+  return '<table class="gtbl"><thead><tr><th style="width:46%">Key Deliverables of the Project Achieved ?</th>'+
+    '<th style="width:8%">Yes</th><th style="width:8%">No</th><th>Comments (if “No”)</th></tr></thead><tbody>'+
+    Q.map((q,i)=>'<tr><td style="color:var(--g-ink)">'+q+'</td>'+
+      '<td style="text-align:center"><span class="gimp '+esc((gPack().f['dl.'+i+'.y']||''))+
+        '" data-gs="dl.'+i+'.y" title="Clic : vert → jaune → rouge → vide"></span></td>'+
+      '<td style="text-align:center"><span class="gimp '+esc((gPack().f['dl.'+i+'.n']||''))+
+        '" data-gs="dl.'+i+'.n" title="Clic : vert → jaune → rouge → vide"></span></td>'+
+      '<td>'+gField('dl.'+i+'.c','','gmini')+'</td></tr>').join('')+
+    '</tbody></table>'+
+    '<div class="gnote">Placez la pastille verte dans « Yes » ; une jaune ou une rouge dans « No », comme le prévoit le gabarit.</div>';
+}
+function gpLL1(){
+  return '<div class="gband" style="margin-bottom:0">Lessons learned</div>'+
+    gTbl('ll1',[{k:'n',l:'#',w:'7%',t:'fixe',v:i=>String(i+1),cls:'lav'},
+      {k:'t',l:'What worked well (Top 5)',vide:'…'}],{min:5});
+}
+function gpLL2(){
+  return '<div class="gband" style="margin-bottom:0">Lessons learned</div>'+
+    gTbl('ll2',[{k:'n',l:'#',w:'7%',t:'fixe',v:i=>String(i+1),cls:'lav'},
+      {k:'t',l:'What Did Not Work Well (Top 5)',vide:'…'}],{min:5})+
+    '<div class="gband" style="margin:16px 0 0">Action Items / Top 5 Priorities:</div>'+
+    gTbl('ll2a',[{k:'n',l:'#',w:'7%',t:'fixe',v:i=>String(i+1),cls:'lav'},
+      {k:'a',l:'Action',w:'46%'},{k:'o',l:'Owner',w:'19%'},{k:'d',l:'Due date'}],{min:5});
+}
+/* La garde reprend l'entête du gabarit : l'intitulé du projet et son code,
+   puis le driver et l'alignement stratégique, chacun sur sa ligne. */
+const gCoverTitre=()=>'<b>'+gField('cov.nom','SHINE project name and P#','ginl')+'</b>';
+const gCoverSous=()=>'<div class="gsousl">Driver :'+gField('cov.drv','XXX','ginl')+'</div>'+
+  '<div class="gsousl">Strategic Alignment:'+gField('cov.sa','XXX','ginl')+'</div>';
+const GATE_PAGES={
+  g0123:[['check','Checklist','',gpCheck0123],
+         ['obj','Session objective','',gpObjectif],
+         ['exec','Executive Summary','',gpExec],
+         ['bc','Business Case','',gpBC],
+         ['fin','Finance – Project Cost','Multi-Year Ventilation &amp; Budget / Strat Plan Reference',gpFin0123],
+         ['ro','Risks &amp; Opportunities – Recommended Scenario','',gpRO],
+         ['act','Action Tracker follow-up from previous gates','',gpAct],
+         ['risk','Risk – Issue Escalation','',gpRisk]],
+  g4:[['cover',gCoverTitre,gCoverSous,()=>gpCover('g4')],
+      ['risk','Risk – Issue Escalation','',gpRisk],
+      ['bud','Budget tracking:','(Provide details since last gate and a Gate by Gate cost synthesis)',gpBudget4]],
+  g5:[['cover',gCoverTitre,gCoverSous,()=>gpCover('g5')],
+      ['check','Checklist','',gpCheck5],
+      ['exec','1.0 Executive Summary','',gpExec5],
+      ['benef','3.1 Project Benefits','',gpBenef],
+      ['deliv','Summary: Project Deliverables','',gpDeliv],
+      ['ll1','Summary: Lessons Learned (1 of 2)','',gpLL1],
+      ['ll2','Summary: Lessons Learned (2 of 2)','',gpLL2]]
+};
+/* Le losange rouge porte le n° de gate : celui du pack, ou celui que l'on a
+   désigné dans le bandeau pour le pack 0-1-2-3. */
+function gNum(){
+  const k=gPackId();
+  if(k==='g4') return ['Gate','4'];
+  if(k==='g5') return ['Gate','5'];
+  return ['Gate',(gV('_gate')||'0-3').replace(/^G/,'')];
+}
+function gEntete(titre,sous){
+  const [a,b]=gNum(), k=gPackId();
+  const chips = k!=='g0123' ? '' :
+    '<div class="gchips noprint">'+GATE_CHIPS.map(r=>'<div class="r">'+r.map(c=>c?
+      '<button class="gchip'+((gV('_gate')||'G1')===c?' on':'')+'" data-g="'+c+'">'+c+'</button>'
+      :'<span style="width:38px"></span>').join('')+'</div>').join('')+'</div>';
+  return '<div class="ghead"><div class="gdiam"><span>'+a+'<br>'+b+'</span></div>'+
+    '<div style="flex:1;min-width:0"><h3>'+titre+'</h3>'+(sous?'<div class="gsous">'+sous+'</div>':'')+'</div>'+
+    chips+
+    '<div class="gmark"><b class="gf" contenteditable data-gg="mark1" data-vide="votre entité">'+
+      esc(S.gateMark1||'')+'</b><span class="gf" contenteditable data-gg="mark2" data-vide="département">'+
+      esc(S.gateMark2||'')+'</span></div></div>';
+}
+function gPied(){
+  const [c,r]=GATE_PIED[gPackId()];
+  return '<div class="gfoot"><div class="l"><span class="gf" contenteditable data-gg="pied" data-vide="votre logo / entité">'+
+    esc(S.gatePied||'')+'</span></div><div class="c">'+c+'</div><div class="r">'+r+'</div></div>';
+}
+/* À la première ouverture, le pack reprend ce que la fiche projet sait déjà :
+   intitulé, code Shine, sponsor, chef de projet. On ne comble que le vide. */
+function gAmorcer(p){
+  const d=gPack(), f=d.f;
+  const pose=(c,v)=>{ if(v && !String(f[c]||'').trim()) f[c]=String(v); };
+  pose('id.t',p.nom); pose('id.sh',p.shine||p.ishift);
+  pose('id.sp',p.sponsor); pose('id.pl',p.pm||p.pl);
+  pose('ri.t',p.nom); pose('ri.sh',p.shine||p.ishift);
+  pose('ri.sp',p.sponsor); pose('ri.pm',p.pm||p.pl);
+  pose('cov.nom',(p.shine||p.ishift||'')+(p.shine||p.ishift?' — ':'')+(p.nom||''));
+  /* Les années ne sont pas des invites : une frise vide ne se lit pas. */
+  const a0=new Date().getFullYear();
+  for(let i=0;i<4;i++) pose('exec.an'+i,String(a0+i));
+  for(let i=0;i<3;i++) pose('fin.an'+i,String(a0+i));
+  if(!f['_gate']) f['_gate']='G1';
+}
+function kitGate(){
+  const p=S.projects.find(x=>x.id===S.currentProj);
+  if(!p) return '<div class="hint">Aucun projet sélectionné.</div>';
+  const k=gPackId();
+  gAmorcer(p);
+  const pages=GATE_PAGES[k]||[];
+  const barre='<div class="gatebar noprint"><span class="gquoi">Passage Gate</span>'+
+    GATE_PACKS.map(([i,l])=>'<button class="gpackbtn'+(i===k?' on':'')+'" data-gpack="'+i+'">'+l+'</button>').join('')+
+    '<span class="sp" style="flex:1"></span>'+
+    '<button class="iconbtn" id="gateMaj" title="Reprendre de la fiche projet l\'intitulé, le code, le sponsor et le chef de projet">⟲ Reprendre la fiche</button>'+
+    '<button class="iconbtn" id="gatePrint">⎙ Diffuser le pack</button></div>'+
+    (k==='g0123'?'<div class="gleg noprint">OC = Opportunity confirmation · SF = Scope Freeze · PV = Project Validation · SC = Scope Change — '+
+      'désignez dans le bandeau la gate présentée : elle passe en relief et le losange la reprend.</div>':'');
+  const corps=pages.map(([id,t,s,f])=>'<section class="gslide" data-gpage="'+id+'">'+
+    gEntete(typeof t==='function'?t():t, typeof s==='function'?s():s)+
+    '<div class="gbody">'+f()+'</div>'+gPied()+'</section>').join('');
+  return '<div class="gate" id="gatePack">'+barre+corps+'</div>';
+}
+/* Le journal doit se lire : on y nomme la rubrique du gabarit, pas la clé
+   technique qui la porte. */
+const GATE_NOM=[['id.','identité'],['cov.','page de garde'],['fin.','finance'],['fc.','coût projet'],
+  ['fs.','strat plan'],['chk5.','checklist'],['chk.','checklist'],['obj.','objectif de séance'],
+  ['exec.','executive summary'],['bc.','business case'],['ri.','remontée de risque'],
+  ['gg.','synthèse gate à gate'],['br.','pont budgétaire'],['br','pont budgétaire'],
+  ['x5.','executive summary'],['pb.','budget projet'],['dl.','livrables'],
+  ['ll1','retours — ce qui a marché'],['ll2a','actions issues des retours'],['ll2','retours — ce qui n’a pas marché'],
+  ['ro','risques & opportunités'],['act','suivi d’actions'],['cm','contre-mesures'],
+  ['ms','jalons'],['rn','ressources'],['bg3','bénéfices (repris du Gate 3)'],['bac','bénéfices réels'],
+  ['_gate','gate présentée'],['_pied','pied de page']];
+function gNomChamp(c){
+  const e=GATE_NOM.find(([k])=>String(c).indexOf(k)===0);
+  return e?e[1]:String(c);
+}
+function kitArmerGate(){
+  const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+  const d=()=>gPack();
+  const trace=(q,av,ap)=>{ logChange('Passage Gate — '+(p.shine||p.nom),
+    (GATE_PACKS.find(([i])=>i===gPackId())||[,''])[1]+' · '+q, av, ap); };
+  $$('#kitPane [data-gpack]').forEach(b=>b.addEventListener('click',()=>{
+    S.gatePack=b.dataset.gpack; scheduleSave(); renderKit(); }));
+  $$('#kitPane [data-g]').forEach(b=>b.addEventListener('click',()=>{
+    const f=d().f, av=f['_gate']||'';
+    if(av===b.dataset.g) return;
+    f['_gate']=b.dataset.g; trace('gate présentée',av,f['_gate']); scheduleSave(); renderKit(); }));
+  /* L'entité, elle, ne dépend ni du projet ni du pack : on la saisit une
+     fois et toutes les pages la portent. */
+  $$('#kitPane [data-gg]').forEach(el=>el.addEventListener('blur',()=>{
+    const k='gate'+el.dataset.gg.charAt(0).toUpperCase()+el.dataset.gg.slice(1);
+    const v=el.textContent.replace(/\u00a0/g,' ').trim();
+    if(String(S[k]||'')===v) return;
+    logChange('Passage Gate','entité du support',S[k]||'',v);
+    S[k]=v; scheduleSave(); renderKit(); }));
+  $$('#kitPane [data-gf]').forEach(el=>el.addEventListener('blur',()=>{
+    const f=d().f, c=el.dataset.gf, v=el.textContent.replace(/ /g,' ').trim();
+    if(String(f[c]||'')===v) return;
+    trace(gNomChamp(c), f[c]||'', v); f[c]=v; scheduleSave();
+    /* Un écart, une marche ou un intitulé de gate changent le dessin de la
+       page : on la redessine plutôt que d'attendre le prochain passage. */
+    if(/^(fs\.|br\.)/.test(c)) renderKit(); }));
+  $$('#kitPane [data-gc]').forEach(el=>el.addEventListener('blur',()=>{
+    const [cle,i,k]=el.dataset.gc.split('|');
+    const r=gRows(cle)[+i]; if(!r) return;
+    const v=el.textContent.replace(/ /g,' ').trim();
+    if(String(r[k]||'')===v) return;
+    trace(gNomChamp(cle)+' · ligne '+(+i+1), r[k]||'', v); r[k]=v; scheduleSave();
+    if(cle==='br') renderKit();
+  }));
+  /* Les pastilles d'impact tournent sur le code couleur du gabarit. */
+  const suivant=v=>v==='v'?'j':v==='j'?'r':v==='r'?'':'v';
+  $$('#kitPane [data-gi]').forEach(el=>el.addEventListener('click',()=>{
+    const [cle,i,k]=el.dataset.gi.split('|');
+    const r=gRows(cle)[+i]; if(!r) return;
+    r[k]=suivant(r[k]||''); scheduleSave(); renderKit(); }));
+  $$('#kitPane [data-gs]').forEach(el=>el.addEventListener('click',()=>{
+    const f=d().f, c=el.dataset.gs;
+    f[c]=suivant(f[c]||''); scheduleSave(); renderKit(); }));
+  $$('#kitPane [data-gadd]').forEach(b=>b.addEventListener('click',()=>{
+    gRows(b.dataset.gadd).push({}); scheduleSave(); renderKit(); }));
+  $$('#kitPane [data-gdel]').forEach(b=>b.addEventListener('click',()=>{
+    const [cle,i]=b.dataset.gdel.split('|');
+    const rs=gRows(cle); if(rs.length<=0) return;
+    rs.splice(+i,1); trace(gNomChamp(cle),'ligne '+(+i+1),'supprimée'); scheduleSave(); renderKit(); }));
+  const lier=(s,ev,f)=>{ const el=$('#kitPane '+s); if(el) el.addEventListener(ev,f); };
+  lier('#gateMaj','click',()=>{
+    const f=d().f;
+    [['id.t',p.nom],['id.sh',p.shine||p.ishift],['id.sp',p.sponsor],['id.pl',p.pm||p.pl],
+     ['ri.t',p.nom],['ri.sh',p.shine||p.ishift],['ri.sp',p.sponsor],['ri.pm',p.pm||p.pl]]
+      .forEach(([c,v])=>{ if(v) f[c]=String(v); });
+    trace('reprise de la fiche','',p.shine||p.nom); scheduleSave(); renderKit(); });
+  lier('#gatePrint','click',()=>gateDiffuser(p));
+}
+/* Diffuser le pack : les pages telles qu'elles sont à l'écran, une par
+   feuille, en paysage — les outils de saisie restent à l'écran. */
+function gateDiffuser(p){
+  const el=document.getElementById('gatePack');
+  if(!el){ alert("Le pack n'est pas affiché."); return; }
+  const w=window.open('','_blank');
+  if(!w){ alert('Autorisez les fenêtres pop-up pour diffuser le pack.'); return; }
+  const styles=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  const nom=(GATE_PACKS.find(([i])=>i===gPackId())||[,''])[1];
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">'+
+    '<title>'+esc(nom+' — '+(p.shine||p.nom))+'</title><style>'+styles+
+    'body{margin:0;padding:0;background:#fff}'+
+    '.noprint{display:none!important}'+
+    '[contenteditable]{outline:none}'+
+    '.gslide{border:0;box-shadow:none;break-after:page;page-break-after:always;min-height:0;padding:10mm 10mm 16mm}'+
+    '.gslide:last-child{break-after:auto;page-break-after:auto}'+
+    '@page{size:A4 landscape;margin:0}'+
+    '</style></head><body><div class="gate">'+el.innerHTML+'</div></body></html>');
+  w.document.close();
+  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },420);
+}
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
   const base=Math.max(1, all.length-c('NA'));
@@ -3860,12 +4545,13 @@ function kitResumeHTML(){
 function renderKit(){
   const h=document.getElementById('kitPane'); if(!h) return;
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
-  h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+  h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='gate'?kitGate() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   kitAjusterCellules();
   if(t==='macro'){ kitArmerJalons(); kitArmerGantt(); }
   if(t==='orga') kitArmerOrga();
   if(t==='idcard') kitArmerIdCard();
+  if(t==='gate') kitArmerGate();
   if(t==='onepage'){ opArmer(); bindEditables(); }
 }
 /* Dans les tableaux repris des classeurs, une cellule ne tronque pas : elle
