@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-22.4 -->
+<!-- PPM_BUILD:2026-10-23.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1750,7 +1750,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-22.4';
+const APP_BUILD='2026-10-23.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -7120,7 +7120,47 @@ const ACH_SYN={numCmd:['n° commande','no commande','n commande','numero de comm
   demandeur:['demandeur','requester','acheteur','createur','créateur'],
   statut:['statut','status','etat','état'],
   type:['type','categorie','catégorie'],
-  commentaire:['commentaire','remarque','note','observations']};
+  commentaire:['commentaire','remarque','note','observations'],
+  /* La colonne qui désigne le projet : son code Shine, son n° d'imputation
+     ou son intitulé. Elle ne s'écrit pas sur la ligne — elle la range. */
+  __proj:['projet','project','code projet','shine','code shine','n° shine','no shine','projet shine','nom du projet']};
+/* Rattacher une ligne importée à son projet. L'export d'un outil d'achat ne
+   nomme pas les projets comme le portefeuille : ce qu'il porte toujours, en
+   revanche, c'est le n° d'imputation (INV-0xxxxx) ou le code Shine. On cherche
+   donc le code, pas le libellé — et on ne tranche jamais entre deux projets. */
+function achCodesInv(v){
+  return (String(v||'').match(/INV[\s-]?\d{4,8}/ig)||[]).map(x=>norm(x).replace(/[\s-]/g,''));
+}
+function achProjParCode(txt){
+  const t=String(txt||''); if(!t.trim()) return '';
+  const vivants=(S.projects||[]).filter(p=>!p.deleted);
+  const inv=achCodesInv(t);
+  if(inv.length){
+    const c=vivants.filter(x=>achCodesInv(x.ishift).some(k=>inv.includes(k)));
+    if(c.length===1) return c[0].id;
+    if(c.length>1) return '';
+  }
+  const sh=(t.match(/\bP\s?\d{7,9}\b/ig)||[]).map(x=>norm(x).replace(/\s/g,''));
+  if(sh.length){
+    const c=vivants.filter(x=>sh.includes(norm(x.shine).replace(/\s/g,'')));
+    if(c.length===1) return c[0].id;
+    if(c.length>1) return '';
+  }
+  const n=norm(t).trim();
+  if(n.length>6){
+    const c=vivants.filter(x=>norm(x.nom)===n);
+    if(c.length===1) return c[0].id;
+  }
+  return '';
+}
+/* Le lot se lit dans l'objet ou l'imputation : « ETU2671 - … ». On ne le pose
+   que si le projet porte déjà ce lot — on n'en invente pas. */
+function achSPParEtu(pid,txt){
+  if(!pid) return '';
+  const m=String(txt||'').match(/ETU\s?(\d{3,6})/i); if(!m) return '';
+  const sp=achSPs(pid).find(x=>norm(x.etu).replace(/\s/g,'')===norm(m[1]));
+  return sp?sp.id:'';
+}
 function achDevine(entete){
   const n=norm(entete).replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
   if(!n) return '';
@@ -7182,8 +7222,22 @@ function achImportDlg(){
   const lire=()=>{
     const t=achDecoupe(ta.value); if(t.length<2){ ap.textContent=''; return null; }
     const map=t[0].map(achDevine);
-    const connues=map.map((k,i)=>k?`<b>${esc(t[0][i]||'')}</b> → ${esc(ACH_FIELDS[k]||k)}`:null).filter(Boolean);
-    ap.innerHTML=`${t.length-1} ligne(s) lue(s) · ${connues.length} colonne(s) reconnue(s) sur ${map.length}<br>${connues.join(' · ')||'<span style="color:var(--bad)">aucune colonne reconnue — vérifiez la ligne d’en-tête</span>'}`;
+    const nomCol=k=>k==='__proj'?'Projet (rattachement)':(ACH_FIELDS[k]||k);
+    const connues=map.map((k,i)=>k?`<b>${esc(t[0][i]||'')}</b> → ${esc(nomCol(k))}`:null).filter(Boolean);
+    /* Dire tout de suite où iront les lignes : un import qui se range mal se
+       répare plus cher qu'il ne se vérifie. */
+    const iCol=map.indexOf('__proj'), iWbs=map.indexOf('wbs'), iObj=map.indexOf('objet');
+    const par={}; let sans=0;
+    t.slice(1).forEach(c=>{
+      const pid=achProjParCode(iCol>=0?c[iCol]:'') || achProjParCode(iWbs>=0?c[iWbs]:'')
+             || achProjParCode(iObj>=0?c[iObj]:'');
+      if(pid) par[pid]=(par[pid]||0)+1; else sans++;
+    });
+    const detail=Object.keys(par).map(id=>{ const p=achProj(id);
+      return (p?((p.shine?p.shine+' — ':'')+p.nom):id)+' : '+par[id]; }).join('<br>');
+    ap.innerHTML=`${t.length-1} ligne(s) lue(s) · ${connues.length} colonne(s) reconnue(s) sur ${map.length}<br>${connues.join(' · ')||'<span style="color:var(--bad)">aucune colonne reconnue — vérifiez la ligne d’en-tête</span>'}`
+      + (detail?`<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--line)"><b>Rattachement reconnu</b><br>${detail}${sans?`<br><span style="color:var(--warn)">${sans} ligne(s) sans projet reconnu</span>`:''}</div>`
+         : (t.length>1?`<div style="margin-top:7px;color:var(--warn)">Aucun projet reconnu : ajoutez une colonne « Projet » (code Shine) ou « WBS | INV » (n° d’imputation), ou choisissez le projet ci-dessus.</div>`:''));
     return {t,map};
   };
   ta.addEventListener('input',lire);
@@ -7193,13 +7247,24 @@ function achImportDlg(){
     if(!map.some(Boolean)){ alert("Aucune colonne n'a été reconnue : vérifiez que la première ligne collée est bien l'en-tête."); return; }
     const forceProj=$('#achImpProj',ov).value, devType=$('#achImpType',ov).checked;
     let n=0;
+    let rattachees=0, orphelines=0; const vus={};
     t.slice(1).forEach(cells=>{
       const l=achNouvelle(forceProj); n++;
+      let col='';
       map.forEach((k,i)=>{ if(!k)return; const v=cells[i]; if(v==null||v==='')return;
+        if(k==='__proj'){ col=String(v); return; }         // désigne le projet, ne s'écrit pas
         if(['montant','recu','facture'].includes(k)) l[k]=achNum(v);
         else if(k.startsWith('date')) l[k]=achDateAuto(v);
         else if(k==='nature') l[k]=/opex/i.test(v)?'OPEX':'CAPEX';
         else l[k]=String(v); });
+      /* Sans projet imposé, on le cherche là où l'export le porte : la colonne
+         qui le nomme, puis l'imputation, puis l'objet. */
+      if(!forceProj){
+        l.projId = achProjParCode(col) || achProjParCode(l.wbs) || achProjParCode(l.objet)
+                || achProjParCode(l.compte) || '';
+      }
+      if(l.projId){ rattachees++; vus[l.projId]=1; } else orphelines++;
+      l.sp = achSPParEtu(l.projId, (l.objet||'')+' '+(l.wbs||'')) || '';
       if(devType){
         if(l.numCmd) l.type='Commande';
         else if(l.numDA) l.type="Demande d'achat";
@@ -7210,9 +7275,19 @@ function achImportDlg(){
       else if(l.type==='Commande'&&achNum(l.recu)>0) l.statut='Partiellement réceptionnée';
       if(!l.objet&&l.fournisseur) l.objet=l.fournisseur;
     });
-    logChange('Achats','import',''+n+' ligne(s)','');
-    fermer(); scheduleSave(); S.ach.view='lines'; renderAch();
-    alert(n+' ligne(s) importée(s).\n\nVérifiez le rattachement aux projets dans « Toutes les lignes », puis enregistrez.');
+    logChange('Achats','import',''+n+' ligne(s)',
+      rattachees+' rattachée(s) à '+Object.keys(vus).length+' projet(s)');
+    fermer(); scheduleSave();
+    /* On atterrit là où le résultat se vérifie : sur le projet si tout est
+       allé au même, sinon sur la liste de toutes les lignes. */
+    const seuls=Object.keys(vus);
+    if(!forceProj && seuls.length===1 && !orphelines){ S.ach.pid=seuls[0]; }
+    else { S.ach.pid=forceProj||''; S.ach.view='lines'; }
+    renderAch();
+    alert(n+' ligne(s) importée(s).\n\n'
+      +rattachees+' rattachée(s) à '+seuls.length+' projet(s) d\'après le n° d\'imputation ou le code Shine.'
+      +(orphelines?'\n'+orphelines+' sans projet reconnu : rangez-les depuis « Toutes les lignes ».':'')
+      +'\n\nVérifiez, puis enregistrez.');
   };
   ta.focus();
 }
