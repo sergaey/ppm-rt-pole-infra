@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-27.1 -->
+<!-- PPM_BUILD:2026-10-27.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -249,6 +249,11 @@
   .ppedit:focus{background:var(--panel);border-bottom-color:var(--accent);box-shadow:inset 0 -1px 0 var(--accent)}
   .ppedit:empty::before{content:'—';color:var(--faint)}
   td.edc{cursor:text;white-space:normal;min-width:122px;max-width:160px;line-height:1.3;overflow-wrap:break-word;vertical-align:middle}
+  /* Un montant saisissable : il se lit comme un chiffre, il s'ouvre comme un champ. */
+  td.edn{cursor:text;font-variant-numeric:tabular-nums}
+  td.edn:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic;font-weight:400}
+  td.edn:hover{box-shadow:inset 0 0 0 1px var(--line-2);border-radius:5px}
+  td.edn:focus{outline:none;background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent);border-radius:5px}
   td.edc:hover{background:var(--panel-2)}
   td.edc:focus{background:var(--panel);box-shadow:inset 0 0 0 1.5px var(--accent);outline:none}
   td.edc:empty::before{content:'—';color:var(--faint)}
@@ -1184,6 +1189,15 @@
     border-radius:var(--radius);padding:9px 13px;margin-bottom:12px;font-size:12px;color:var(--ink-2)}
   .achrec.ok{border-color:var(--good);background:var(--good-soft)}
   .achrec .sp{flex:1}
+  .achbud{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 12px;
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:8px 13px}
+  .achbud .l{font-family:Archivo;font-size:12px;font-weight:800;color:var(--ink-2);
+    text-transform:uppercase;letter-spacing:.03em}
+  .achbud label{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);font-weight:600}
+  .achbudin{width:84px;border:1px solid var(--line-2);border-radius:7px;padding:3px 7px;font-size:12.5px;
+    font-family:inherit;background:var(--panel);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+  .achbudin:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+  .achbud .hint{flex:1;min-width:210px}
   .achadds{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px}
   .achfiltres{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:9px;margin-bottom:11px}
   .achfiltres label{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
@@ -1750,7 +1764,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-27.1';
+const APP_BUILD='2026-10-27.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2987,10 +3001,9 @@ function projRows(list){
       <td>${selPole(p,`data-ppole="${esc(p.id)}"`)}</td>
       <td class="edc" contenteditable data-dpf="pm|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pm||'')}</td>
       <td class="edc" contenteditable data-dpf="pl|${esc(p.id)}" title="Cliquez pour modifier · deux noms possibles, séparés par «  /  »">${esc(p.pl||'')}</td>
-      <td class="num">${fmt(p.c1)}</td>
-      <td class="num">${fmt(p.c2!=null?p.c2:p.c1)}</td>
-      <td class="num">${fmt(p.b27)}</td>
-      <td class="num">${fmt(p.act)}</td>
+      ${['c1','c2','b27','act'].map(k=>`<td class="num edn" contenteditable data-dpn="${k}|${esc(p.id)}"
+        data-vide="${k==='c2'?'= C1':'—'}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
+          k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${p[k]!=null&&p[k]!==''?fmtSaisie(p[k]):''}</td>`).join('')}
       <td class="num" style="color:${ec>0?'var(--bad)':ec<0?'var(--good)':'inherit'}">${p.c1?((ec>=0?'+':'')+fmt(ec/ (p.c1||1)*100,1)+'%'):'—'}</td>
       <td class="pact" style="white-space:nowrap">${corbeille?`
         <button class="iconbtn" style="padding:1px 7px;font-size:11px;background:var(--good-soft);border-color:var(--good);color:var(--good)" data-prest="${gi}" title="Restaurer ce projet">↩</button>
@@ -3001,6 +3014,27 @@ function projRows(list){
     </tr>`;}).join('');
 }
 function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
+/* ---- Saisie d'un budget de projet ----
+   Les montants de la fiche se saisissent à trois endroits : le tableau du
+   portefeuille, la page Achats du projet, la fiche Pilotage. Tous passent par
+   ici — même lecture du nombre, même trace au journal, même règle pour un
+   champ vidé. Ce qui en découle suit de soi, puisque tout part de ces
+   champs : l'écart et la santé du portefeuille, la baseline des achats et le
+   disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
+const PROJ_BUD={c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',b27:'B27 (k€)',
+  act:'Actuals (k€)',commit:'Commitments (k€)'};
+function projBudgetSaisie(p,champ,texte){
+  if(!p||!PROJ_BUD[champ]) return false;
+  const t=String(texte==null?'':texte).replace(/\u00a0/g,' ')
+    .replace(/[^\d,.\-]/g,'').replace(/\s/g,'').replace(',','.');
+  const v = t==='' ? null : parseFloat(t);
+  const neu = (v==null||isNaN(v)) ? null : v;
+  const av = (p[champ]==null||p[champ]==='') ? null : +p[champ];
+  if(av===neu) return false;
+  logChange('Projet '+(p.shine||p.nom), PROJ_BUD[champ], av==null?'':av, neu==null?'':neu);
+  p[champ]=neu; scheduleSave();
+  return true;
+}
 function hord(p){return {r:0,a:1,g:2}[projHealth(p).band];}
 function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{S.currentProj=tr.dataset.id; S.tab='pass'; render();}));
   /* Glisser-déposer : la ligne n'est saisissable que par sa poignée, sinon le
@@ -3038,7 +3072,21 @@ function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventLis
   const agir=(sel,fn)=>$$('#projTbl ['+sel+']').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); fn(+b.dataset[sel.replace('data-','')]); }));
   agir('data-parch', projArchiver); agir('data-pdel', projCorbeille);
   agir('data-prest', projRestaurer); agir('data-ppurge', projPurger);
-  $$('#projTbl [data-dpf]').forEach(el=>{ el.addEventListener('click',e=>e.stopPropagation()); el.addEventListener('blur',()=>{const parts=el.dataset.dpf.split('|'); const f=parts[0], id=parts.slice(1).join('|'); const pr=S.projects.find(x=>x.id===id); if(pr){pr[f]=el.textContent.trim(); scheduleSave();}}); }); }
+  $$('#projTbl [data-dpf]').forEach(el=>{ el.addEventListener('click',e=>e.stopPropagation()); el.addEventListener('blur',()=>{const parts=el.dataset.dpf.split('|'); const f=parts[0], id=parts.slice(1).join('|'); const pr=S.projects.find(x=>x.id===id); if(pr){pr[f]=el.textContent.trim(); scheduleSave();}}); });
+  /* Les montants : un clic n'ouvre pas la fiche, et ce qui en découle —
+     écart, santé, barres par pôle, totaux — est redessiné après la saisie,
+     jamais pendant : remplacer le tableau en plein « blur » ferait perdre la
+     valeur qu'on vient d'écrire. */
+  $$('#projTbl [data-dpn]').forEach(el=>{
+    el.addEventListener('click',e=>e.stopPropagation());
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+    el.addEventListener('blur',()=>{
+      const parts=el.dataset.dpn.split('|'); const f=parts[0], id=parts.slice(1).join('|');
+      const pr=S.projects.find(x=>x.id===id); if(!pr) return;
+      if(projBudgetSaisie(pr,f,el.textContent)) setTimeout(()=>renderGardeFocus(renderDash),0);
+      else el.textContent = (pr[f]!=null&&pr[f]!=='')?fmtSaisie(pr[f]):'';
+    });
+  }); }
 function weightsBar(){
   const w=S.config.weights; const tot=Object.values(w).reduce((a,b)=>a+b,0);
   const cols={plan:'var(--accent)',fin:'#2b7e97',risk:'var(--copper)',res:'#6a8a99',qual:'#87a0ac',doc:'#a6b8c1'};
@@ -6606,6 +6654,13 @@ function renderAch(){
 
   /* ---- Page d'un projet ---- */
   lier('#achTous','click',()=>{ S.ach.pid=''; S.ach.f.sp=''; S.ach.note=''; scheduleSave(); rr(); window.scrollTo(0,0); });
+  $$('[data-achb]').forEach(el=>{
+    const maj=()=>{ const p2=achProj(S.ach.pid); if(!p2) return;
+      if(projBudgetSaisie(p2,el.dataset.achb,el.value)) setTimeout(rr,0);
+      else el.value=(p2[el.dataset.achb]!=null&&p2[el.dataset.achb]!=='')?fmtSaisie(p2[el.dataset.achb]):''; };
+    el.addEventListener('change',maj);
+    el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); el.blur(); } });
+  });
   lier('#achSP','change',e=>{ S.ach.f.sp=e.target.value; rr(); });
   lier('#achNew','click',()=>{ const l=achNouvelle(S.ach.pid); scheduleSave(); rr();
     setTimeout(()=>achFicheDlg(l&&l.id),40); });
@@ -6896,6 +6951,16 @@ function achPageProjet(p){
       '<button class="iconbtn" id="achImpP">⤓ Importer pour ce projet</button>'+
       '<button class="iconbtn" id="achExp">⤒ Exporter (CSV Excel)</button></div>'+
     '<div class="kpis">'+tuiles+'</div>'+
+    /* Le budget se corrige ici même : c'est l'écran où l'on constate qu'il ne
+       tient plus. En k€, comme la fiche projet — les tuiles, elles, restent
+       en euros comme les commandes. */
+    '<div class="achbud noprint"><span class="l">Budget du projet</span>'+
+      '<label>C1 alloué <input class="achbudin" data-achb="c1" value="'+
+        esc(p.c1!=null&&p.c1!==''?fmtSaisie(p.c1):'')+'" placeholder="0"> k€</label>'+
+      '<label>C2 révisé <input class="achbudin" data-achb="c2" value="'+
+        esc(p.c2!=null&&p.c2!==''?fmtSaisie(p.c2):'')+'" placeholder="= C1"> k€</label>'+
+      '<span class="hint">Baseline retenue : '+(s.base==null?'—':achEurC(s.base))+
+      ' · une modification se reporte partout — disponible, écart, santé, seuil de l’ID Card.</span></div>'+
     achLegende()+achBarre(s)+
     (S.ach.note?'<div class="achnote" style="margin-top:12px"><span>🧩</span><span class="sp">'+esc(S.ach.note)+
       '</span><button class="iconbtn mini" id="achNoteOk">OK</button></div>':'<div style="height:12px"></div>')+
@@ -8339,7 +8404,12 @@ function bindEditables(){
   }));
   $$('[data-pf]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(p){p[el.dataset.pf]=el.textContent.trim(); scheduleSave();}}));
   $$('[data-ppf]').forEach(el=>el.addEventListener('blur',()=>{const pp=ensurePP(S.currentProj); pp[el.dataset.ppf]=el.textContent.trim(); scheduleSave();}));
-  $$('[data-pfn]').forEach(el=>el.addEventListener('blur',()=>{const p=S.projects.find(x=>x.id===S.currentProj); if(!p)return; const t=el.textContent.replace(/\s/g,'').replace(',','.'); const v=t===''?null:parseFloat(t); p[el.dataset.pfn]=(v==null||isNaN(v))?null:v; scheduleSave(); renderPass();}));
+  $$('[data-pfn]').forEach(el=>el.addEventListener('blur',()=>{
+    const p=S.projects.find(x=>x.id===S.currentProj); if(!p)return;
+    const k=el.dataset.pfn;
+    if(PROJ_BUD[k]){ if(projBudgetSaisie(p,k,el.textContent)) setTimeout(()=>renderPass(),0); return; }
+    const t=el.textContent.replace(/\s/g,'').replace(',','.'); const v=t===''?null:parseFloat(t);
+    p[k]=(v==null||isNaN(v))?null:v; scheduleSave(); renderPass();}));
   $$('[data-km]').forEach(el=>el.addEventListener('blur',()=>{const[id,i,f]=el.dataset.km.split('|');const pp=ensurePP(id);pp.milestones[+i][f]=el.textContent.trim();scheduleSave();}));
   $$('[data-rk]').forEach(el=>{
     const avant=el.innerText;
