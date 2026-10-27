@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-26.1 -->
+<!-- PPM_BUILD:2026-10-27.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1750,7 +1750,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-26.1';
+const APP_BUILD='2026-10-27.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -6735,7 +6735,11 @@ const SEED_ACH = {};
    était enregistré — c'est l'objet même d'une mise à jour — et le journal
    garde la valeur d'avant. Posé une fois, il ne se rejoue pas : ce qui sera
    corrigé à la main ensuite n'est jamais repris. Montants en k€, comme toute
-   la fiche projet. */
+   la fiche projet.
+   Un projet qui court sur deux exercices n'entre pas dans une fiche qui n'en
+   tient qu'un : le total révisé va en C2, le montant d'avant reste en C1
+   alloué — l'écart dit alors la tranche ajoutée — et la ventilation par année
+   est portée par la page Finance du pack Gate, qui est faite pour elle. */
 const SEED_BUD = [];
 function appliquerSeedBud(){
   if(!Array.isArray(SEED_BUD)||!SEED_BUD.length) return 0;
@@ -6752,13 +6756,27 @@ function appliquerSeedBud(){
     if(e.c2!=null && (+p.c2||0)!==+e.c2){
       logChange('Projet '+nom,'C2 révisé (k€) — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
     }
-    /* Sans C1 alloué enregistré, le chiffre arbitré en tient lieu : sinon le
+    /* Sans C1 alloué enregistré, un montant en tient lieu : sinon le
        portefeuille afficherait un écart de tout le budget contre une
-       allocation jamais saisie. Un C1 déjà renseigné est de l'histoire — on
-       n'y touche pas. */
+       allocation jamais saisie. Quand le budget d'avant révision est connu,
+       c'est lui — l'écart dit alors la hausse, et non le budget entier. Un C1
+       déjà renseigné est de l'histoire : on n'y touche pas. */
     if(e.c2!=null && !(+p.c1||0)){
-      logChange('Projet '+nom,'C1 alloué (k€) — aucun montant alloué n’était enregistré', p.c1, e.c2);
-      p.c1=+e.c2; n++;
+      const v = e.c1Vide!=null ? +e.c1Vide : +e.c2;
+      logChange('Projet '+nom,'C1 alloué (k€) — '+(e.c1Vide!=null?'budget avant révision':'aucun montant alloué n’était enregistré'), p.c1, v);
+      p.c1=v; n++;
+    }
+    /* La ventilation par année va là où une page la porte : la Finance du
+       pack Gate 0-1-2-3. On ne comble que le vide — une cellule déjà écrite
+       n'est jamais reprise. */
+    if(e.gate && typeof gdOf==='function'){
+      const g=gdOf(p.id).g0123; let m=0;
+      Object.keys(e.gate).forEach(k=>{
+        if(String(g.f[k]||'').trim()) return;
+        g.f[k]=String(e.gate[k]); m++;
+      });
+      if(m){ logChange('Passage Gate — '+nom,'Finance · ventilation par année','',
+        'Gate 0-1-2-3 : '+m+' cellule(s) posée(s)'); n+=m; }
     }
     if(e.b27!=null && (+p.b27||0)!==+e.b27){
       logChange('Projet '+nom,'B27 (k€) — '+(e.quoi||'budget arbitré'), p.b27, e.b27); p.b27=+e.b27; n++;
