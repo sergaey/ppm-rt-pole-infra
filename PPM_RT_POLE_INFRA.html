@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-28.2 -->
+<!-- PPM_BUILD:2026-10-28.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1297,6 +1297,16 @@
   .trk .tdel{border:0;background:transparent;color:var(--faint);cursor:pointer;font-size:14px;padding:2px 4px;border-radius:6px}
   .trk .tdel:hover{color:var(--bad);background:var(--bad-soft)}
   .trk .tflag{font-size:10.5px;color:var(--t-retard);font-weight:700;white-space:nowrap}
+  /* La poignée : visible au survol, prise ferme au clic. */
+  .trktbl td.tgrab{width:26px;text-align:center;cursor:grab;user-select:none;padding:0 2px;
+    border-left:4px solid var(--c,var(--line-2));border-radius:10px 0 0 10px}
+  .trktbl td.tgrab + td{border-left:0;border-radius:0}
+  .trktbl td.tgrab .grabdot{color:var(--line-2);font-size:14px;letter-spacing:-1px}
+  .trktbl tr.l:hover td.tgrab .grabdot{color:var(--muted)}
+  .trktbl td.tgrab:active{cursor:grabbing}
+  .trktbl tr.l.dragging{opacity:.45}
+  .trktbl tr.l.dropav td{box-shadow:inset 0 3px 0 -1px var(--accent)}
+  .trktbl tr.l.dropap td{box-shadow:inset 0 -3px 0 -1px var(--accent)}
   .trkvide{text-align:center;padding:34px 16px;color:var(--muted);font-size:13px}
   .trkvide b{display:block;font-size:15px;color:var(--ink);margin-bottom:4px}
   /* ---- Passage Gate : les supports de passage, au format des gabarits ----
@@ -1764,7 +1774,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-28.2';
+const APP_BUILD='2026-10-28.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -4289,7 +4299,8 @@ function trkLigne({a,p}){
     <input type="date" class="tdtp" data-trkd="${a.id}|${k}" value="${esc(v||'')}" tabindex="-1" aria-hidden="true">
   </span>`;
   const li=TRK_IMP.indexOf(a.imp||'—');
-  return `<tr class="l${fini?' fini':''}" style="--c:var(--t-${cls})">
+  return `<tr class="l${fini?' fini':''}" data-trkid="${esc(a.id)}" style="--c:var(--t-${cls})">
+    ${S.trkVue==='portefeuille'?'':`<td class="tgrab" title="Glissez pour replacer cette action dans la liste"><span class="grabdot">⠿</span></td>`}
     <td style="--c:var(--t-${cls})"><div style="display:flex;gap:9px;align-items:flex-start">
       <button class="tck${fini?' on':''}" data-trkck="${a.id}" title="${fini?'Rouvrir l’action':'Marquer l’action faite'}">✓</button>
       <div style="flex:1;min-width:0"><div class="tact" contenteditable data-trkf="${a.id}|act"
@@ -4309,6 +4320,36 @@ function trkLigne({a,p}){
       <button class="tdel" data-trkdel="${a.id}" title="Supprimer cette action">✕</button></div></td>
   </tr>`;
 }
+/* ---- Replacer une action à la souris ----
+   L'ordre de la liste est celui que l'utilisateur pose : il vit dans le
+   tableau lui-même. Un tri de colonne l'affiche autrement sans le changer —
+   déplacer une ligne sous un tri figerait donc un ordre que personne n'a
+   voulu. Le premier déplacement sous tri fige d'abord ce qui est à l'écran,
+   puis rend la main à l'ordre manuel. */
+function trkFigerOrdre(pid){
+  const t=S.trkTri||{};
+  if(!t.k) return;
+  const l=trkOf(pid);
+  const vus=$$('#kitPane .trktbl tr.l[data-trkid]').map(tr=>l.find(a=>a.id===tr.dataset.trkid)).filter(Boolean);
+  if(vus.length){ const reste=l.filter(a=>vus.indexOf(a)<0); S.trk[pid]=vus.concat(reste); }
+  S.trkTri=null;
+}
+function trkDeplacer(pid,idSrc,idDst,apres){
+  if(idSrc===idDst) return false;
+  trkFigerOrdre(pid);
+  const l=trkOf(pid);
+  const a=l.find(x=>x.id===idSrc), b=l.find(x=>x.id===idDst);
+  if(!a||!b) return false;
+  const i=l.indexOf(a); l.splice(i,1);
+  let j=l.indexOf(b); if(apres) j++;
+  l.splice(j,0,a);
+  if(i===j) return false;
+  const nom=(S.projects.find(x=>x.id===pid)||{});
+  logChange('Actions — '+(nom.shine||nom.nom||pid),'rang de l’action « '+((a.act||'sans intitulé').slice(0,40))+' »',
+    String(i+1),String(j+1));
+  scheduleSave();
+  return true;
+}
 function kitActions(){
   const p=S.projects.find(x=>x.id===S.currentProj);
   const vue=S.trkVue==='portefeuille'?'portefeuille':'projet';
@@ -4318,17 +4359,19 @@ function kitActions(){
   const t=S.trkTri||{k:'',d:1};
   const fl=k=>t.k===k?(t.d>0?'▲':'▼'):'⇅';
   const cols=(vue==='portefeuille'?[['proj','Projet','14%']]:[]).concat(TRK_COLS);
-  const entete=cols.map(([k,l,w])=>`<th class="${t.k===k?'on':''}" style="width:${w}" data-trktri="${k}">${l} <span class="fl">${fl(k)}</span></th>`).join('');
+  const entete=(vue==='portefeuille'?'':'<th style="width:26px"></th>')+
+    cols.map(([k,l,w])=>`<th class="${t.k===k?'on':''}" style="width:${w}" data-trktri="${k}">${l} <span class="fl">${fl(k)}</span></th>`).join('');
+  const nbCol=cols.length+(vue==='portefeuille'?0:1);
   let corps='';
   if(!vues.length){
-    corps=`<tr><td colspan="${cols.length}"><div class="trkvide">
+    corps=`<tr><td colspan="${nbCol}"><div class="trkvide">
       <b>${toutes.length?'Aucune action ne répond à ce filtre.':'Aucune action pour l’instant.'}</b>
       ${toutes.length?'Retirez le filtre pour revoir les '+toutes.length+' action(s).'
         :'Ajoutez la première : une action, un pilote, une échéance.'}</div></td></tr>`;
   } else if(vue==='portefeuille'){
     const par={};
     vues.forEach(l=>{ const g=(l.p&&l.p.group)||'—'; (par[g]=par[g]||[]).push(l); });
-    corps=Object.keys(par).sort().map(g=>`<tr class="grp"><td colspan="${cols.length}">
+    corps=Object.keys(par).sort().map(g=>`<tr class="grp"><td colspan="${nbCol}">
         <b>${esc(g)}</b> <span class="hint">· ${par[g].length} action(s)</span></td></tr>`+
       par[g].map(l=>trkLigne(l).replace('<td style="--c',
         `<td class="tcom" style="font-weight:600">${esc((l.p&&(l.p.shine||l.p.nom))||'')}</td><td style="--c`)).join('')).join('');
@@ -4343,6 +4386,7 @@ function kitActions(){
       <button class="iconbtn${vue==='portefeuille'?' on':''}" data-trkvue="portefeuille">▦ Portefeuille</button>
       <input class="search tsearch" id="trkQ" type="text" placeholder="Rechercher une action, un pilote…" value="${esc(f.q||'')}">
       <span class="sp" style="flex:1"></span>
+      ${(vue==='projet'&&t.k)?`<button class="iconbtn" id="trkOrdre" title="Le tri masque l’ordre que vous avez posé à la main — revenez-y pour déplacer les actions">↕ Ordre manuel</button>`:''}
       ${retards?`<button class="iconbtn" id="trkSync" title="Passer au statut « En retard » les actions dont l'échéance est dépassée">⏱ ${retards} à requalifier</button>`:''}
       ${vue==='projet'?'<button class="iconbtn" id="trkAdd">＋ Action</button>':''}
       <button class="iconbtn" id="trkPrint">⎙ Imprimer</button>
@@ -4368,6 +4412,39 @@ function kitArmerActions(){
   const toucher=(o,pid,q,av,ap)=>{ o.maj=trkJour(); trace(pid,q,av,ap); scheduleSave(); };
   $$('#kitPane [data-trkvue]').forEach(b=>b.addEventListener('click',()=>{
     S.trkVue=b.dataset.trkvue; scheduleSave(); rr(); }));
+  /* La ligne n'est saisissable que par sa poignée : sans cela, le moindre
+     glissement sur une cellule que l'on écrit deviendrait un déplacement. */
+  if(S.trkVue!=='portefeuille'){
+    const pid=S.currentProj;
+    let source=null;
+    const nettoyer=()=>$$('#kitPane .trktbl tr.l').forEach(t=>t.classList.remove('dropav','dropap','dragging'));
+    $$('#kitPane .trktbl tr.l[data-trkid]').forEach(tr=>{
+      const poi=tr.querySelector('.tgrab');
+      if(poi) poi.addEventListener('mousedown',()=>{ tr.draggable=true; });
+      tr.addEventListener('dragstart',e=>{
+        if(!tr.draggable){ e.preventDefault(); return; }
+        source=tr.dataset.trkid; tr.classList.add('dragging');
+        try{ e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',source); }catch(_){}
+      });
+      tr.addEventListener('dragend',()=>{ tr.draggable=false; source=null; nettoyer(); });
+      tr.addEventListener('dragover',e=>{
+        if(source==null || tr.dataset.trkid===source) return;
+        e.preventDefault(); try{ e.dataTransfer.dropEffect='move'; }catch(_){}
+        const r=tr.getBoundingClientRect(), apres=(e.clientY-r.top)>r.height/2;
+        tr.classList.toggle('dropap',apres); tr.classList.toggle('dropav',!apres);
+      });
+      tr.addEventListener('dragleave',()=>tr.classList.remove('dropav','dropap'));
+      tr.addEventListener('drop',e=>{
+        if(source==null) return;
+        e.preventDefault(); e.stopPropagation();
+        const r=tr.getBoundingClientRect(), apres=(e.clientY-r.top)>r.height/2;
+        const src=source; source=null; nettoyer();
+        if(trkDeplacer(pid,src,tr.dataset.trkid,apres)) rr();
+      });
+    });
+  }
+  const bOrdre=$('#kitPane #trkOrdre');
+  if(bOrdre) bOrdre.addEventListener('click',()=>{ S.trkTri=null; scheduleSave(); rr(); });
   $$('#kitPane [data-trkt]').forEach(b=>b.addEventListener('click',()=>{
     const v=b.dataset.trkt, f=S.trkF=S.trkF||{};
     if(v==='!retard'){ f.retard=!f.retard; f.st=''; }
