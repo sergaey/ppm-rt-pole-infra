@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-29.2 -->
+<!-- PPM_BUILD:2026-10-29.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1843,7 +1843,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-29.2';
+const APP_BUILD='2026-10-29.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2084,7 +2084,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.nav=r.nav||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.nav=r.nav||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.fnavSeed=r.fnavSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3410,7 +3410,8 @@ function amorcerTout(){
                  ['référentiel INFRA',()=>appliquerSeedRef()],
                  ['n° ETU',()=>appliquerSeedEtu()],
                  ['achats du pôle',()=>appliquerSeedAch()],
-                 ['budgets arbitrés',()=>appliquerSeedBud()]];
+                 ['budgets arbitrés',()=>appliquerSeedBud()],
+                 ['fiches navette',()=>appliquerSeedFnav()]];
   let n=0; const rates=[];
   travaux.forEach(([nom,f])=>{
     try{ n+=(f()||0); }
@@ -4646,7 +4647,11 @@ const navN=v=>{ const t=String(v==null?'':v).replace(/ /g,' ').replace(/[^\d,.\
 function navTotLigne(lot){ return NAV_COLS.reduce((a,[k])=>a+navN(navV('ch.'+lot+'.'+k)),0); }
 function navTotCol(k){ return NAV_LOTS.reduce((a,l)=>a+navN(navV('ch.'+l+'.'+k)),0); }
 function navTotal(){ return NAV_LOTS.reduce((a,l)=>a+navTotLigne(l),0); }
-const navK=v=>v?fmt(v,v%1?1:0):'';
+/* Les fiches du site portent jusqu'au centime de k€ — 66,44 et non 66,4.
+   Le total calcule suit la meme precision, sans trainer de zero inutile :
+   198 reste 198, 6,3 reste 6,3, et 270,74 garde ses deux decimales. */
+const navK=v=>{ if(!v) return ''; const r=Math.round(v*100)/100;
+  return fmt(r, r%1 ? (Math.round(r*100)%10 ? 2 : 1) : 0); };
 /* ---- Page 1 : la demande ---- */
 function navPage1(p){
   const opt=(c,lib,est,ast)=>'<div class="navopt">'+navCk(c)+'<span>'+lib+
@@ -4932,6 +4937,45 @@ function navDiffuser(p){
     '</style></head><body><div class="nav">'+el.innerHTML+'</div></body></html>');
   w.document.close();
   setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },420);
+}
+/* ---- Fiches navette relevees sur les fiches signees du client ----
+   Les fiches navette emises sur le site arrivent en PDF, signees ou non. Le
+   releve les reprend champ par champ : l'intitule, le n°, les chiffreurs, la
+   grille, les documents joints et les signatures. Il ne comble que le vide —
+   une case saisie a la main n'est jamais recouverte — et il ne repasse pas :
+   la pose est retenue fiche par fiche. Les totaux, eux, ne sont pas repris :
+   la grille les recalcule, et l'ecart avec le total imprime se voit. */
+const SEED_FNAV = [
+];
+function fnavProjet(e){
+  const vivants=(S.projects||[]).filter(x=>!x.deleted);
+  const c=norm(e.shine||'');
+  if(c){ const p=vivants.find(x=>[x.shine,x.ishift,x.id,x.code].some(v=>v&&norm(v)===c)); if(p) return p; }
+  return e.nom?etuTrouve(e,vivants):null;
+}
+function appliquerSeedFnav(){
+  if(!Array.isArray(SEED_FNAV)||!SEED_FNAV.length) return 0;
+  S.fnavSeed=S.fnavSeed||{};
+  let n=0;
+  SEED_FNAV.forEach(e=>{
+    if(S.fnavSeed[e.id]) return;
+    const p=fnavProjet(e); if(!p) return;            // projet absent de ce portefeuille
+    S.fnavSeed[e.id]=p.id;
+    const f=navOf(p.id).f; let k=0;
+    Object.keys(e.f||{}).forEach(c=>{
+      if(String(f[c]==null?'':f[c]).trim()) return;  // jamais par-dessus une saisie
+      f[c]=e.f[c]; k++;
+    });
+    if(k){ logChange('Projet '+(p.shine||p.nom),'fiche navette — '+(e.quoi||'relevé'),'',k+' champ(s) repris'); n++; }
+  });
+  if(n) logChange('Portefeuille','fiches navette reprises','',n+' fiche(s)');
+  return n;
+}
+/* Ce que le releve n'a pas pu poser : le projet manque au portefeuille, ou
+   deux projets lui repondaient. La fiche reste alors a remplir a la main. */
+function fnavManquantes(){
+  if(!Array.isArray(SEED_FNAV)) return [];
+  return SEED_FNAV.filter(e=>!fnavProjet(e));
 }
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
