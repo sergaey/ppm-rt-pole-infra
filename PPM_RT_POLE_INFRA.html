@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-28.3 -->
+<!-- PPM_BUILD:2026-10-29.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1218,6 +1218,53 @@
   .achnum{width:100%;border:1px solid var(--line-2);border-radius:6px;padding:2px 6px;font-size:12px;
     font-family:inherit;background:var(--panel);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
   .achnum:focus{outline:none;border-color:var(--accent)}
+  /* ---- Fiche navette — demande de chiffrage EIA ----
+     Le formulaire du client, reproduit page à page : bandeaux gris, filets
+     noirs, invites en bleu italique. Il s'imprime tel qu'il se remplit. */
+  .nav{--n-band:#D9D9D9;--n-line:#000;--n-hint:#00B0F0;--n-ink:#000;
+    font-family:Calibri,Carlito,Segoe UI,Arial,sans-serif;color:var(--n-ink)}
+  .navbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .navbar .nquoi{font-family:Archivo;font-weight:800;letter-spacing:.02em;color:var(--ink)}
+  /* Une feuille A4 portrait, comme le document d'origine. */
+  .navpage{background:#fff;border:1px solid var(--line);border-radius:4px;
+    padding:14px 18px 30px;margin-bottom:16px;position:relative;
+    box-shadow:0 1px 3px rgba(16,24,40,.06);color:#000}
+  .navhead{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid #000;padding-bottom:4px}
+  .navhead .refs{font-family:"Times New Roman",Times,serif;font-weight:700;font-size:11.5px;line-height:1.3}
+  .navhead .refs .gf{display:inline-block;min-width:110px}
+  .navhead .objet{flex:1;text-align:center;font-style:italic;font-weight:700;font-size:11.5px;padding-top:12px}
+  .navhead .mark{min-width:110px;text-align:right;font-size:8px;letter-spacing:.22em;
+    text-transform:uppercase;color:#6B747B;line-height:1.5}
+  .navband{background:var(--n-band);border:1px solid #000;border-top:0;text-align:center;
+    font-weight:700;font-size:15px;padding:3px 6px;letter-spacing:.01em}
+  .navband.petit{font-size:13px}
+  .navtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .navtbl td,.navtbl th{border:1px solid #000;padding:3px 6px;vertical-align:top;
+    white-space:normal;text-transform:none;text-align:left;background:#fff;color:#000}
+  .navtbl th{font-weight:700;font-size:11px;text-align:center;background:#fff}
+  .navtbl td.lab{font-weight:400}
+  .navtbl td.ctr{text-align:center} .navtbl td.num{text-align:center;font-variant-numeric:tabular-nums}
+  .navtbl td.tot{font-weight:700;border:2px solid #000}
+  .nav .gf{outline:none;min-height:16px;white-space:pre-wrap;font-size:12.5px;line-height:1.4;color:#000}
+  .nav .gf:empty::before{content:attr(data-vide);color:var(--n-hint);font-style:italic}
+  .nav .gf:focus{background:#EAF6FD;box-shadow:0 0 0 1px var(--n-hint);border-radius:2px}
+  .nav .gf.zone{min-height:150px} .nav .gf.grande{min-height:320px}
+  .nav .gf.mini{min-height:15px}
+  /* La case à cocher du formulaire : un carré, une croix. */
+  .navck{width:15px;height:15px;border:1px solid #000;background:#fff;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;font-size:12px;
+    line-height:1;color:transparent;padding:0;vertical-align:-2px}
+  .navck.on{color:#000}
+  .navopt{display:flex;align-items:center;gap:8px;margin-bottom:3px;font-size:12.5px}
+  /* « (estimation à ± __ %) » tient sur une ligne : le champ y est en ligne. */
+  .navopt .est{margin-left:auto;font-size:12px;white-space:nowrap}
+  .navopt .est .gf{display:inline-block;min-width:26px;text-align:center;vertical-align:-1px}
+  .navopt .ast{color:var(--n-hint)}
+  .navfoot{position:absolute;right:18px;bottom:8px;font-size:11.5px}
+  .navfoot b{font-weight:700}
+  .navnote{font-size:11px;color:var(--n-hint);font-style:italic}
+  .navsig{margin-bottom:10px}
+  .navsig .t{border:1px solid #000;border-bottom:0;font-weight:700;font-size:14px;padding:3px 7px}
   /* ---- Action Tracker ----
      Un suivi qui se lit d'un coup d'œil : l'état porte sa couleur, du
      bandeau de tuiles jusqu'au filet de gauche de chaque ligne. */
@@ -1774,7 +1821,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-28.3';
+const APP_BUILD='2026-10-29.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -1854,6 +1901,7 @@ function buildFromSeed(){
     gates:{},
     gatedoc:{},
     trk:{},
+    nav:{},
     achSP:{},
     hse:{},
     actions: seedActions(),
@@ -2014,7 +2062,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.nav=r.nav||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3587,7 +3635,7 @@ const KIT_BOTH='Études et travaux', KIT_SECT=['Études','Travaux',KIT_BOTH];
 const KIT_MSC=['#DC2626','#D97706','#16A34A','#0891B2','#2563EB','#7C3AED','#DB2777','#65A30D'];
 const KIT_KINDS=[['activity','Activité'],['coordination','Coordination'],['gate','Gate']];
 const KIT_TABS=[['synthese','Synthèse'],['onepage','One Page'],['idcard','ID Card'],['gate','Passage Gate'],['checklist','Check-list'],
-                ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning'],['actions','Action Tracker']];
+                ['orga','Organigramme'],['budget','Chiffrage'],['load','Plan de charge'],['macro','Macroplanning'],['navette','Fiche Navette'],['actions','Action Tracker']];
 const KIT_TPL={"phases":[{"name":"Ph 0 : Evaluation projet","rows":[{"task":"Identifier les objectifs principaux du projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Identifier le responsable utilisateur du projet","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin, premier jet de CDO et|ou URS","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Préparer le draft du Project charter","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Donner un ordre de grandeur du budget nécessaire","owner":"RT","status":"A faire","notes":""},{"task":"Vérifier la pertinence du projet par rapport à la stratégie du\nSite ( feuille de route secteur  et budget site )","owner":"Uti+RT","status":"A faire","notes":""}]},{"name":"Ph1: Faire une réunion de lancement et création de l’ETU dans la GEDT","rows":[{"task":"Faire une réunion de lancement et création de l’ETU dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Démarrer l’analyse de risque projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Générer la description des procédés , Si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Générer le schéma bloc, si applicable","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Exprimer le besoin en matières et en utilités et évaluer la capacité pour supporter le projet","owner":"RT","status":"A faire","notes":""},{"task":"Faire l'état des contraintes qualité et règlementaires liés au projet","owner":"Uti+RT+Q/V","status":"A faire","notes":""},{"task":"Faire l’état des contraintes, sécurité liées au projet (PRE-CER)","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Présenter les différentes solutions techniques. \nPour chaque solution, lister les avantages et inconvénients","owner":"RT","status":"A faire","notes":""},{"task":"Faire une estimation des couts (± 35%) des solutions techniques","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le macro-planning","owner":"RT","status":"A faire","notes":""},{"task":"Préparer le draft du plan de ressources","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph2: Finaliser URS et/ou CDO","rows":[{"task":"Constituer l’équipe projet","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Finaliser URS et/ou CDO","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Proposer différentes solutions techniques en décrivant :\n-la liste des systèmes\n- les concepts spécifiques (protection feu, HVAC, génie civil...)\nEt en se basant sur les standards STD-0000472-Sustainable Building et STD-0000280 Energy Operational Standard KPI & Monitoring","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les premiers layouts","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les impacts du projet sur l’infrastructure, les utilités, l’environnement et les ressources","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour les estimations des coûts (± 25%)","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour le planning suivant les différentes solutions techniques.","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer les risques avec les qualifications | validation et le HSE","owner":"RT","status":"A faire","notes":""},{"task":"Communiquer le projet à FM Global","owner":"RT","status":"A faire","notes":""},{"task":"Evaluer pour chaque solution technique les points positifs et négatifs sous les aspects QHSE, coûts et délais. Si nécessaire, déterminer les capacités de production pour chaque solution","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la PRE-SPE ( équipements à longs délais d’approvisionnement)","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph3: Générer les AR et le plan de qualification","rows":[{"task":"URS et/ou CDO approuvés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Analyse de risque projet approuvée","owner":"Uti+RT","status":"A faire","notes":""},{"task":"Elaborer les différents documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser la CER avec le HSE et  les exploitants","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Générer les AR et le plan de qualification","owner":"Q/V","status":"A faire","notes":""},{"task":"Mettre à jour le planning prévisionnel","owner":"RT","status":"A faire","notes":""},{"task":"Mettre à jour de l’estimation des coûts (± 10%)","owner":"RT","status":"A faire","notes":""},{"task":"Définir le plan de charge de ressources","owner":"RT","status":"A faire","notes":""},{"task":"Lancer les consultations, réaliser les alignements de fournisseurs et emettre les commandes","owner":"RT","status":"A faire","notes":""},{"task":"Créer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Créer la  SPE et mettre en place le fichier suivi couts","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Approuver la documentation FAT/SAT/QI/QO","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la qualification de design","owner":"RT-Q/V","status":"A faire","notes":""},{"task":"Réaliser la revue de schéma TI (yellow review) et finalisation des documents d’ingénierie","owner":"RT","status":"A faire","notes":""},{"task":"Approuver la documentation pour la phase d'exécution","owner":"RT","status":"A faire","notes":""},{"task":"Préparer les dispositifs de logistique et stockage pour les travaux","owner":"RT","status":"A faire","notes":""}]},{"name":"Ph 4 :  Construction , Mise en service  et Qualification","rows":[{"task":"Mettre à jour le planning détaillé","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le plan de prévention","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser le kick off et les travaux","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser les plans de maintenance, métrologie et inspection \n(VIT-QU-FOR-00001895)","owner":"RT","status":"A faire","notes":""},{"task":"Créer et/ou mettre à la documentation utilisateur en lien avec les systèmes modifiés","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Réaliser les réceptions techniques \n(VIT-QU-FOR-0053991)","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le permis de démarrage","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Réaliser la visite CSSCT","owner":"Uti+RT+HSE","status":"A faire","notes":""},{"task":"Exécuter les qualifications FAT/SAT","owner":"RT - Q/V","status":"A faire","notes":""},{"task":"Exécuter les qualifications (QI-QO)","owner":"Q/V","status":"A faire","notes":""},{"task":"Préparer le DOE","owner":"RT","status":"A faire","notes":""},{"task":"Transmettre les documentations techniques aux utilisateurs, maintenance et inspection","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser le PV de transfert \nVIT-QU-FOR-0037955)","owner":"RT MTN +Q/V+Uti","status":"A faire","notes":""}]},{"name":"Ph 5 : Démarrage, qualification de performance et validation finale","rows":[{"task":"Exécuter les qualifications de performance (QP)","owner":"RT-Q/V-Ut","status":"A faire","notes":""},{"task":"Produire les lots de validation","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Finaliser des rapports de validation","owner":"Q/V- Ut","status":"A faire","notes":""},{"task":"Compléter les tâches du CC au fur et à mesure","owner":"Tous","status":"A faire","notes":""},{"task":"Vérifier le DOE","owner":"RT MTN+Q/V","status":"A faire","notes":""}]},{"name":"Ph 6 : Clotûre du projet & Bénéfices","rows":[{"task":"Clôturer le CC","owner":"Utilisateur","status":"A faire","notes":""},{"task":"Clôturer la SPE","owner":"RT","status":"A faire","notes":""},{"task":"Réaliser un retour d’expérience du projet. Réaliser le rapport final incluant analyse des résultats en termes de sécurité, qualité, respect des coûts et des délais","owner":"TOUS","status":"A faire","notes":""},{"task":"Archiver les dossiers, DOE dans la GEDT","owner":"RT","status":"A faire","notes":""},{"task":"Clôturer l’ETU","owner":"RT","status":"A faire","notes":""},{"task":"Mise en service comptable","owner":"RT","status":"A faire","notes":""}]}],"people":[{"role":"SPONSOR","name":"","level":1},{"role":"CHEF DE PROJET","name":"","level":2},{"role":"PMO","name":"","level":2},{"role":"CORRESPONDANTS HSE","name":"","level":2},{"role":"CORRESPONDANTS AQ","name":"","level":2},{"role":"ING. PROCÉDÉS","name":"","level":2},{"role":"CHARGÉ D'AFFAIRES INGÉNIERIE","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES HVAC","name":"","level":3},{"role":"CHARGÉ D'AFFAIRES ÉLECTRICITÉ","name":"","level":3},{"role":"INSTRUMENTATION","name":"","level":3},{"role":"AUTOMATISME","name":"","level":3},{"role":"MÉTROLOGIE","name":"","level":3},{"role":"DESSINATEUR – PROJETEUR","name":"","level":4},{"role":"SUPERVISEUR DE TRAVAUX","name":"","level":4},{"role":"QUALIF. ÉQUIPEMENT","name":"","level":4},{"role":"AQ QV ÉQUIPEMENT","name":"","level":4},{"role":"QUALIFICATION SI","name":"","level":4},{"role":"AQ QV SI","name":"","level":4}],"budgetGroups":[{"name":"Diagnostique externes","section":"Études","rows":[]},{"name":"Etudes","section":"Études","rows":[]},{"name":"Pilotage projet","section":"Études","rows":[]},{"name":"Supervision","section":"Études","rows":[]},{"name":"HSE","section":"Études","rows":[]},{"name":"Achat","section":"Travaux","rows":[]}],"groups":[{"name":"Ingénierie","rows":[{"name":"Chef de Projet (PM)"},{"name":"CA Eng. (PL)"},{"name":"DAO"},{"name":"Conducteur Travaux"}]},{"name":"EIA","rows":[{"name":"CA Elec."}]},{"name":"AQ QV","rows":[{"name":"CA QV"}]},{"name":"HSE","rows":[{"name":"CA HSE"}]}],"milestones":[{"name":"pré CDO","date":"","owner":"","notes":""},{"name":"CDO","date":"","owner":"","notes":""},{"name":"Gate XX","date":"","owner":"","notes":""},{"name":"CER","date":"","owner":"","notes":""},{"name":"PDP","date":"","owner":"","notes":""}]};
 const kuid=()=>'k'+Math.random().toString(36).slice(2,9);
 const ksum=a=>a.reduce((x,y)=>x+(+y||0),0);
@@ -4550,6 +4598,193 @@ function trkImprimer(){
   w.document.close();
   setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },380);
 }
+/* ===================== Fiche navette — demande de chiffrage EIA =====================
+   Le formulaire du client, reproduit page à page pour que le chef de projet
+   le remplisse ici plutôt que dans un document à part : mêmes rubriques, même
+   ordre, mêmes bandeaux. Le contenu vit par projet dans S.nav.
+   Les références du formulaire viennent d'une amorce : elles appartiennent au
+   système documentaire du client et ne partent pas dans la version publiée. */
+const SEED_NAV = {"ref":"","refDoc":"","objet":"DEMANDE DE CHIFFRAGE"};
+const NAV_LOTS=['Electricité','Instrumentation','Automatismes','Métrologie'];
+const NAV_COLS=[['suivi','Suivi EIA'],['etudes','Etudes'],['four','fournitures'],['trav','Travaux'],
+  ['dao','DAO'],['qual','Qualif.'],['imp','Imprévus'],['opex','OPEX']];
+const NAV_METIERS=['Instrumentation','Automatismes','Electricité','Métrologie','DAO'];
+const NAV_SIGN=['Référent de la fiche navette','Vérificateur(s) et/ou Demandeur(s)',
+  'Responsable EIA','Coordinateur Chiffrages EIA'];
+function navOf(id){ S.nav=S.nav||{}; const d=S.nav[id]=S.nav[id]||{}; d.f=d.f||{}; return d; }
+function navD(){ return navOf(S.currentProj); }
+const navV=c=>String((navD().f||{})[c]==null?'':navD().f[c]);
+const navF=(c,vide,cls)=>'<div class="gf '+(cls||'')+'" contenteditable data-navf="'+esc(c)+
+  '" data-vide="'+esc(vide||'')+'">'+esc(navV(c))+'</div>';
+const navCk=c=>'<button class="navck'+(navV(c)?' on':'')+'" data-navck="'+esc(c)+'" title="Cocher">✕</button>';
+const navN=v=>{ const t=String(v==null?'':v).replace(/ /g,' ').replace(/[^\d,.\-]/g,'').replace(/\s/g,'').replace(',','.');
+  const n=parseFloat(t); return isFinite(n)?n:0; };
+/* Les totaux se calculent : la ligne TOTAL d'un lot, et la ligne Total de la
+   grille. Une case vide vaut zéro, une case portant « NA » aussi. */
+function navTotLigne(lot){ return NAV_COLS.reduce((a,[k])=>a+navN(navV('ch.'+lot+'.'+k)),0); }
+function navTotCol(k){ return NAV_LOTS.reduce((a,l)=>a+navN(navV('ch.'+l+'.'+k)),0); }
+function navTotal(){ return NAV_LOTS.reduce((a,l)=>a+navTotLigne(l),0); }
+const navK=v=>v?fmt(v,v%1?1:0):'';
+/* ---- Page 1 : la demande ---- */
+function navPage1(p){
+  const opt=(c,lib,est,ast)=>'<div class="navopt">'+navCk(c)+'<span>'+lib+
+    (ast?'<span class="ast">*</span>':'')+'</span><span class="est">'+est+'</span></div>';
+  const metier=NAV_METIERS.map(m=>'<tr><td class="lab" style="width:34%">Chiffrage '+m+' par :</td>'+
+    '<td>'+navF('qui.'+m,'Mettre un nom / cocher la case sinon mettre NA','mini')+'</td>'+
+    '<td class="ctr" style="width:34px">'+navCk('ck.'+m)+'</td></tr>').join('');
+  const grille='<table class="navtbl navgrille" style="margin-top:4px"><thead><tr><th style="width:17%"></th>'+
+    NAV_COLS.map(([,l])=>'<th>'+l+'</th>').join('')+'<th>TOTAL</th><th style="width:26px"></th></tr></thead><tbody>'+
+    NAV_LOTS.map(l=>'<tr><td class="lab" style="text-align:right;font-size:11.5px">↳ '+l+' :</td>'+
+      NAV_COLS.map(([k])=>'<td class="num">'+navF('ch.'+l+'.'+k,'NA','mini')+'</td>').join('')+
+      '<td class="num tot">'+(navTotLigne(l)?navK(navTotLigne(l)):'NA')+'</td><td class="ctr" style="font-size:11px">K€</td></tr>').join('')+
+    '<tr><td class="lab" style="text-align:right;font-weight:700;font-size:11.5px">↳ Total :</td>'+
+      NAV_COLS.map(([k])=>'<td class="num tot">'+(navTotCol(k)?navK(navTotCol(k)):'NA')+'</td>').join('')+
+      '<td class="num tot">'+(navTotal()?navK(navTotal()):'NA')+'</td><td class="ctr" style="font-size:11px">K€</td></tr>'+
+    '</tbody></table>';
+  return '<div class="navpage" data-navp="1">'+navEntete()+
+    '<div class="navband" style="border-top:1px solid #000;margin-top:8px">DEMANDE DE CHIFFRAGE</div>'+
+    '<table class="navtbl"><tr><td style="width:58%">'+
+        opt('et.faisa','Etude de faisabilité','(estimation à ± '+navF('et.pc','__','mini')+' %)',1)+
+        opt('et.concep','Etude de conception','(estimation à ± 25 %)')+
+        opt('et.base','Etude de base','(chiffrage à ± 5 %)')+
+      '</td><td>'+
+        '<div style="font-size:13px;margin-bottom:9px">N° : '+navF('num','20XX / XX','mini')+'</div>'+
+        '<div style="font-size:13px">Nombre de Document(s) joint(s) : '+navF('nbdoc','1','mini')+'</div>'+
+        '<div class="navnote">(Liste en annexe)</div>'+
+      '</td></tr></table>'+
+    '<table class="navtbl" style="border-top:0"><tr><td style="width:30%">'+
+        '<div>Demandeur :</div>'+navF('dem',(p&&(p.pm||p.pl))||'Nom du demandeur','mini')+
+        '<div style="margin-top:9px">Référent de la fiche navette :</div>'+
+        navF('ref','Désigné comme responsable de la fiche navette','mini')+
+      '</td><td style="padding:0"><table class="navtbl" style="border:0;width:100%">'+metier+'</table></td></tr></table>'+
+    '<table class="navtbl" style="border-top:0"><tr>'+
+      '<td style="width:66%"><b><i>Intitulé du Projet</i></b>'+navF('intitule',(p&&p.nom)||'Intitulé du projet','mini')+'</td>'+
+      '<td><b><i>N°ETU :</i></b> '+navF('etu','ETU xxx','mini')+'</td></tr>'+
+      '<tr><td colspan="2"><b><i>Descriptif sommaire :</i></b>'+navF('descr','Nature des travaux, périmètre, contraintes d’exploitation, interfaces…','zone')+'</td></tr>'+
+      '<tr><td>Date de la demande : '+navF('dateDem','','mini')+'</td>'+
+        '<td>Délai de chiffrage demandé : '+navF('delai','','mini')+'<div class="navnote">(Minimum 1 semaine)</div></td></tr>'+
+      '<tr><td>Durée estimée de réalisation du projet : '+navF('duree','Si applicable sinon NA','mini')+'</td>'+
+        '<td>N° Imputation : '+navF('imput','Si applicable sinon NA','mini')+'</td></tr></table>'+
+    '<div class="navband petit">CHIFFRAGE</div>'+grille+
+    '<div class="navband petit" style="margin-top:8px;border-top:1px solid #000">REPONSE</div>'+
+    '<table class="navtbl" style="border-top:0"><tr><td style="text-align:right;font-size:13px">Total :</td>'+
+      '<td class="num tot" style="width:120px">'+navF('rep.total','NA','mini')+'</td>'+
+      '<td style="width:34px;font-size:11px">K€</td></tr></table>'+
+    '<div class="navband petit" style="margin-top:10px;border-top:1px solid #000">ANNEXE DEMANDE DE CHIFFRAGE</div>'+
+    '<div class="navfoot">Page <b>1</b> sur <b>3</b></div></div>';
+}
+/* ---- Page 2 : l'annexe ---- */
+function navPage2(){
+  return '<div class="navpage" data-navp="2">'+navEntete(true)+
+    '<table class="navtbl" style="margin-top:8px"><tr><td><b><u>Liste des documents joints :</u></b>'+
+      navF('docs','Un document par ligne — indice et date de révision','zone')+'</td></tr></table>'+
+    '<div class="navband petit">COMMENTAIRES</div>'+
+    '<table class="navtbl" style="border-top:0"><tr><td>'+navF('comm','','grande')+'</td></tr></table>'+
+    '<div class="navfoot">Page <b>2</b> sur <b>3</b></div></div>';
+}
+/* ---- Page 3 : les signatures ---- */
+function navPage3(){
+  const bloc=(t,i)=>'<div class="navsig"><div class="t">'+t+'</div>'+
+    '<table class="navtbl"><thead><tr><th style="width:26%;text-align:left">Nom et Prénom</th>'+
+      '<th style="width:26%;text-align:left">Fonction</th><th style="width:16%;text-align:left">Date</th>'+
+      '<th style="text-align:left">Signature</th></tr></thead><tbody><tr>'+
+      ['nom','fonc','date','sig'].map(k=>'<td style="height:34px">'+navF('sg.'+i+'.'+k,'','mini')+'</td>').join('')+
+    '</tr></tbody></table></div>';
+  return '<div class="navpage" data-navp="3">'+navEntete(true)+
+    '<div class="navband petit" style="border-top:1px solid #000;margin-top:8px">Signatures</div>'+
+    NAV_SIGN.map((t,i)=>bloc(t,i)).join('')+
+    '<div class="navfoot">Page <b>3</b> sur <b>3</b></div></div>';
+}
+function navEntete(nu){
+  return '<div class="navhead"><div class="refs">'+
+      'Référence du document : '+esc(SEED_NAV.ref||'—')+'<br>'+
+      'Document de référence : '+esc(SEED_NAV.refDoc||'—')+'</div>'+
+    '<div class="objet">'+(nu?'':esc(SEED_NAV.objet||''))+'</div>'+
+    '<div class="mark"><span class="gf" contenteditable data-navg="mark" data-vide="votre entité">'+
+      esc(S.navMark||'')+'</span></div></div>';
+}
+function kitNavette(){
+  const p=S.projects.find(x=>x.id===S.currentProj);
+  if(!p) return '<div class="hint">Aucun projet sélectionné.</div>';
+  navAmorcer(p);
+  const t=navTotal();
+  const barre='<div class="navbar noprint"><span class="nquoi">Fiche navette</span>'+
+    '<span class="hint">demande de chiffrage EIA — lot Élec. · Autom. · Instrum. · Métrologie</span>'+
+    '<span class="sp" style="flex:1"></span>'+
+    (t?'<span class="hint">Chiffrage demandé : <b>'+navK(t)+' K€</b></span>':'')+
+    '<button class="iconbtn" id="navMaj" title="Reprendre de la fiche projet l’intitulé, le n° d’ETU, le demandeur et le n° d’imputation">⟲ Reprendre la fiche</button>'+
+    '<button class="iconbtn" id="navPrint">⎙ Diffuser la fiche</button></div>';
+  return '<div class="nav" id="navFiche">'+barre+navPage1(p)+navPage2()+navPage3()+'</div>';
+}
+/* À la première ouverture, la fiche reprend ce que le projet sait déjà. */
+function navAmorcer(p){
+  const f=navD().f;
+  const pose=(c,v)=>{ if(v && !String(f[c]||'').trim()) f[c]=String(v); };
+  pose('intitule',p.nom);
+  pose('dem',p.pm||p.pl);
+  pose('imput',p.ishift||'');
+  const etu=((S.csd&&S.csd[p.id])||{}).etu||'';
+  if(etu) pose('etu','ETU'+String(etu).replace(/^ETU\s*/i,''));
+}
+function kitArmerNavette(){
+  const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+  const rr=()=>setTimeout(()=>renderKit(),0);
+  const trace=(q,av,ap)=>{ logChange('Fiche navette — '+(p.shine||p.nom),q,av,ap); scheduleSave(); };
+  const NOM={'ch.':'chiffrage','qui.':'chiffreur','ck.':'chiffreur — case','et.':'type d’étude',
+    'sg.':'signature','rep.':'réponse','num':'n° de fiche','nbdoc':'documents joints',
+    'dem':'demandeur','ref':'référent','intitule':'intitulé','etu':'n° ETU','descr':'descriptif',
+    'dateDem':'date de la demande','delai':'délai demandé','duree':'durée estimée',
+    'imput':'n° d’imputation','docs':'liste des documents','comm':'commentaires'};
+  const nom=c=>{ const e=Object.keys(NOM).find(k=>String(c).indexOf(k)===0); return e?NOM[e]:c; };
+  $$('#kitPane [data-navf]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const f=navD().f, c=el.dataset.navf, v=el.textContent.replace(/ /g,' ').trim();
+    if(String(f[c]||'')===v) return;
+    trace(nom(c)+' · '+c, f[c]||'', v); f[c]=v;
+    if(c.indexOf('ch.')===0) rr();                 // les totaux suivent
+  }));
+  $$('#kitPane [data-navck]').forEach(b=>b.addEventListener('click',()=>{
+    const f=navD().f, c=b.dataset.navck;
+    f[c]=f[c]?'':'x'; trace(nom(c)+' · '+c, f[c]?'':'coché', f[c]?'coché':''); rr();
+  }));
+  $$('#kitPane [data-navg]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const v=el.textContent.replace(/ /g,' ').trim();
+    if(String(S.navMark||'')===v) return;
+    logChange('Fiche navette','entité du formulaire',S.navMark||'',v);
+    S.navMark=v; scheduleSave(); rr();
+  }));
+  const lier=(s,ev,f)=>{ const el=$('#kitPane '+s); if(el) el.addEventListener(ev,f); };
+  lier('#navMaj','click',()=>{
+    const f=navD().f;
+    f.intitule=p.nom||f.intitule;
+    f.dem=p.pm||p.pl||f.dem;
+    f.imput=p.ishift||f.imput;
+    const etu=((S.csd&&S.csd[p.id])||{}).etu||'';
+    if(etu) f.etu='ETU'+String(etu).replace(/^ETU\s*/i,'');
+    trace('reprise de la fiche projet','',p.shine||p.nom); rr();
+  });
+  lier('#navPrint','click',()=>navDiffuser(p));
+}
+/* Diffuser : les trois pages telles qu'elles sont remplies, une par feuille. */
+function navDiffuser(p){
+  const el=document.getElementById('navFiche');
+  if(!el){ alert("La fiche n'est pas affichée."); return; }
+  const w=window.open('','_blank');
+  if(!w){ alert('Autorisez les fenêtres pop-up pour diffuser la fiche.'); return; }
+  const styles=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">'+
+    '<title>'+esc('Fiche navette — '+(p.shine||p.nom))+'</title><style>'+styles+
+    'body{margin:0;padding:0;background:#fff}'+
+    '.noprint{display:none!important}[contenteditable]{outline:none}'+
+    '.navpage{border:0;box-shadow:none;margin:0;padding:10mm 12mm 14mm;'+
+      'break-after:page;page-break-after:always}'+
+    '.navpage:last-child{break-after:auto;page-break-after:auto}'+
+    '@page{size:A4 portrait;margin:0}'+
+    '</style></head><body><div class="nav">'+el.innerHTML+'</div></body></html>');
+  w.document.close();
+  setTimeout(()=>{ try{ w.focus(); w.print(); }catch(e){} },420);
+}
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
   const base=Math.max(1, all.length-c('NA'));
@@ -5126,13 +5361,14 @@ function renderKit(){
 function renderKitCorps(h){
   const k=kitOf(S.currentProj), t=S.kitTab||'checklist';
   h.innerHTML = t==='onepage'?opPage() : t==='idcard'?kitIdCard() : t==='gate'?kitGate()
-              : t==='actions'?kitActions() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
+              : t==='navette'?kitNavette() : t==='actions'?kitActions() : t==='checklist'?kitChecklist(k) : t==='orga'?kitOrga(k)
               : t==='budget'?kitBudget(k) : t==='load'?kitLoad(k) : kitMacro(k);
   kitAjusterCellules();
   if(t==='macro'){ kitArmerJalons(); kitArmerGantt(); }
   if(t==='orga') kitArmerOrga();
   if(t==='idcard') kitArmerIdCard();
   if(t==='gate') kitArmerGate();
+  if(t==='navette') kitArmerNavette();
   if(t==='actions') kitArmerActions();
   if(t==='onepage'){ opArmer(); bindEditables(); }
 }
