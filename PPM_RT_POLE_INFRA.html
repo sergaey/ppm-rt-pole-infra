@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-29.1 -->
+<!-- PPM_BUILD:2026-10-29.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1265,6 +1265,28 @@
   .navnote{font-size:11px;color:var(--n-hint);font-style:italic}
   .navsig{margin-bottom:10px}
   .navsig .t{border:1px solid #000;border-bottom:0;font-weight:700;font-size:14px;padding:3px 7px}
+  /* La validation et la transmission : à l'écran seulement — le formulaire
+     imprimé reste celui du client, page pour page. */
+  .navval{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+    padding:11px 13px;margin-bottom:14px;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+  .navval .h{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:9px}
+  .navval .h .ic{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+    justify-content:center;background:var(--panel-2);border:1px solid var(--line);font-size:13px}
+  .navval.ok .h .ic{background:var(--good-soft);border-color:var(--good);color:var(--good)}
+  .navval .t{font-size:12.5px;color:var(--muted)} .navval .t b{color:var(--ink);font-family:Archivo}
+  .navval .lots{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:10px}
+  .navval .lots .lb{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);font-weight:700;margin-right:2px}
+  .navlot{border:1px solid var(--line-2);background:var(--panel);color:var(--muted);
+    border-radius:999px;padding:3px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  .navlot.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent-ink)}
+  .navval .navtr{font-size:12px}
+  .navval .navtr td,.navval .navtr th{border:1px solid var(--line);padding:4px 7px;background:var(--panel);color:var(--ink)}
+  .navval .navtr th{background:var(--panel-2);font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--muted)}
+  .navval .navtr td.lab{font-weight:700}
+  .navval .pied{font-size:11.5px;color:var(--muted);margin-top:7px}
+  .navval .navck{border-color:var(--line-2)}
   /* ---- Action Tracker ----
      Un suivi qui se lit d'un coup d'œil : l'état porte sa couleur, du
      bandeau de tuiles jusqu'au filet de gauche de chaque ligne. */
@@ -1821,7 +1843,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-29.1';
+const APP_BUILD='2026-10-29.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -4703,6 +4725,111 @@ function navEntete(nu){
     '<div class="mark"><span class="gf" contenteditable data-navg="mark" data-vide="votre entité">'+
       esc(S.navMark||'')+'</span></div></div>';
 }
+/* ---- Validation et transmission aux services ----
+   Une fiche remplie ne vaut qu'une fois validée, et elle ne sert qu'une fois
+   arrivée chez ceux qui chiffrent. Les lots concernés se déduisent de ce qui
+   est écrit — un chiffreur nommé, une case cochée, un montant posé — et la
+   déduction se force à la main là où elle se trompe. */
+function navLotConcerne(m){
+  const f=navD().f;
+  const forcee=f['lot.'+m];
+  if(forcee==='1') return true;
+  if(forcee==='0') return false;
+  const qui=String(f['qui.'+m]||'').trim();
+  if(qui && !/^n\s*\/?\s*a$/i.test(qui)) return true;
+  if(f['ck.'+m]) return true;
+  if(NAV_LOTS.indexOf(m)>=0 && navTotLigne(m)>0) return true;
+  return false;
+}
+function navLots(){ return NAV_METIERS.filter(navLotConcerne); }
+function navValide(){ const v=navD().f['_valide']; return v?JSON.parse(v):null; }
+function navBlocValidation(p){
+  const f=navD().f, v=navValide(), lots=navLots();
+  const chips=NAV_METIERS.map(m=>{
+    const on=navLotConcerne(m), forcee=f['lot.'+m];
+    return '<button class="navlot'+(on?' on':'')+'" data-navlot="'+esc(m)+'" title="'+
+      (on?'Lot concerné — cliquez pour l’écarter':'Lot écarté — cliquez pour l’inclure')+
+      (forcee?' (choix forcé)':' (déduit de la fiche)')+'">'+esc(m)+'</button>';
+  }).join('');
+  const lignes=lots.length?lots.map(m=>'<tr><td class="lab">'+esc(m)+'</td>'+
+      '<td>'+navF('tr.'+m+'.dest', String(f['qui.'+m]||'').trim()&&!/^n\s*\/?\s*a$/i.test(f['qui.'+m])?f['qui.'+m]:'Service destinataire','mini')+'</td>'+
+      '<td style="width:120px">'+navF('tr.'+m+'.date','','mini')+'</td>'+
+      '<td class="ctr" style="width:92px">'+navCk('tr.'+m+'.ok')+'</td></tr>').join('')
+    :'<tr><td colspan="4" style="color:var(--muted);font-style:italic">Aucun lot concerné : nommez un chiffreur, cochez une case ou portez un montant dans la grille.</td></tr>';
+  const nb=lots.filter(m=>f['tr.'+m+'.ok']).length;
+  return '<div class="navval noprint">'+
+    '<div class="h"><span class="ic">'+(v?'✓':'✎')+'</span>'+
+      '<div class="t"><b>'+(v?'Fiche validée':'Fiche en préparation')+'</b>'+
+        (v?'<span> · par '+esc(v.par||'—')+' le '+esc(v.date||'—')+'</span>'
+          :'<span> · validez-la pour la transmettre aux services</span>')+'</div>'+
+      '<span class="sp" style="flex:1"></span>'+
+      (v?'<button class="iconbtn" id="navDevalide" title="Revenir à l’état de préparation">↺ Lever la validation</button>'
+        :'<button class="iconbtn" id="navValide">✓ Valider la fiche</button>')+
+      '<button class="iconbtn" id="navGed"'+(v?'':' disabled title="Validez la fiche d’abord"')+
+        '>⤴ Déposer dans la GEDT</button></div>'+
+    '<div class="lots"><span class="lb">Lots concernés</span>'+chips+'</div>'+
+    '<table class="navtbl navtr"><thead><tr><th style="text-align:left">Service</th>'+
+      '<th style="text-align:left">Destinataire</th><th style="text-align:left">Date d’envoi</th>'+
+      '<th>Transmis</th></tr></thead><tbody>'+lignes+'</tbody></table>'+
+    '<div class="pied">'+(lots.length?nb+' lot(s) transmis sur '+lots.length:'')+
+      (v&&f['_ged']?' · déposée dans la GEDT ('+esc(f['_ged'])+')':'')+'</div>'+
+    '</div>';
+}
+/* Déposer : la fiche rejoint le rayon Chiffrage de la GEDT, là où les
+   services la cherchent, avec les lots dans sa rubrique et son contenu tel
+   qu'il est rempli. */
+function navStyles(){
+  const garde=/(^|[\s,>()])\.(nav[a-z]*|gf)\b/;
+  const out=['/* variables utilisées par le formulaire, en clair */',
+    ':root{--line:#e0e7ee;--line-2:#ccd7e0;--panel:#fff;--panel-2:#eef3f7;--panel-3:#e4ebf1;',
+    '--ink:#11202e;--ink-2:#33485a;--muted:#5e7485;--faint:#8499a7;--radius:10px;',
+    '--accent:#115e75;--accent-soft:#e1edf1;--accent-ink:#0b4658;--good:#1d7a52;--good-soft:#e0f0e8}',
+    'body{margin:0;padding:0;background:#fff}'];
+  try{
+    [...document.styleSheets].forEach(ss=>{
+      let rs=null; try{ rs=ss.cssRules; }catch(_){ return; }
+      [...(rs||[])].forEach(r=>{ if(r.selectorText && garde.test(r.selectorText)) out.push(r.cssText); });
+    });
+  }catch(_){}
+  return out.join('\n');
+}
+function navDeposer(p){
+  const f=navD().f, v=navValide();
+  if(!v){ alert('Validez la fiche avant de la déposer.'); return; }
+  const el=document.getElementById('navFiche');
+  if(!el){ alert("La fiche n'est pas affichée."); return; }
+  const lots=navLots();
+  /* Le document déposé vit seul dans une iframe : il emporte sa mise en forme.
+     Mais emporter toute la feuille de styles de l'application alourdirait
+     l'état de 140 ko par fiche — on n'emporte que les règles du formulaire,
+     et les quelques variables qu'elles utilisent. */
+  const styles=navStyles();
+  const corps=el.cloneNode(true);
+  corps.querySelectorAll('.noprint').forEach(x=>x.remove());
+  const html='<style>'+styles+'</style><div class="nav">'+corps.innerHTML+'</div>';
+  const etu=String(f.etu||'').trim();
+  const code=('NAV-'+(p.shine||p.id)+(etu?'-'+etu.replace(/\s+/g,''):'')).slice(0,40);
+  S.ged=S.ged||[];
+  const deja=S.ged.find(d=>d.code===code);
+  const doc={code:code, projet:(p.shine||p.nom||''), sousens:'Chiffrage',
+    rubrique:'Fiche navette — '+(lots.length?lots.join(' · '):'lot à préciser'),
+    phase:'APD', dossier:'10_ETUDES', type:'HTML', version:'A', statut:'Validé',
+    auteur:(v.par||S.user||''), date:v.date||new Date().toLocaleDateString('fr-FR'),
+    fav:false, archived:false, file:null, html:html};
+  if(deja){
+    if(!confirm('Une fiche navette de ce projet est déjà déposée ('+code+').\n\nRemplacer son contenu par la version affichée ?')) return;
+    Object.assign(deja,doc);
+    deja.version=String.fromCharCode(Math.min(90,(deja.version||'A').charCodeAt(0)+1));
+    logChange('GEDT '+code,'fiche navette remise à jour','',deja.version);
+  } else {
+    S.ged.unshift(doc);
+    logChange('GEDT '+code,'fiche navette déposée','',doc.rubrique);
+  }
+  f['_ged']=code;
+  scheduleSave(); renderKit();
+  alert('Fiche déposée dans la GEDT, rayon Chiffrage.\n\n'+code+'\n'+doc.rubrique
+    +'\n\nLes services la trouvent dans GEDT | ARCHIVES → Chiffrage.');
+}
 function kitNavette(){
   const p=S.projects.find(x=>x.id===S.currentProj);
   if(!p) return '<div class="hint">Aucun projet sélectionné.</div>';
@@ -4714,7 +4841,8 @@ function kitNavette(){
     (t?'<span class="hint">Chiffrage demandé : <b>'+navK(t)+' K€</b></span>':'')+
     '<button class="iconbtn" id="navMaj" title="Reprendre de la fiche projet l’intitulé, le n° d’ETU, le demandeur et le n° d’imputation">⟲ Reprendre la fiche</button>'+
     '<button class="iconbtn" id="navPrint">⎙ Diffuser la fiche</button></div>';
-  return '<div class="nav" id="navFiche">'+barre+navPage1(p)+navPage2()+navPage3()+'</div>';
+  return '<div class="nav'+(navValide()?' ok':'')+'" id="navFiche">'+barre+navBlocValidation(p)+
+    navPage1(p)+navPage2()+navPage3()+'</div>';
 }
 /* À la première ouverture, la fiche reprend ce que le projet sait déjà. */
 function navAmorcer(p){
@@ -4765,6 +4893,26 @@ function kitArmerNavette(){
     trace('reprise de la fiche projet','',p.shine||p.nom); rr();
   });
   lier('#navPrint','click',()=>navDiffuser(p));
+  /* Les lots : trois états — déduit, forcé dedans, forcé dehors. Le clic
+     fait le tour, et ce qui est forcé le reste tant qu'on ne le relâche pas. */
+  $$('#kitPane [data-navlot]').forEach(b2=>b2.addEventListener('click',()=>{
+    const f=navD().f, m=b2.dataset.navlot, av=f['lot.'+m]||'', on=navLotConcerne(m);
+    f['lot.'+m] = av ? (av==='1'?'0':'') : (on?'0':'1');
+    trace('lot concerné · '+m, on?'inclus':'écarté',
+      navLotConcerne(m)?'inclus':'écarté'); rr();
+  }));
+  lier('#navValide','click',()=>{
+    const f=navD().f;
+    f['_valide']=JSON.stringify({par:S.user||'—',date:new Date().toLocaleDateString('fr-FR')});
+    trace('validation','', 'validée par '+(S.user||'—')); rr();
+  });
+  lier('#navDevalide','click',()=>{
+    const f=navD().f; const v=navValide();
+    if(!confirm('Lever la validation de cette fiche ?\n\nLe dépôt déjà fait dans la GEDT, lui, reste en place.')) return;
+    delete f['_valide'];
+    trace('validation', v?('validée par '+(v.par||'—')):'validée', 'levée'); rr();
+  });
+  lier('#navGed','click',()=>navDeposer(p));
 }
 /* Diffuser : les trois pages telles qu'elles sont remplies, une par feuille. */
 function navDiffuser(p){
