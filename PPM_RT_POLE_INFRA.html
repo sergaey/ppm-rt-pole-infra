@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-29.4 -->
+<!-- PPM_BUILD:2026-10-30 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1221,7 +1221,7 @@
   /* ---- Fiche navette — demande de chiffrage EIA ----
      Le formulaire du client, reproduit page à page : bandeaux gris, filets
      noirs, invites en bleu italique. Il s'imprime tel qu'il se remplit. */
-  .nav{--n-band:#D9D9D9;--n-line:#000;--n-hint:#00B0F0;--n-ink:#000;
+  .nav{--n-band:#D9D9D9;--n-head:#F1F1F1;--n-line:#000;--n-hint:#00B0F0;--n-ink:#000;
     font-family:Calibri,Carlito,Segoe UI,Arial,sans-serif;color:var(--n-ink)}
   .navbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .navbar .nquoi{font-family:Archivo;font-weight:800;letter-spacing:.02em;color:var(--ink)}
@@ -1263,8 +1263,18 @@
   .navfoot{position:absolute;right:18px;bottom:8px;font-size:11.5px}
   .navfoot b{font-weight:700}
   .navnote{font-size:11px;color:var(--n-hint);font-style:italic}
-  .navsig{margin-bottom:10px}
+  /* Les quatre blocs de signature ne flottent pas : ils forment une pile
+     continue, comme sur le formulaire du client — un seul trait entre le
+     dernier cadre d'un bloc et le titre du suivant. */
+  .navsig+.navsig .t{border-top:0}
   .navsig .t{border:1px solid #000;border-bottom:0;font-weight:700;font-size:14px;padding:3px 7px}
+  .navsig .navtbl th{background:var(--n-head);font-size:11.5px;padding:2px 6px}
+  /* Le releve des versions du document ressource : un cartouche sobre, sans
+     numero de page — il suit la fiche sans en faire partie. */
+  .navhist{font-weight:700;font-size:14px;margin:14px 0 10px;letter-spacing:.01em}
+  .navhist+.navtbl th{text-align:left;font-size:12px}
+  .navhist+.navtbl td{font-style:italic;line-height:1.45}
+  .navhist+.navtbl td:first-child,.navhist+.navtbl td:nth-child(2){vertical-align:middle}
   /* La validation et la transmission : à l'écran seulement — le formulaire
      imprimé reste celui du client, page pour page. */
   .navval{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
@@ -1843,7 +1853,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-29.4';
+const APP_BUILD='2026-10-30';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -4627,7 +4637,7 @@ function trkImprimer(){
    ordre, mêmes bandeaux. Le contenu vit par projet dans S.nav.
    Les références du formulaire viennent d'une amorce : elles appartiennent au
    système documentaire du client et ne partent pas dans la version publiée. */
-const SEED_NAV = {"ref":"","refDoc":"","objet":"DEMANDE DE CHIFFRAGE"};
+const SEED_NAV = {"ref":"","refDoc":"","objet":"DEMANDE DE CHIFFRAGE","hist":[]};
 const NAV_LOTS=['Electricité','Instrumentation','Automatismes','Métrologie'];
 const NAV_COLS=[['suivi','Suivi EIA'],['etudes','Etudes'],['four','fournitures'],['trav','Travaux'],
   ['dao','DAO'],['qual','Qualif.'],['imp','Imprévus'],['opex','OPEX']];
@@ -4712,8 +4722,8 @@ function navPage2(){
 /* ---- Page 3 : les signatures ---- */
 function navPage3(){
   const bloc=(t,i)=>'<div class="navsig"><div class="t">'+t+'</div>'+
-    '<table class="navtbl"><thead><tr><th style="width:26%;text-align:left">Nom et Prénom</th>'+
-      '<th style="width:26%;text-align:left">Fonction</th><th style="width:16%;text-align:left">Date</th>'+
+    '<table class="navtbl"><thead><tr><th style="width:25%;text-align:left">Nom et Prénom</th>'+
+      '<th style="width:26%;text-align:left">Fonction</th><th style="width:15%;text-align:left">Date</th>'+
       '<th style="text-align:left">Signature</th></tr></thead><tbody><tr>'+
       ['nom','fonc','date','sig'].map(k=>'<td style="height:34px">'+navF('sg.'+i+'.'+k,'','mini')+'</td>').join('')+
     '</tr></tbody></table></div>';
@@ -4721,6 +4731,23 @@ function navPage3(){
     '<div class="navband petit" style="border-top:1px solid #000;margin-top:8px">Signatures</div>'+
     NAV_SIGN.map((t,i)=>bloc(t,i)).join('')+
     '<div class="navfoot">Page <b>3</b> sur <b>3</b></div></div>';
+}
+/* ---- Releve des versions du document ressource ----
+   Le formulaire du client se termine par le cartouche des modifications
+   successives de CPV-R-00091. Il suit la fiche sans en faire partie : il ne
+   porte pas de numero de page, et la pagination reste « sur 3 ». Le releve
+   vient de l'amorce du gabarit — vide, la page ne s'affiche pas. */
+function navHistorique(){
+  const h=(SEED_NAV && Array.isArray(SEED_NAV.hist)) ? SEED_NAV.hist : [];
+  if(!h.length) return '';
+  const ref=SEED_NAV.ref ? String(SEED_NAV.ref).replace(/\s*v[\d.]+\s*$/i,'') : '';
+  return '<div class="navpage" data-navp="hist">'+navEntete(true)+
+    '<div class="navhist">DESCRIPTION DES MODIFICATIONS SUCCESSIVES DU DOCUMENT '+esc(ref||'—')+'</div>'+
+    '<table class="navtbl"><thead><tr><th style="width:15%">Version</th>'+
+      '<th style="width:19%">Date</th><th>Modifications</th></tr></thead><tbody>'+
+    h.map(l=>'<tr><td>'+esc(l.v||'')+'</td><td>'+esc(l.d||'')+'</td><td>'+
+      (l.m||[]).map(x=>'- '+esc(x)).join('<br>')+'</td></tr>').join('')+
+    '</tbody></table></div>';
 }
 function navEntete(nu){
   return '<div class="navhead"><div class="refs">'+
@@ -4847,7 +4874,7 @@ function kitNavette(){
     '<button class="iconbtn" id="navMaj" title="Reprendre de la fiche projet l’intitulé, le n° d’ETU, le demandeur et le n° d’imputation">⟲ Reprendre la fiche</button>'+
     '<button class="iconbtn" id="navPrint">⎙ Diffuser la fiche</button></div>';
   return '<div class="nav'+(navValide()?' ok':'')+'" id="navFiche">'+barre+navBlocValidation(p)+
-    navPage1(p)+navPage2()+navPage3()+'</div>';
+    navPage1(p)+navPage2()+navPage3()+navHistorique()+'</div>';
 }
 /* À la première ouverture, la fiche reprend ce que le projet sait déjà. */
 function navAmorcer(p){
