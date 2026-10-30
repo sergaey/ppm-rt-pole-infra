@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-10-30 -->
+<!-- PPM_BUILD:2026-10-30.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1225,9 +1225,14 @@
     font-family:Calibri,Carlito,Segoe UI,Arial,sans-serif;color:var(--n-ink)}
   .navbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
   .navbar .nquoi{font-family:Archivo;font-weight:800;letter-spacing:.02em;color:var(--ink)}
-  /* Une feuille A4 portrait, comme le document d'origine. */
+  /* Une feuille A4 portrait, comme le document d'origine — et a ses mesures.
+     Sans largeur fixe la feuille s'etirait a celle du volet : les corps de
+     texte, eux, restent en pixels, si bien que tout paraissait deux fois trop
+     petit a l'ecran alors que l'impression, elle, tombait juste. La feuille
+     fait donc 210 mm, marges du document comprises, et se centre. */
   .navpage{background:#fff;border:1px solid var(--line);border-radius:4px;
-    padding:14px 18px 30px;margin-bottom:16px;position:relative;
+    width:210mm;max-width:100%;box-sizing:border-box;
+    padding:12mm 12mm 16mm;margin:0 auto 16px;position:relative;
     box-shadow:0 1px 3px rgba(16,24,40,.06);color:#000}
   .navhead{display:flex;align-items:flex-start;gap:12px;border-bottom:1px solid #000;padding-bottom:4px}
   .navhead .refs{font-family:"Times New Roman",Times,serif;font-weight:700;font-size:11.5px;line-height:1.3}
@@ -1236,8 +1241,7 @@
   .navhead .mark{min-width:110px;text-align:right;font-size:8px;letter-spacing:.22em;
     text-transform:uppercase;color:#6B747B;line-height:1.5}
   .navband{background:var(--n-band);border:1px solid #000;border-top:0;text-align:center;
-    font-weight:700;font-size:15px;padding:3px 6px;letter-spacing:.01em}
-  .navband.petit{font-size:13px}
+    font-weight:700;font-size:18.3px;line-height:1.18;padding:2px 6px;letter-spacing:.01em}
   .navtbl{width:100%;border-collapse:collapse;font-size:12.5px}
   .navtbl td,.navtbl th{border:1px solid #000;padding:3px 6px;vertical-align:top;
     white-space:normal;text-transform:none;text-align:left;background:#fff;color:#000}
@@ -1245,6 +1249,8 @@
   .navtbl td.lab{font-weight:400}
   .navtbl td.ctr{text-align:center} .navtbl td.num{text-align:center;font-variant-numeric:tabular-nums}
   .navtbl td.tot{font-weight:700;border:2px solid #000}
+  .nav .navtbl tbody tr:last-child td{border-bottom:1px solid #000}
+  .nav .navtbl tbody tr:last-child td.tot{border-bottom:2px solid #000}
   .nav .gf{outline:none;min-height:16px;white-space:pre-wrap;font-size:12.5px;line-height:1.4;color:#000}
   .nav .gf:empty::before{content:attr(data-vide);color:var(--n-hint);font-style:italic}
   .nav .gf:focus{background:#EAF6FD;box-shadow:0 0 0 1px var(--n-hint);border-radius:2px}
@@ -1267,13 +1273,14 @@
      continue, comme sur le formulaire du client — un seul trait entre le
      dernier cadre d'un bloc et le titre du suivant. */
   .navsig+.navsig .t{border-top:0}
-  .navsig .t{border:1px solid #000;border-bottom:0;font-weight:700;font-size:14px;padding:3px 7px}
-  .navsig .navtbl th{background:var(--n-head);font-size:11.5px;padding:2px 6px}
+  .navsig .t{border:1px solid #000;border-bottom:0;font-weight:700;font-size:18.6px;line-height:1.2;padding:2px 7px}
+  .navsig .navtbl th{background:var(--n-head);font-size:12.5px;padding:1px 6px}
   /* Le releve des versions du document ressource : un cartouche sobre, sans
      numero de page — il suit la fiche sans en faire partie. */
-  .navhist{font-weight:700;font-size:14px;margin:14px 0 10px;letter-spacing:.01em}
-  .navhist+.navtbl th{text-align:left;font-size:12px}
-  .navhist+.navtbl td{font-style:italic;line-height:1.45}
+  .navhist{font-weight:700;font-size:18.4px;margin:14px 0 10px;letter-spacing:.01em}
+  .navhist+.navtbl{width:94.5%}
+  .navhist+.navtbl th{text-align:left;font-size:12px;padding:8px 6px}
+  .navhist+.navtbl td{font-style:italic;font-size:14.7px;line-height:1.15}
   .navhist+.navtbl td:first-child,.navhist+.navtbl td:nth-child(2){vertical-align:middle}
   /* La validation et la transmission : à l'écran seulement — le formulaire
      imprimé reste celui du client, page pour page. */
@@ -1853,7 +1860,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-10-30';
+const APP_BUILD='2026-10-30.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -4666,9 +4673,9 @@ const navK=v=>{ if(!v) return ''; const r=Math.round(v*100)/100;
 function navPage1(p){
   const opt=(c,lib,est,ast)=>'<div class="navopt">'+navCk(c)+'<span>'+lib+
     (ast?'<span class="ast">*</span>':'')+'</span><span class="est">'+est+'</span></div>';
-  const metier=NAV_METIERS.map(m=>'<tr><td class="lab" style="width:34%">Chiffrage '+m+' par :</td>'+
+  const metier=NAV_METIERS.map(m=>'<tr><td class="lab" style="width:40%">Chiffrage '+m+' par :</td>'+
     '<td>'+navF('qui.'+m,'Mettre un nom / cocher la case sinon mettre NA','mini')+'</td>'+
-    '<td class="ctr" style="width:34px">'+navCk('ck.'+m)+'</td></tr>').join('');
+    '<td class="ctr" style="width:11%">'+navCk('ck.'+m)+'</td></tr>').join('');
   const grille='<table class="navtbl navgrille" style="margin-top:4px"><thead><tr><th style="width:17%"></th>'+
     NAV_COLS.map(([,l])=>'<th>'+l+'</th>').join('')+'<th>TOTAL</th><th style="width:26px"></th></tr></thead><tbody>'+
     NAV_LOTS.map(l=>'<tr><td class="lab" style="text-align:right;font-size:11.5px">↳ '+l+' :</td>'+
@@ -4689,7 +4696,7 @@ function navPage1(p){
         '<div style="font-size:13px">Nombre de Document(s) joint(s) : '+navF('nbdoc','1','mini')+'</div>'+
         '<div class="navnote">(Liste en annexe)</div>'+
       '</td></tr></table>'+
-    '<table class="navtbl" style="border-top:0"><tr><td style="width:30%">'+
+    '<table class="navtbl" style="border-top:0"><tr><td style="width:25%">'+
         '<div>Demandeur :</div>'+navF('dem',(p&&(p.pm||p.pl))||'Nom du demandeur','mini')+
         '<div style="margin-top:9px">Référent de la fiche navette :</div>'+
         navF('ref','Désigné comme responsable de la fiche navette','mini')+
@@ -4988,12 +4995,26 @@ function appliquerSeedFnav(){
     if(S.fnavSeed[e.id]) return;
     const p=fnavProjet(e); if(!p) return;            // projet absent de ce portefeuille
     S.fnavSeed[e.id]=p.id;
-    const f=navOf(p.id).f; let k=0;
+    const f=navOf(p.id).f; let k=0, maj=0, gardes=[];
+    /* Une version corrigee du releve ne peut pas atteindre une fiche deja
+       posee : le releve ne comble que le vide. « maj » dit alors ce que la
+       pose precedente avait ecrit. La valeur n'est reprise que si elle est
+       restee telle quelle — si elle a ete retouchee, c'est une saisie, et
+       une saisie ne se recouvre pas : elle est comptee et nommee. */
+    Object.keys(e.maj||{}).forEach(c=>{
+      const av=String(f[c]==null?'':f[c]);
+      if(av===String(e.maj[c])){ f[c]=e.f[c]; maj++; }
+      else if(av.trim()) gardes.push(c);
+    });
     Object.keys(e.f||{}).forEach(c=>{
       if(String(f[c]==null?'':f[c]).trim()) return;  // jamais par-dessus une saisie
       f[c]=e.f[c]; k++;
     });
-    if(k){ logChange('Projet '+(p.shine||p.nom),'fiche navette — '+(e.quoi||'relevé'),'',k+' champ(s) repris'); n++; }
+    if(k||maj){
+      const quoi=[k?k+' champ(s) repris':'', maj?maj+' mis a jour':''].filter(Boolean).join(', ');
+      logChange('Projet '+(p.shine||p.nom),'fiche navette — '+(e.quoi||'relevé'),'',quoi); n++; }
+    if(gardes.length) logChange('Projet '+(p.shine||p.nom),
+      'fiche navette — saisies conservées','',gardes.join(', '));
   });
   if(n) logChange('Portefeuille','fiches navette reprises','',n+' fiche(s)');
   return n;
