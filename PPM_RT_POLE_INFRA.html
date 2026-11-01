@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-01.4 -->
+<!-- PPM_BUILD:2026-11-01.5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1862,7 +1862,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-01.4';
+const APP_BUILD='2026-11-01.5';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2103,7 +2103,7 @@ function migrate(saved){
     demandRT:saved.demandRT||base.demandRT,
     capacityRT:saved.capacityRT||base.capacityRT
   });
-  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.nav=r.nav||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.fnavSeed=r.fnavSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
+  r.cers=r.cers||{}; r.gates=r.gates||{}; r.gatedoc=r.gatedoc||{}; r.trk=r.trk||{}; r.nav=r.nav||{}; r.achSP=r.achSP||{}; r.achSeeded=r.achSeeded||{}; r.budSeed=r.budSeed||{}; r.fnavSeed=r.fnavSeed||{}; r.packSeed=r.packSeed||{}; r.hse=r.hse||{}; r.actions=r.actions||seedActions(); if(!r.navKey)r.navKey='ppole';
   r.scenario=r.scenario||{budgetCut:0,capCut:0,excluded:{},added:[],q:''}; r.audit=r.audit||[]; if(!r.user)r.user='SGD RT Infra';
   r.ged=r.ged||seedGED(); r.cdc=r.cdc||{}; r.uoEst=r.uoEst||[]; if(r.activeOnly===undefined)r.activeOnly=true;
   (r.ged||[]).forEach(dd=>{if(dd.sousens===undefined)dd.sousens='Études';if(dd.phase===undefined)dd.phase='APD';if(dd.fav===undefined)dd.fav=false;if(dd.archived===undefined)dd.archived=false;if(dd.file===undefined)dd.file=null;if(dd.html===undefined)dd.html=null;if(dd.rubrique===undefined)dd.rubrique='';
@@ -3448,7 +3448,8 @@ function amorcerTout(){
                  ['n° ETU',()=>appliquerSeedEtu()],
                  ['achats du pôle',()=>appliquerSeedAch()],
                  ['budgets arbitrés',()=>appliquerSeedBud()],
-                 ['fiches navette',()=>appliquerSeedFnav()]];
+                 ['fiches navette',()=>appliquerSeedFnav()],
+                 ['supports de projet',()=>appliquerSeedPack()]];
   let n=0; const rates=[];
   travaux.forEach(([nom,f])=>{
     try{ n+=(f()||0); }
@@ -5113,6 +5114,97 @@ function appliquerSeedFnav(){
 function fnavManquantes(){
   if(!Array.isArray(SEED_FNAV)) return [];
   return SEED_FNAV.filter(e=>!fnavProjet(e));
+}
+/* ---- Supports de projet releves sur les presentations du client ----
+   Les ID Card et les packs de Gate arrivent en PowerPoint. Le releve les
+   reprend champ par champ, comme celui des fiches navette : il ne comble que
+   le vide, ne repasse pas, et journalise ce qu'il porte. Les tableaux ne sont
+   poses que s'ils sont encore vierges — une ligne saisie a la main vaut mieux
+   qu'un tableau refait. */
+const SEED_PACK = [
+];
+function packProjet(e){
+  const vivants=(S.projects||[]).filter(x=>!x.deleted);
+  const c=norm(e.shine||'');
+  if(c){ const p=vivants.find(x=>[x.shine,x.ishift,x.id,x.code].some(v=>v&&norm(v)===c)); if(p) return p; }
+  return e.nom?etuTrouve(e,vivants):null;
+}
+const packVide=v=>!String(v==null?'':v).trim();
+/* Une case n'est libre que si personne n'y a rien mis. Mais l'ID Card et le
+   pack de Gate s'amorcent seuls depuis la fiche projet — intitule, code,
+   sponsor, chef de projet, annees, invite de l'ecart. Cette valeur-la n'est
+   pas une saisie : elle tient la place en attendant mieux, et la presentation
+   du client est mieux. On la remplace ; une valeur retouchee, jamais. */
+function packAutoIdc(p){
+  return {nom:p.nom||'', code:p.shine||p.ishift||'', sponsor:p.sponsor||'',
+          pm:p.pm||'', approvers:'PPM, finance, Resp secteur',
+          statut:'To approve', gap:IDC_GAP0};
+}
+function packAutoGate(p){
+  const a0=new Date().getFullYear(), o={
+    'id.t':p.nom||'', 'id.sh':p.shine||p.ishift||'', 'id.sp':p.sponsor||'', 'id.pl':p.pm||p.pl||'',
+    'ri.t':p.nom||'', 'ri.sh':p.shine||p.ishift||'', 'ri.sp':p.sponsor||'', 'ri.pm':p.pm||p.pl||'',
+    'cov.nom':(p.shine||p.ishift||'')+((p.shine||p.ishift)?' — ':'')+(p.nom||''), '_gate':'G1'};
+  for(let i=0;i<4;i++) o['exec.an'+i]=String(a0+i);
+  for(let i=0;i<3;i++) o['fin.an'+i]=String(a0+i);
+  return o;
+}
+const packLibre=(cur,auto)=>packVide(cur)||(auto!==undefined&&String(cur)===String(auto));
+function appliquerSeedPack(){
+  if(!Array.isArray(SEED_PACK)||!SEED_PACK.length) return 0;
+  S.packSeed=S.packSeed||{};
+  let n=0;
+  SEED_PACK.forEach(e=>{
+    if(S.packSeed[e.id]) return;
+    const p=packProjet(e); if(!p) return;            // projet absent de ce portefeuille
+    S.packSeed[e.id]=p.id;
+    const nom='Projet '+(p.shine||p.nom); let k=0;
+    /* --- ID Card --- */
+    if(e.idc){
+      const d=idcOf(p.id), auto=packAutoIdc(p);
+      Object.keys(e.idc).forEach(c=>{
+        if(c==='fin'||c==='tl') return;
+        if(!packLibre(d[c],auto[c])) return;
+        d[c]=e.idc[c]; k++;
+      });
+      if(e.idc.fin){ ['capex','opex'].forEach(m=>{ ['b','r'].forEach(x=>{
+        (e.idc.fin[m]&&e.idc.fin[m][x]||[]).forEach((v,i)=>{
+          if(v!=='' && packVide(d.fin[m][x][i])){ d.fin[m][x][i]=v; k++; } }); }); }); }
+      /* Le planning n'est pose que si la carte n'en a pas encore : une frise
+         deja tiree a la souris ne se refait pas. */
+      if(e.idc.tl && !d.tl){ d.tl=JSON.parse(JSON.stringify(e.idc.tl)); k++; }
+    }
+    /* --- Pack de Gate --- */
+    if(e.gd){
+      const g=gdOf(p.id);
+      const autog=packAutoGate(p);
+      Object.keys(e.gd).forEach(pk=>{
+        g[pk]=g[pk]||{}; g[pk].f=g[pk].f||{}; g[pk].t=g[pk].t||{};
+        Object.keys(e.gd[pk].f||{}).forEach(c=>{
+          if(!packLibre(g[pk].f[c],autog[c])) return;
+          g[pk].f[c]=e.gd[pk].f[c]; k++; });
+        Object.keys(e.gd[pk].t||{}).forEach(c=>{
+          const av=g[pk].t[c];
+          const vierge=!Array.isArray(av)||!av.length||
+            av.every(r=>Object.keys(r||{}).every(x=>packVide(r[x])));
+          if(vierge){ g[pk].t[c]=JSON.parse(JSON.stringify(e.gd[pk].t[c])); k++; }
+        });
+      });
+    }
+    /* --- Statuts des gates : seulement si personne n'y a touche --- */
+    if(Array.isArray(e.gates)){
+      const g=ensureGate(p.id);
+      const neuf=(g.gates||[]).every(x=>packVide(x.date));
+      if(neuf){ e.gates.forEach((x,i)=>{ if(g.gates[i]) Object.assign(g.gates[i],x); }); k++; }
+    }
+    if(k){ logChange(nom,'support repris — '+(e.quoi||'relevé'),'',k+' élément(s)'); n++; }
+  });
+  if(n) logChange('Portefeuille','supports de projet repris','',n+' support(s)');
+  return n;
+}
+function packManquants(){
+  if(!Array.isArray(SEED_PACK)) return [];
+  return SEED_PACK.filter(e=>!packProjet(e));
 }
 function kitChecklist(k){
   const all=k.phases.flatMap(p=>p.rows), c=s=>all.filter(r=>r.status===s).length;
