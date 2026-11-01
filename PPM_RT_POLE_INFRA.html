@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-01.3 -->
+<!-- PPM_BUILD:2026-11-01.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1862,7 +1862,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-01.3';
+const APP_BUILD='2026-11-01.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -6349,11 +6349,13 @@ function kitIdCard(){
       ${idcCDOde(p)?`<button class="iconbtn" id="idcCDO" title="Reprendre le cahier des objectifs de ce projet : il ne remplit que les zones restées vides">📄 Reprendre le CDO</button>`:''}
       <button class="iconbtn" id="idcMaj" title="Reprendre le nom, le code, le PM et le sponsor de la fiche projet">⟲ Reprendre la fiche</button>
     </div>
-    ${reg==='gate' ? idcGatesHTML(p)+(idcRempli(d)?`
+    ${reg==='gate' ? idcGatesHTML(p)+`
         <div class="idcnote" style="margin:14px 0 11px"><span class="ic">🪪</span>
-          <div><b>Une ID Card a été rédigée pour ce projet.</b> Au-delà de ${IDC_SEUIL} k€ elle ne vaut
-            pas validation — c'est le process de Gate qui s'applique —, mais son contenu reste le
-            cadrage du projet et alimente les supports de passage.</div></div>`+idcProjetHTML(p,d):'')
+          <div><b>${idcRempli(d)?'Une ID Card a été rédigée pour ce projet.'
+                                :'L’ID Card de ce projet reste à rédiger.'}</b>
+            Au-delà de ${IDC_SEUIL} k€ elle ne vaut pas validation — c'est le process de Gate qui
+            s'applique —, mais son contenu est le cadrage du projet et alimente les supports de
+            passage.</div></div>`+idcProjetHTML(p,d)
       : reg==='bucket' ? idcBucketHTML(p,d) : idcProjetHTML(p,d)}
   </div>`;
 }
