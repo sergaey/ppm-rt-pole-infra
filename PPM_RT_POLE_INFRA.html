@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-01 -->
+<!-- PPM_BUILD:2026-11-01.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1861,7 +1861,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-01';
+const APP_BUILD='2026-11-01.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2753,7 +2753,7 @@ function nouveauProjet(){
     logChange('Projet '+(p.shine||p.nom),'création','—',p.nom);
     const ouvrir=q('npOuvrir').checked;
     fermer();
-    if(ouvrir){ S.currentProj=p.id; S.tab='pass'; }
+    if(ouvrir){ ouvrirProjet(p.id); }
     render(); scheduleSave();
   };
   setTimeout(()=>q('npShine').focus(),0);
@@ -2981,7 +2981,7 @@ function renderDash(){
   $$('#projTbl thead th[data-k]').forEach(th=>th.addEventListener('click',()=>{toggleSort('sort',th.dataset.k); renderDash();}));
   $$('[data-filterhealth]').forEach(el=>el.addEventListener('click',()=>{ S._hfilter=el.dataset.filterhealth; S.filters.statut=''; renderDash();}));
   $$('[data-gp]').forEach(el=>el.addEventListener('click',()=>{S.filters.pole=el.dataset.gp; renderDash();}));
-  $$('[data-fid2]').forEach(el=>el.addEventListener('click',()=>{S.currentProj=el.dataset.fid2;S.tab='pass';render();}));
+  $$('[data-fid2]').forEach(el=>el.addEventListener('click',()=>{ouvrirProjet(el.dataset.fid2);render();}));
   wireRows();
   armerPole();
 }
@@ -3134,7 +3134,25 @@ function projBudgetSaisie(p,champ,texte){
   return true;
 }
 function hord(p){return {r:0,a:1,g:2}[projHealth(p).band];}
-function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{S.currentProj=tr.dataset.id; S.tab='pass'; render();}));
+/* Ouvrir un projet, d'ou que l'on vienne — cockpit, tableau financier, suivi
+   d'actions, macroplanning. L'ecran Pilotage filtre ses projets par pole ; si
+   le projet choisi n'appartient pas au pole encore retenu, c'est le projet qui
+   etait remplace par le premier du lot, et non le filtre qui suivait. On
+   cliquait FMG Compliance, on arrivait sur un projet du pole EE. Le choix
+   prime sur le filtre : le pole suit le projet. */
+function ouvrirProjet(id, onglet){
+  const p=(S.projects||[]).find(x=>x.id===id && !x.deleted);
+  if(!p) return false;
+  S.currentProj=id;
+  if(S.ppPole && p.group!==S.ppPole){
+    S.ppPole = p.group || '';
+    S.navKey = '';
+  }
+  S.tab='pass';
+  if(onglet) S.kitTab=onglet;
+  return true;
+}
+function wireRows(){ $$('#projTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{ouvrirProjet(tr.dataset.id); render();}));
   /* Glisser-déposer : la ligne n'est saisissable que par sa poignée, sinon le
      moindre glissement sur une cellule éditable deviendrait un déplacement. */
   let source=null;
@@ -6948,7 +6966,7 @@ function csdFiche(id){
     el.addEventListener('change',maj); el.addEventListener('blur',maj);
   });
   const go=ov.querySelector('[data-cdo-open]');
-  if(go) go.onclick=()=>{ ov.remove(); S.currentProj=id; S.tab='pass'; S.kitTab='synthese'; render(); };
+  if(go) go.onclick=()=>{ ov.remove(); ouvrirProjet(id,'synthese'); render(); };
 }
 /* Import d'un fichier CSD : les tableaux de données y sont des littéraux
    JavaScript (INFRA_RAW, EE_RAW…). On les lit sans exécuter le fichier. */
@@ -8231,7 +8249,7 @@ function renderActions(){
   $$('[data-ats]').forEach(th=>th.onclick=()=>{ const k=th.dataset.ats;
     if(S.at.sort.k===k) S.at.sort.d*=-1; else { S.at.sort.k=k; S.at.sort.d=(k==='score'||k==='priorite'||k==='avancement')?-1:1; }
     scheduleSave(); rr(); });
-  $$('[data-atgo]').forEach(b=>b.onclick=()=>{ S.currentProj=b.dataset.atgo; S.tab='pass'; S.kitTab='synthese'; S.navKey=''; scheduleSave(); render(); });
+  $$('[data-atgo]').forEach(b=>b.onclick=()=>{ ouvrirProjet(b.dataset.atgo,'synthese'); S.navKey=''; scheduleSave(); render(); });
 }
 
 function atPuce(a){
@@ -8582,7 +8600,7 @@ function renderMacro(){
   lier('#mpPole','change',e=>{S.mp.pole=e.target.value;scheduleSave();rr();});
   lier('#mpQ','input',e=>{S.mp.q=e.target.value;rr();});
   lier('#mpAvec','change',e=>{S.mp.avecSeuls=e.target.checked;scheduleSave();rr();});
-  $$('[data-mpgo]').forEach(b=>b.onclick=()=>{ S.currentProj=b.dataset.mpgo; S.tab='pass'; S.kitTab='macro'; S.navKey=''; scheduleSave(); render(); });
+  $$('[data-mpgo]').forEach(b=>b.onclick=()=>{ ouvrirProjet(b.dataset.mpgo,'macro'); S.navKey=''; scheduleSave(); render(); });
   mpArmer();
 }
 function mpLigne(p,ph,an,cw){
@@ -9061,8 +9079,8 @@ function renderFin(){
   </div>
   ${footHTML('fin',`Finance · source de référence ERP pour engagements/factures ; la plateforme consolide et projette l'atterrissage.`)}`;
   $$('#finTbl thead th[data-k]').forEach(th=>th.addEventListener('click',()=>{if(S.finSort.key===th.dataset.k)S.finSort.dir*=-1;else{S.finSort.key=th.dataset.k;S.finSort.dir=-1;}renderFin();}));
-  $$('#finTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{S.currentProj=tr.dataset.id;S.tab='pass';render();}));
-  $$('[data-fid]').forEach(el=>el.addEventListener('click',()=>{S.currentProj=el.dataset.fid;S.tab='pass';render();}));
+  $$('#finTbl tbody tr[data-id]').forEach(tr=>tr.addEventListener('click',()=>{ouvrirProjet(tr.dataset.id);render();}));
+  $$('[data-fid]').forEach(el=>el.addEventListener('click',()=>{ouvrirProjet(el.dataset.fid);render();}));
   bindFinEdit();
 }
 function fth(l,k){return `<th data-k="${k}">${l}${S.finSort.key===k?(S.finSort.dir<0?' ▼':' ▲'):''}</th>`;}
