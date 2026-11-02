@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.2 -->
+<!-- PPM_BUILD:2026-11-02.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1863,7 +1863,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.2';
+const APP_BUILD='2026-11-02.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3132,7 +3132,32 @@ function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
    champs : l'écart et la santé du portefeuille, la baseline des achats et le
    disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
 const PROJ_BUD={capex26:'CAPEX B26 (k€)',c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',
-  b27:'CAPEX B27 (k€)',act:'Actuals (k€)',commit:'Commitments (k€)'};
+  b27:'CAPEX B27 (k€)',act:'Actuals (k€)',commit:'Commitments (k€)',
+  att26:'Atterrissage CAPEX B26 (k€)',attC1:'Atterrissage C1 alloué (k€)',
+  attC2:'Atterrissage C2 révisé (k€)',attTot:'Atterrissage CAPEX Projet Total (k€)',
+  attB27:'Atterrissage CAPEX B27 (k€)',
+  dispoC1:'Available Amount base C1 (k€)',dispoC2:'Available Amount base C2 (k€)'};
+/* Une valeur saisie l'emporte sur son calcul ; vide, c'est le calcul qui parle.
+   La case montre alors la valeur calculee en invite, pour qu'on voie ce que
+   l'on remplace avant de le remplacer. */
+const budSaisi=v=>(v==null||v==='')?null:(+v||0);
+/* Trois de ces champs ont une valeur calculee : l'atterrissage de la base C2,
+   et les deux disponibles. Elle s'affiche en clair — la case reste modifiable,
+   et resaisir la valeur calculee rend simplement la main au calcul plutot que
+   de le figer. Les autres colonnes d'atterrissage n'ont rien a supposer. */
+function budCalcule(p,champ){
+  if(!p) return undefined;
+  const eng=(+p.act||0)+(+p.commit||0);
+  const fy=(p.c2!=null&&p.c2!=='')?(+p.c2||0):(+p.c1||0);
+  if(champ==='attC2'){
+    if(budSaisi(p.c1)==null && budSaisi(p.c2)==null
+       && budSaisi(p.act)==null && budSaisi(p.commit)==null) return undefined;
+    return atterrissageCalc(p);
+  }
+  if(champ==='dispoC1') return (+p.c1||0)-eng;
+  if(champ==='dispoC2') return fy-eng;
+  return undefined;
+}
 /* Le CAPEX Projet Total est une somme, pas une saisie : le CAPEX B26 plus le
    budget de l'exercice — le C2 revise s'il est renseigne, le C1 alloue sinon,
    la meme regle que partout ailleurs dans l'application. Il ne s'affiche que
@@ -3152,9 +3177,13 @@ function projBudgetSaisie(p,champ,texte){
   const v = t==='' ? null : parseFloat(t);
   const neu = (v==null||isNaN(v)) ? null : v;
   const av = (p[champ]==null||p[champ]==='') ? null : +p[champ];
-  if(av===neu) return false;
-  logChange('Projet '+(p.shine||p.nom), PROJ_BUD[champ], av==null?'':av, neu==null?'':neu);
-  p[champ]=neu; scheduleSave();
+  const calc=budCalcule(p,champ);
+  const rendu = calc!==undefined && neu!=null && Math.abs(neu-calc)<1e-9;
+  const val = rendu ? null : neu;
+  if(av===val) return false;
+  logChange('Projet '+(p.shine||p.nom), PROJ_BUD[champ]+(rendu?' — rendu au calcul':''),
+    av==null?'':av, val==null?(rendu?fmt(calc):''):val);
+  p[champ]=val; scheduleSave();
   return true;
 }
 function hord(p){return {r:0,a:1,g:2}[projHealth(p).band];}
@@ -9090,9 +9119,15 @@ function subHealth(lb,sc){const b=sc>=75?'g':sc>=55?'a':'r';return `<div class="
    budget révisé — un projet consomme ce qui lui est alloué — et davantage dès
    que le facturé et l'engagé le dépassent. Avec des engagements nuls, c'est
    exactement l'estimation d'avant. */
-function atterrissage(p){
+/* L'atterrissage de reference reste celui de la base C2 : saisi s'il l'est,
+   calcule sinon — le budget de l'exercice, releve au plancher du consomme. */
+function atterrissageCalc(p){
   const c2=(p.c2!=null?p.c2:p.c1)||0;
   return Math.max(c2, (p.act||0)+(p.commit||0));
+}
+function atterrissage(p){
+  const v=budSaisi(p&&p.attC2);
+  return v!=null?v:atterrissageCalc(p);
 }
 function budgetBlock(p,pp,atter){
   const c1=p.c1||0, c2=(p.c2!=null?p.c2:p.c1), ec=(c2||0)-c1;
@@ -9103,6 +9138,10 @@ function budgetBlock(p,pp,atter){
   const BCOLS=[['capex26','CAPEX B26','—'],['c1','C1 Alloué','—'],['c2','C2 révisé','—'],
                ['capexTot','CAPEX Projet Total',''],['b27','CAPEX B27','—']];
   const ctot=capexTotal(p);
+  /* Un champ d'atterrissage par colonne de budget. Seule la base C2 a une
+     estimation calculee — le budget de l'exercice releve au plancher du
+     consomme ; les autres colonnes n'ont rien a supposer, elles se saisissent. */
+  const ATT={capex26:'att26',c1:'attC1',c2:'attC2',capexTot:'attTot',b27:'attB27'};
   const bval=k=>k==='c2'?(c2!=null?fmtSaisie(c2):''):(p[k]!=null&&p[k]!==''?fmtSaisie(p[k]):'');
   return `<div class="tblwrap ppsec" style="--c:#D97706;--cs:rgba(217,119,6,.13);margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th>${
     BCOLS.map(([,l])=>`<th class="num">${l}</th>`).join('')}</tr></thead>
@@ -9113,15 +9152,28 @@ function budgetBlock(p,pp,atter){
       : `<td class="num" contenteditable data-pfn="${k}"
       data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
         k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${bval(k)}</td>`).join('')}</tr>
-    <tr class="tot"><td>Atterrissage estimé</td><td class="num" colspan="${BCOLS.length}" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
+    <tr class="tot"><td>Atterrissage estimé <span class="bmini" style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td>${
+      BCOLS.map(([k])=>{ const ch=ATT[k], v=budSaisi(p[ch]), calc=budCalcule(p,ch);
+        const eff=v!=null?v:calc;
+        return `<td class="num" contenteditable data-pfn="${ch}" data-vide="—"
+          style="${v==null&&calc!==undefined?'color:var(--accent)':''}"
+          title="${esc(PROJ_BUD[ch])} — cliquez pour saisir${calc!==undefined
+            ?' · vidée, c’est l’estimation calculée ('+fmt(calc)+') qui fait foi':''}"
+          >${eff!=null?fmtSaisie(eff):''}</td>`; }).join('')}</tr>
   </tbody></table></div>
   <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
   <tbody>
     <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act,c2||c1)}</td></tr>
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com,c2||c1)}</td></tr>
     <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage,c2||c1)}</td></tr>
-    <tr><td>Available Amount <span class="bmini">C1 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo1)};font-weight:600">${fmt(dispo1)}</td><td class="num">${pc(dispo1,c1)}</td></tr>
-    <tr><td>Available Amount <span class="bmini">C2 − (actuals + commitments)</span></td><td class="num" style="color:${teinte(dispo2)};font-weight:600">${fmt(dispo2)}</td><td class="num">${pc(dispo2,c2)}</td></tr>
+    ${[['dispoC1','C1',dispo1,c1],['dispoC2','C2',dispo2,c2]].map(([ch,b,calc,base])=>{
+      const v=budSaisi(p[ch]), eff=v!=null?v:calc;
+      return `<tr><td>Available Amount <span class="bmini">${b} − (actuals + commitments)</span></td>
+        <td class="num" contenteditable data-pfn="${ch}" data-vide="—"
+          style="color:${teinte(eff)};font-weight:600"
+          title="${esc(PROJ_BUD[ch])} — cliquez pour saisir · vidée, c’est le calcul (${esc(fmt(calc))}) qui fait foi"
+          >${fmtSaisie(eff)}</td>
+        <td class="num">${pc(eff,base)}</td></tr>`; }).join('')}
   </tbody></table></div>`;
 }
 function milestonesBlock(p,pp){
