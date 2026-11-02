@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.11 -->
+<!-- PPM_BUILD:2026-11-02.12 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1874,7 +1874,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.11';
+const APP_BUILD='2026-11-02.12';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2146,12 +2146,9 @@ function migrate(saved){
       }
       delete p.dispoC1; delete p.dispoC2;
     }
-    if(p.capexTot!==undefined){
-      const som=capexTotal(p), av=(p.capexTot==null||p.capexTot==='')?null:+p.capexTot;
-      if(av!=null && av!==som) logChange('Projet '+(p.shine||p.nom),
-        'CAPEX 25 | 26 Projet Total — désormais calculé', av, som==null?'':som);
-      delete p.capexTot;
-    } });
+    /* Cette migration retirait la saisie du total a chaque chargement, du temps
+       ou le total n'etait qu'une somme. La case est redevenue saisissable : la
+       retirer encore effacerait en silence ce qui vient d'etre tape. */ });
   // Membres retires a la main. Sans cette memoire, le rapprochement ci-dessous
   // recreerait a chaque chargement tout PM|PL d'un projet, et une suppression
   // dans BDD Membres paraitrait ne jamais s'enregistrer.
@@ -3155,6 +3152,7 @@ function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
    champs : l'écart et la santé du portefeuille, la baseline des achats et le
    disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
 const PROJ_BUD={capex26:'CAPEX B25 (k€)',c1:'C1 | 26 (k€)',c2:'C2 | 26 Révisé (k€)',
+  capexTot:'CAPEX 25 | 26 Projet Total (k€)',
   b27:'CAPEX B27 (k€)',act:'Actuals (k€)',commit:'Commitments (k€)',
   att26:'Atterrissage CAPEX B25 (k€)',attC1:'Atterrissage C1 | 26 (k€)',
   attC2:'Atterrissage C2 | 26 Révisé (k€)',attTot:'Atterrissage CAPEX 25 | 26 Projet Total (k€)',
@@ -3178,6 +3176,10 @@ function budCalcule(p,champ){
     return atterrissageCalc(p);
   }
   if(champ==='dispo') return (capexTotal(p)||0)-eng;
+  /* Pour la case du total, le calcul de reference est la somme seule : sans
+     cela, « resaisir la valeur affichee » se comparerait a la saisie elle-meme
+     et ne rendrait jamais la main. */
+  if(champ==='capexTot'){ const s=capexSomme(p); return s==null?undefined:s; }
   return undefined;
 }
 /* Le CAPEX 25 | 26 Projet Total est une somme, pas une saisie : le CAPEX B25 plus le
@@ -3195,8 +3197,10 @@ function budExercice(p){
 /* L'ecart porte par la ligne d'atterrissage : la difference entre
    l'atterrissage saisi et le budget de sa colonne. Seules les valeurs
    explicitement saisies comptent — une estimation calculee ferait bouger le
-   total du projet toute seule au fil des facturations. La colonne du total
-   est exclue : c'est un resultat, pas un terme. */
+   total du projet toute seule au fil des facturations. Deux colonnes sont
+   exclues : celle du total, qui est un resultat et non un terme, et le CAPEX
+   B27 — un total nomme « 25 | 26 » ne porte pas d'argent de 2027, et son
+   atterrissage deplacait le total sans que rien ne le dise. */
 function ecartAtterrissage(p){
   if(!p) return 0;
   let e=0;
@@ -3204,17 +3208,24 @@ function ecartAtterrissage(p){
   if(a26!=null) e += a26-(budN(p.capex26)||0);
   const afy=budN(p.attC2)!=null?budN(p.attC2):budN(p.attC1);
   if(afy!=null) e += afy-(budExercice(p)||0);
-  const ab=budN(p.attB27);
-  if(ab!=null) e += ab-(budN(p.b27)||0);
   return e;
 }
 /* CAPEX 25 | 26 Projet Total = CAPEX B25 ± l'ecart de l'atterrissage + le budget de
-   l'exercice. Exemple : 100 + 30 + 165 = 295 k€. */
-function capexTotal(p){
+   l'exercice : 130 de 2025 + 165 de 2026 = 295 k€. */
+function capexSomme(p){
   if(!p) return null;
   const b26=budN(p.capex26), fy=budExercice(p), ec=ecartAtterrissage(p);
   if(b26==null && fy==null && !ec) return null;
   return (b26||0)+ec+(fy||0);
+}
+/* La somme n'est qu'un defaut. Comme partout ailleurs, une saisie l'emporte —
+   et la case videe, ou resaisie a l'identique, rend la main au calcul. Le
+   total avait ete livre comme une saisie, puis comme une somme ; il est les
+   deux, dans cet ordre. */
+function capexTotal(p){
+  if(!p) return null;
+  const v=budSaisi(p.capexTot);
+  return v!=null?v:capexSomme(p);
 }
 function projBudgetSaisie(p,champ,texte){
   if(!p||!PROJ_BUD[champ]) return false;
@@ -6868,7 +6879,7 @@ function idcBucketHTML(p,d){
   return `<tr class="${gros?'idcgros':''}">
     <td><span contenteditable data-idcl="${i}|nom" data-vide="Project ${i+1}">${esc(l.nom||'')}</span>
       ${gros?`<span class="idcwarn" title="${idcF(tl)} k€ : ce sous-projet atteint le seuil de ${IDC_SEUIL} k€ et relève du process de Gate">⚠ ${idcF(tl)} k€</span>`:`<span class="idcmini">${idcF(tl)||'—'} k€</span>`}</td>
-    <td class="code"><span contenteditable data-idcl="${i}|wbs" data-vide="INV-042XXX">${esc(l.wbs||'')}</span></td>
+    <td class="code"><span contenteditable data-idcl="${i}|wbs" data-vide="INV-XXXXXX">${esc(l.wbs||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|description" data-vide="—">${esc(l.description||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|benefits" data-vide="—">${esc(l.benefits||'')}</span></td>
     <td class="wrap"><span contenteditable data-idcl="${i}|timeline" data-vide="—">${esc(l.timeline||'')}</span></td>
@@ -6895,7 +6906,7 @@ function idcBucketHTML(p,d){
     ${idcEnteteHTML(p,d,'Bucket ID Card')}
     ${recap}
     <div class="tblwrap"><table class="idcbk"><thead><tr>
-      <th style="width:120px"></th><th style="width:124px">WBS (INV-042XXX)</th><th>Description</th>
+      <th style="width:120px"></th><th style="width:124px">WBS (INV-XXXXXX)</th><th>Description</th>
       <th>Benefits</th><th>Timeline / Milestones</th><th style="width:150px">2026</th><th style="width:150px">2027</th><th style="width:62px">ID Card</th></tr></thead>
       <tbody>${lignes}</tbody>
       <tfoot><tr><th colspan="5" style="text-align:right">Total</th>
@@ -7671,8 +7682,44 @@ function appliquerSeedBud(){
     if(!p) return;                                  // projet absent de ce portefeuille
     S.budSeed[e.id]=p.id;
     const nom=p.shine||p.nom;
-    if(e.c2!=null && (+p.c2||0)!==+e.c2){
-      logChange('Projet '+nom,PROJ_BUD.c2+' — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
+    /* Un releve corrige ne peut pas recouvrir une saisie : « maj » dit ce que
+       la pose precedente avait ecrit, et la valeur n'est reprise que si elle
+       est restee telle quelle. Sinon elle a ete retouchee — c'est une saisie,
+       elle est gardee et nommee, et l'ecart avec le releve est journalise
+       plutot qu'arbitre. */
+    Object.keys(e.maj||{}).forEach(c=>{
+      if(!PROJ_BUD[c]) return;
+      const av=(p[c]==null||p[c]==='')?null:+p[c];
+      const vise=Object.prototype.hasOwnProperty.call(e,c)?e[c]:null;
+      if(av!==+e.maj[c]){
+        if(av!=null) logChange('Projet '+nom, PROJ_BUD[c]+' — saisie conservée',
+          av, av+' · le relevé proposait '+(vise==null?'vide':vise));
+        return;
+      }
+      logChange('Projet '+nom, PROJ_BUD[c]+' — '+(e.quoi||'relevé corrigé'),
+        av, vise==null?'':vise);
+      p[c]=vise==null?null:+vise; n++;
+    });
+    /* Les montants du releve comblent le vide, jamais une saisie. Le B27 garde
+       son propre traitement plus bas. */
+    ['capex26','c1'].forEach(c=>{
+      if(!Object.prototype.hasOwnProperty.call(e,c) || e[c]==null) return;
+      if(+p[c]||0) return;
+      logChange('Projet '+nom, PROJ_BUD[c]+' — '+(e.quoi||'relevé'), p[c], e[c]);
+      p[c]=+e[c]; n++;
+    });
+    /* Un budget arbitre comble le vide, il ne recouvre pas une saisie. La pose
+       etait inconditionnelle : un C2 tape a la main repassait a la valeur du
+       releve — « 310 → 295 » — en contradiction avec la regle tenue partout
+       ailleurs. Deux montants qui se contredisent ne s'arbitrent pas ici : le
+       releve est journalise, et c'est la saisie qui reste. */
+    if(e.c2!=null){
+      if(p.c2==null||p.c2===''){
+        logChange('Projet '+nom,PROJ_BUD.c2+' — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
+      } else if((+p.c2||0)!==+e.c2){
+        logChange('Projet '+nom,PROJ_BUD.c2+' — saisie conservée', p.c2,
+          p.c2+' · le relevé proposait '+e.c2);
+      }
     }
     /* Sans C1 | 26 enregistré, un montant en tient lieu : sinon le
        portefeuille afficherait un écart de tout le budget contre une
@@ -7696,8 +7743,13 @@ function appliquerSeedBud(){
       if(m){ logChange('Passage Gate — '+nom,'Finance · ventilation par année','',
         'Gate 0-1-2-3 : '+m+' cellule(s) posée(s)'); n+=m; }
     }
-    if(e.b27!=null && (+p.b27||0)!==+e.b27){
-      logChange('Projet '+nom,'B27 (k€) — '+(e.quoi||'budget arbitré'), p.b27, e.b27); p.b27=+e.b27; n++;
+    if(e.b27!=null){
+      if(p.b27==null||p.b27===''){
+        logChange('Projet '+nom,PROJ_BUD.b27+' — '+(e.quoi||'budget arbitré'), p.b27, e.b27); p.b27=+e.b27; n++;
+      } else if((+p.b27||0)!==+e.b27){
+        logChange('Projet '+nom,PROJ_BUD.b27+' — saisie conservée', p.b27,
+          p.b27+' · le relevé proposait '+e.b27);
+      }
     }
   });
   if(n) logChange('Portefeuille','budgets arbitrés','',n+' champ(s) mis à jour');
@@ -8110,7 +8162,7 @@ const ACH_SYN={numCmd:['n° commande','no commande','n commande','numero de comm
   __proj:['projet','project','code projet','shine','code shine','n° shine','no shine','projet shine','nom du projet']};
 /* Rattacher une ligne importée à son projet. L'export d'un outil d'achat ne
    nomme pas les projets comme le portefeuille : ce qu'il porte toujours, en
-   revanche, c'est le n° d'imputation (INV-0xxxxx) ou le code Shine. On cherche
+   revanche, c'est le n° d'imputation (INV-xxxxxx) ou le code Shine. On cherche
    donc le code, pas le libellé — et on ne tranche jamais entre deux projets. */
 function achCodesInv(v){
   return (String(v||'').match(/INV[\s-]?\d{4,8}/ig)||[]).map(x=>norm(x).replace(/[\s-]/g,''));
@@ -9196,6 +9248,22 @@ function budgetBlock(p,pp,atter){
   const BCOLS=[['capex26','CAPEX B25','—'],['c1','C1 | 26','—'],['c2','C2 | 26 Révisé','—'],
                ['capexTot','CAPEX 25 | 26 Projet Total',''],['b27','CAPEX B27','—']];
   const ctot=capexTotal(p);
+  /* Le total portait un chiffre sans dire d'ou il venait, et un atterrissage
+     saisi dans une colonne pouvait le deplacer sans que rien ne l'explique.
+     L'infobulle enonce desormais chaque terme : la question « d'ou sort ce
+     chiffre » se repond sur la case elle-meme. */
+  const som=capexSomme(p), totSaisi=budSaisi(p.capexTot);
+  const totForcee = totSaisi!=null && som!=null && totSaisi!==som;
+  const termes=(()=>{
+    const b26=budN(p.capex26)||0, fy=budExercice(p)||0, t=['CAPEX B25 '+fmt(b26)];
+    const a26=budSaisi(p.att26);
+    if(a26!=null){ const d=a26-b26; t.push((d>=0?'+ ':'− ')+fmt(Math.abs(d))+' d’écart d’atterrissage 2025'); }
+    const afy=budSaisi(p.attC2)!=null?budSaisi(p.attC2):budSaisi(p.attC1);
+    if(afy!=null){ const d=afy-fy; t.push((d>=0?'+ ':'− ')+fmt(Math.abs(d))+' d’écart d’atterrissage d’exercice'); }
+    t.push('+ '+fmt(fy)+' de budget d’exercice ('
+      +(p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 | 26 Révisé':'C1 | 26')+')');
+    return t.join(' ')+' = '+(som!=null?fmt(som):'—')+' k€ · le CAPEX B27 n’y entre pas, c’est un autre exercice';
+  })();
   /* Un champ d'atterrissage par colonne de budget. Seule la base C2 a une
      estimation calculee — le budget de l'exercice releve au plancher du
      consomme ; les autres colonnes n'ont rien a supposer, elles se saisissent. */
@@ -9205,11 +9273,11 @@ function budgetBlock(p,pp,atter){
     BCOLS.map(([,l])=>`<th class="num">${l}</th>`).join('')}<th class="bcom">Commentaire</th></tr></thead>
   <tbody>
     <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>k==='capexTot'
-      ? `<td class="num" style="color:var(--accent);font-weight:600"
-          title="CAPEX 25 | 26 Projet Total — calculé, pas saisi : CAPEX B25 ${fmt(budN(p.capex26)||0)}${
-            ecartAtterrissage(p)?' '+(ecartAtterrissage(p)>0?'+':'−')+' '+fmt(Math.abs(ecartAtterrissage(p)))+' d’écart d’atterrissage':''
-            } + ${fmt(budExercice(p)||0)} de budget d’exercice (${p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 | 26 Révisé':'C1 | 26'}) = ${
-            ctot!=null?fmt(ctot):'—'} k€">${ctot!=null?fmtSaisie(ctot):'—'}</td>`
+      ? `<td class="num${totForcee?' forcee':''}" contenteditable data-pfn="capexTot" data-vide="—"
+          style="${totSaisi==null?'color:var(--accent);':''}font-weight:600"
+          title="CAPEX 25 | 26 Projet Total — ${totSaisi!=null
+            ? 'valeur saisie ; la somme donnerait '+(som!=null?fmt(som):'—')+' k€, videz la case pour y revenir · '+termes
+            : 'somme calculée, modifiable : '+termes}">${ctot!=null?fmtSaisie(ctot):''}</td>`
       : `<td class="num" contenteditable data-pfn="${k}"
       data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
         k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${bval(k)}</td>`).join('')}${budComCell(p,'fy')}</tr>
