@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.8 -->
+<!-- PPM_BUILD:2026-11-02.9 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1868,7 +1868,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.8';
+const APP_BUILD='2026-11-02.9';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2124,26 +2124,26 @@ function migrate(saved){
     const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p);
     /* Un pôle choisi à la main l'emporte sur la déduction faite du libellé. */
     if(!p.poleFixe){ if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; }
-    /* Le CAPEX Projet Total a d'abord ete livre comme une saisie, avant d'etre
+    /* Le CAPEX 25 | 26 Projet Total a d'abord ete livre comme une saisie, avant d'etre
        defini comme une somme. Une valeur restee en base ne sert plus a rien :
        on la retire, mais on ne l'efface pas en silence si elle disait autre
        chose que la somme — le journal en garde la trace. */
     /* Les deux « Available Amount », base C1 et base C2, se ramenent a un seul :
-       le disponible se lit sur la base annoncee, le CAPEX Projet Total. Une
+       le disponible se lit sur la base annoncee, le CAPEX 25 | 26 Projet Total. Une
        valeur forcee sur l'un des deux est reprise plutot que perdue. */
     if(p.dispoC1!==undefined||p.dispoC2!==undefined){
       const av=(p.dispoC1!=null&&p.dispoC1!=='')?p.dispoC1
              :((p.dispoC2!=null&&p.dispoC2!=='')?p.dispoC2:null);
       if(av!=null && (p.dispo==null||p.dispo==='')){
         p.dispo=av;
-        logChange('Projet '+(p.shine||p.nom),'Available Amount — base ramenée au CAPEX Projet Total','',av);
+        logChange('Projet '+(p.shine||p.nom),'Available Amount — base ramenée au CAPEX 25 | 26 Projet Total','',av);
       }
       delete p.dispoC1; delete p.dispoC2;
     }
     if(p.capexTot!==undefined){
       const som=capexTotal(p), av=(p.capexTot==null||p.capexTot==='')?null:+p.capexTot;
       if(av!=null && av!==som) logChange('Projet '+(p.shine||p.nom),
-        'CAPEX Projet Total — désormais calculé (CAPEX B26 + C2 ou C1)', av, som==null?'':som);
+        'CAPEX 25 | 26 Projet Total — désormais calculé', av, som==null?'':som);
       delete p.capexTot;
     } });
   // Membres retires a la main. Sans cette memoire, le rapprochement ci-dessous
@@ -3148,10 +3148,10 @@ function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
    champ vidé. Ce qui en découle suit de soi, puisque tout part de ces
    champs : l'écart et la santé du portefeuille, la baseline des achats et le
    disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
-const PROJ_BUD={capex26:'CAPEX B26 (k€)',c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',
+const PROJ_BUD={capex26:'CAPEX B25 (k€)',c1:'C1 | 26 (k€)',c2:'C2 | 26 Révisé (k€)',
   b27:'CAPEX B27 (k€)',act:'Actuals (k€)',commit:'Commitments (k€)',
-  att26:'Atterrissage CAPEX B26 (k€)',attC1:'Atterrissage C1 alloué (k€)',
-  attC2:'Atterrissage C2 révisé (k€)',attTot:'Atterrissage CAPEX Projet Total (k€)',
+  att26:'Atterrissage CAPEX B25 (k€)',attC1:'Atterrissage C1 | 26 (k€)',
+  attC2:'Atterrissage C2 | 26 Révisé (k€)',attTot:'Atterrissage CAPEX 25 | 26 Projet Total (k€)',
   attB27:'Atterrissage CAPEX B27 (k€)',
   dispo:'Available Amount (k€)'};
 /* Une valeur saisie l'emporte sur son calcul ; vide, c'est le calcul qui parle.
@@ -3174,7 +3174,7 @@ function budCalcule(p,champ){
   if(champ==='dispo') return (capexTotal(p)||0)-eng;
   return undefined;
 }
-/* Le CAPEX Projet Total est une somme, pas une saisie : le CAPEX B26 plus le
+/* Le CAPEX 25 | 26 Projet Total est une somme, pas une saisie : le CAPEX B25 plus le
    budget de l'exercice — le C2 revise s'il est renseigne, le C1 alloue sinon,
    la meme regle que partout ailleurs dans l'application. Il ne s'affiche que
    si l'un des deux termes existe : sans budget du tout, une case a zero ferait
@@ -3202,7 +3202,7 @@ function ecartAtterrissage(p){
   if(ab!=null) e += ab-(budN(p.b27)||0);
   return e;
 }
-/* CAPEX Projet Total = CAPEX B26 ± l'ecart de l'atterrissage + le budget de
+/* CAPEX 25 | 26 Projet Total = CAPEX B25 ± l'ecart de l'atterrissage + le budget de
    l'exercice. Exemple d'Upgrade des automates : 100 + 30 + 165 = 295 k€. */
 function capexTotal(p){
   if(!p) return null;
@@ -7665,16 +7665,16 @@ function appliquerSeedBud(){
     S.budSeed[e.id]=p.id;
     const nom=p.shine||p.nom;
     if(e.c2!=null && (+p.c2||0)!==+e.c2){
-      logChange('Projet '+nom,'C2 révisé (k€) — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
+      logChange('Projet '+nom,PROJ_BUD.c2+' — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
     }
-    /* Sans C1 alloué enregistré, un montant en tient lieu : sinon le
+    /* Sans C1 | 26 enregistré, un montant en tient lieu : sinon le
        portefeuille afficherait un écart de tout le budget contre une
        allocation jamais saisie. Quand le budget d'avant révision est connu,
        c'est lui — l'écart dit alors la hausse, et non le budget entier. Un C1
        déjà renseigné est de l'histoire : on n'y touche pas. */
     if(e.c2!=null && !(+p.c1||0)){
       const v = e.c1Vide!=null ? +e.c1Vide : +e.c2;
-      logChange('Projet '+nom,'C1 alloué (k€) — '+(e.c1Vide!=null?'budget avant révision':'aucun montant alloué n’était enregistré'), p.c1, v);
+      logChange('Projet '+nom,PROJ_BUD.c1+' — '+(e.c1Vide!=null?'budget avant révision':'aucun montant alloué n’était enregistré'), p.c1, v);
       p.c1=v; n++;
     }
     /* La ventilation par année va là où une page la porte : la Finance du
@@ -7811,9 +7811,9 @@ function achPageProjet(p){
        tient plus. En k€, comme la fiche projet — les tuiles, elles, restent
        en euros comme les commandes. */
     '<div class="achbud noprint"><span class="l">Budget du projet</span>'+
-      '<label>C1 alloué <input class="achbudin" data-achb="c1" value="'+
+      '<label>C1 | 26 <input class="achbudin" data-achb="c1" value="'+
         esc(p.c1!=null&&p.c1!==''?fmtSaisie(p.c1):'')+'" placeholder="0"> k€</label>'+
-      '<label>C2 révisé <input class="achbudin" data-achb="c2" value="'+
+      '<label>C2 | 26 Révisé <input class="achbudin" data-achb="c2" value="'+
         esc(p.c2!=null&&p.c2!==''?fmtSaisie(p.c2):'')+'" placeholder="= C1"> k€</label>'+
       '<span class="hint">Baseline retenue : '+(s.base==null?'—':achEurC(s.base))+
       ' · une modification se reporte partout — disponible, écart, santé, seuil de l’ID Card.</span></div>'+
@@ -9186,8 +9186,8 @@ function budgetBlock(p,pp,atter){
   const baseT=capexTotal(p)||0;
   const pc=v=>baseT?fmt(v/baseT*100,1)+' %':'—';
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
-  const BCOLS=[['capex26','CAPEX B26','—'],['c1','C1 Alloué','—'],['c2','C2 révisé','—'],
-               ['capexTot','CAPEX Projet Total',''],['b27','CAPEX B27','—']];
+  const BCOLS=[['capex26','CAPEX B25','—'],['c1','C1 | 26','—'],['c2','C2 | 26 Révisé','—'],
+               ['capexTot','CAPEX 25 | 26 Projet Total',''],['b27','CAPEX B27','—']];
   const ctot=capexTotal(p);
   /* Un champ d'atterrissage par colonne de budget. Seule la base C2 a une
      estimation calculee — le budget de l'exercice releve au plancher du
@@ -9199,9 +9199,9 @@ function budgetBlock(p,pp,atter){
   <tbody>
     <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>k==='capexTot'
       ? `<td class="num" style="color:var(--accent);font-weight:600"
-          title="CAPEX Projet Total — calculé, pas saisi : CAPEX B26 ${fmt(budN(p.capex26)||0)}${
+          title="CAPEX 25 | 26 Projet Total — calculé, pas saisi : CAPEX B25 ${fmt(budN(p.capex26)||0)}${
             ecartAtterrissage(p)?' '+(ecartAtterrissage(p)>0?'+':'−')+' '+fmt(Math.abs(ecartAtterrissage(p)))+' d’écart d’atterrissage':''
-            } + ${fmt(budExercice(p)||0)} de budget d’exercice (${p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 révisé':'C1 alloué'}) = ${
+            } + ${fmt(budExercice(p)||0)} de budget d’exercice (${p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 | 26 Révisé':'C1 | 26'}) = ${
             ctot!=null?fmt(ctot):'—'} k€">${ctot!=null?fmtSaisie(ctot):'—'}</td>`
       : `<td class="num" contenteditable data-pfn="${k}"
       data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
@@ -9215,7 +9215,7 @@ function budgetBlock(p,pp,atter){
             ?' · vidée, c’est l’estimation calculée ('+fmt(calc)+') qui fait foi':''}"
           >${eff!=null?fmtSaisie(eff):''}</td>`; }).join('')}${budComCell(p,'att')}</tr>
   </tbody></table></div>
-  <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num" title="Part du CAPEX Projet Total — CAPEX B26 + budget de l'exercice">% du total${baseT?' ('+fmt(baseT)+' k€)':''}</th><th class="bcom">Commentaire</th></tr></thead>
+  <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num" title="Part du CAPEX 25 | 26 Projet Total — CAPEX B25 ± écart d'atterrissage + budget de l'exercice">% du total${baseT?' ('+fmt(baseT)+' k€)':''}</th><th class="bcom">Commentaire</th></tr></thead>
   <tbody>
     <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act)}</td>${budComCell(p,'act')}</tr>
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com)}</td>${budComCell(p,'commit')}</tr>
@@ -9725,7 +9725,7 @@ function renderCER(){
       <td><button class="delbtn" data-delda="${i}">×</button></td></tr>`).join(''):`<tr><td colspan="7" class="empty">Aucune DA. « Ajouter une DA ».</td></tr>`}</tbody></table></div>
     <div class="panel-b addrow"><button data-addda="1">+ Ajouter une DA</button></div>
   </div>
-  ${footHTML('cer',`CER &amp; Achats · enveloppe amorcée depuis C1 Alloué &amp; réalisé ; lots / DA / PO à compléter (ERP = source de référence des engagements).`)}`;
+  ${footHTML('cer',`CER &amp; Achats · enveloppe amorcée depuis C1 | 26 &amp; réalisé ; lots / DA / PO à compléter (ERP = source de référence des engagements).`)}`;
 
   $('#cerSel').addEventListener('change',e=>{S.currentProj=e.target.value;renderCER();});
   $('#genLots').addEventListener('click',()=>{const c=ensureCER(p.id);const per=c.approuvee?Math.round(c.approuvee/LOT_TEMPLATE.length):0;LOT_TEMPLATE.forEach(nm=>{if(!c.lots.some(l=>l.name===nm))c.lots.push({name:nm,env:per,fourn:''});});renderCER();scheduleSave();});
@@ -9747,8 +9747,8 @@ function addDA(id){
 }
 function cerMiniPass(p){
   const cer=ensureCER(p.id);
-  const alloue=(p.c2!=null?p.c2:p.c1)||0;                 // budget alloué du projet : C2 révisé sinon C1
-  const base=(p.c2!=null?'C2 révisé':'C1 Alloué');
+  const alloue=(p.c2!=null?p.c2:p.c1)||0;                 // budget alloué du projet : C2 | 26 Révisé sinon C1
+  const base=(p.c2!=null?'C2 | 26 Révisé':'C1 | 26');
   const amorce=(+cer.avenants||0)===0 && (+cer.approuvee||0)===(+p.c1||0);
   const manuel=amorce?0:(+cer.approuvee||0)+(+cer.avenants||0);   // enveloppe CER réellement saisie
   const env=manuel>0?manuel:alloue;                        // SPE = budget alloué (ou enveloppe CER si renseignée)
