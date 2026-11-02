@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.1 -->
+<!-- PPM_BUILD:2026-11-02.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1863,7 +1863,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.1';
+const APP_BUILD='2026-11-02.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2118,7 +2118,17 @@ function migrate(saved){
   (r.projects||[]).forEach(p=>{ if(!p.ph && p.shine && SEED_PHASING[p.shine]) p.ph=SEED_PHASING[p.shine];
     const gc=matchGateCdo(p); if(gc){if(!p.cdoReal)p.cdoReal=gc.cdo; if(!p.gateRealRaw)p.gateRealRaw=gc.gate;} if(p.actif===undefined)p.actif=isActif(p);
     /* Un pôle choisi à la main l'emporte sur la déduction faite du libellé. */
-    if(!p.poleFixe){ if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; } });
+    if(!p.poleFixe){ if(p.group==='Site')p.group='INFRA'; if(p.pole&&/plan tr/i.test(p.pole))p.group='Plan Transfo'; }
+    /* Le CAPEX Projet Total a d'abord ete livre comme une saisie, avant d'etre
+       defini comme une somme. Une valeur restee en base ne sert plus a rien :
+       on la retire, mais on ne l'efface pas en silence si elle disait autre
+       chose que la somme — le journal en garde la trace. */
+    if(p.capexTot!==undefined){
+      const som=capexTotal(p), av=(p.capexTot==null||p.capexTot==='')?null:+p.capexTot;
+      if(av!=null && av!==som) logChange('Projet '+(p.shine||p.nom),
+        'CAPEX Projet Total — désormais calculé (CAPEX B26 + C2 ou C1)', av, som==null?'':som);
+      delete p.capexTot;
+    } });
   // Membres retires a la main. Sans cette memoire, le rapprochement ci-dessous
   // recreerait a chaque chargement tout PM|PL d'un projet, et une suppression
   // dans BDD Membres paraitrait ne jamais s'enregistrer.
@@ -3122,8 +3132,19 @@ function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
    champs : l'écart et la santé du portefeuille, la baseline des achats et le
    disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
 const PROJ_BUD={capex26:'CAPEX B26 (k€)',c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',
-  capexTot:'CAPEX Projet Total (k€)',b27:'CAPEX B27 (k€)',
-  act:'Actuals (k€)',commit:'Commitments (k€)'};
+  b27:'CAPEX B27 (k€)',act:'Actuals (k€)',commit:'Commitments (k€)'};
+/* Le CAPEX Projet Total est une somme, pas une saisie : le CAPEX B26 plus le
+   budget de l'exercice — le C2 revise s'il est renseigne, le C1 alloue sinon,
+   la meme regle que partout ailleurs dans l'application. Il ne s'affiche que
+   si l'un des deux termes existe : sans budget du tout, une case a zero ferait
+   croire a un projet chiffre a zero. */
+function capexTotal(p){
+  if(!p) return null;
+  const n=v=>(v==null||v==='')?null:(+v||0);
+  const b26=n(p.capex26), fy=n(p.c2)!=null?n(p.c2):n(p.c1);
+  if(b26==null && fy==null) return null;
+  return (b26||0)+(fy||0);
+}
 function projBudgetSaisie(p,champ,texte){
   if(!p||!PROJ_BUD[champ]) return false;
   const t=String(texte==null?'':texte).replace(/\u00a0/g,' ')
@@ -9080,12 +9101,16 @@ function budgetBlock(p,pp,atter){
   const pc=(v,base)=>base?fmt(v/base*100,1)+' %':'—';
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
   const BCOLS=[['capex26','CAPEX B26','—'],['c1','C1 Alloué','—'],['c2','C2 révisé','—'],
-               ['capexTot','CAPEX Projet Total','—'],['b27','CAPEX B27','—']];
+               ['capexTot','CAPEX Projet Total',''],['b27','CAPEX B27','—']];
+  const ctot=capexTotal(p);
   const bval=k=>k==='c2'?(c2!=null?fmtSaisie(c2):''):(p[k]!=null&&p[k]!==''?fmtSaisie(p[k]):'');
   return `<div class="tblwrap ppsec" style="--c:#D97706;--cs:rgba(217,119,6,.13);margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th>${
     BCOLS.map(([,l])=>`<th class="num">${l}</th>`).join('')}</tr></thead>
   <tbody>
-    <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>`<td class="num" contenteditable data-pfn="${k}"
+    <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>k==='capexTot'
+      ? `<td class="num" style="color:var(--accent);font-weight:600"
+          title="CAPEX Projet Total — somme du CAPEX B26 et du budget de l'exercice (C2 révisé, ou C1 alloué à défaut). Calculé, pas saisi.">${ctot!=null?fmtSaisie(ctot):'—'}</td>`
+      : `<td class="num" contenteditable data-pfn="${k}"
       data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
         k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${bval(k)}</td>`).join('')}</tr>
     <tr class="tot"><td>Atterrissage estimé</td><td class="num" colspan="${BCOLS.length}" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
