@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.12 -->
+<!-- PPM_BUILD:2026-11-02.13 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1874,7 +1874,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.12';
+const APP_BUILD='2026-11-02.13';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3199,16 +3199,34 @@ function budExercice(p){
    explicitement saisies comptent — une estimation calculee ferait bouger le
    total du projet toute seule au fil des facturations. Deux colonnes sont
    exclues : celle du total, qui est un resultat et non un terme, et le CAPEX
-   B27 — un total nomme « 25 | 26 » ne porte pas d'argent de 2027, et son
-   atterrissage deplacait le total sans que rien ne le dise. */
+   B27 — un total nomme « 25 | 26 » ne porte pas d'argent de 2027.
+
+   Les deux sens de l'ecart ne se valent pas. Un ecart positif, c'est de
+   l'argent reellement depense au-dela du budget : il s'ajoute au budget
+   initial — 100 de budget pour un atterrissage de 130, le projet a coute 130.
+   Un ecart negatif, lui, n'est pas de l'argent perdu par le projet : c'est une
+   sous-consommation, qui se deduit du budget de l'exercice suivant et non du
+   total. Le retrancher ramenait a 155 k€ un projet de 295. */
 function ecartAtterrissage(p){
   if(!p) return 0;
   let e=0;
   const a26=budN(p.att26);
-  if(a26!=null) e += a26-(budN(p.capex26)||0);
+  if(a26!=null) e += Math.max(0, a26-(budN(p.capex26)||0));
   const afy=budN(p.attC2)!=null?budN(p.attC2):budN(p.attC1);
-  if(afy!=null) e += afy-(budExercice(p)||0);
+  if(afy!=null) e += Math.max(0, afy-(budExercice(p)||0));
   return e;
+}
+/* La part negative, celle qui se reporte sur l'exercice suivant. Elle ne sort
+   pas du total mais ne doit pas disparaitre sans etre nommee : l'infobulle la
+   dit, plutot que de laisser un terme s'evaporer en silence. */
+function reportAtterrissage(p){
+  if(!p) return [];
+  const r=[];
+  const a26=budN(p.att26);
+  if(a26!=null){ const d=a26-(budN(p.capex26)||0); if(d<0) r.push(['2025',-d]); }
+  const afy=budN(p.attC2)!=null?budN(p.attC2):budN(p.attC1);
+  if(afy!=null){ const d=afy-(budExercice(p)||0); if(d<0) r.push(['d’exercice',-d]); }
+  return r;
 }
 /* CAPEX 25 | 26 Projet Total = CAPEX B25 ± l'ecart de l'atterrissage + le budget de
    l'exercice : 130 de 2025 + 165 de 2026 = 295 k€. */
@@ -9257,12 +9275,16 @@ function budgetBlock(p,pp,atter){
   const termes=(()=>{
     const b26=budN(p.capex26)||0, fy=budExercice(p)||0, t=['CAPEX B25 '+fmt(b26)];
     const a26=budSaisi(p.att26);
-    if(a26!=null){ const d=a26-b26; t.push((d>=0?'+ ':'− ')+fmt(Math.abs(d))+' d’écart d’atterrissage 2025'); }
+    if(a26!=null && a26-b26>0) t.push('+ '+fmt(a26-b26)+' d’écart d’atterrissage 2025');
     const afy=budSaisi(p.attC2)!=null?budSaisi(p.attC2):budSaisi(p.attC1);
-    if(afy!=null){ const d=afy-fy; t.push((d>=0?'+ ':'− ')+fmt(Math.abs(d))+' d’écart d’atterrissage d’exercice'); }
+    if(afy!=null && afy-fy>0) t.push('+ '+fmt(afy-fy)+' d’écart d’atterrissage d’exercice');
     t.push('+ '+fmt(fy)+' de budget d’exercice ('
       +(p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 | 26 Révisé':'C1 | 26')+')');
-    return t.join(' ')+' = '+(som!=null?fmt(som):'—')+' k€ · le CAPEX B27 n’y entre pas, c’est un autre exercice';
+    let txt=t.join(' ')+' = '+(som!=null?fmt(som):'—')+' k€';
+    const rep=reportAtterrissage(p);
+    if(rep.length) txt+=' · '+rep.map(([q,v])=>fmt(v)+' de sous-consommation '+q).join(' et ')
+      +' : un écart négatif ne se retranche pas du total, il se déduit du budget de l’exercice suivant';
+    return txt+' · le CAPEX B27 n’y entre pas, c’est un autre exercice';
   })();
   /* Un champ d'atterrissage par colonne de budget. Seule la base C2 a une
      estimation calculee — le budget de l'exercice releve au plancher du
