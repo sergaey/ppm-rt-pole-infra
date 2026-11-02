@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.3 -->
+<!-- PPM_BUILD:2026-11-02.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1863,7 +1863,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.3';
+const APP_BUILD='2026-11-02.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -9258,6 +9258,17 @@ function bindEditables(){
     logChange('Projet '+(p.shine||p.nom),'n° ETU',c[k]||'',v);
     c[k]=v; scheduleSave(); renderPass();
   }));
+  $$('[data-cerdep]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+    const c=ensureCER(p.id);
+    const t=String(el.textContent||'').replace(/\u00a0/g,' ')
+      .replace(/[^\d,.\-]/g,'').replace(/\s/g,'').replace(',','.');
+    const v = t==='' ? 0 : (parseFloat(t)||0);
+    if((+c.depense||0)===v) return;
+    logChange('Projet '+(p.shine||p.nom),'SPE réalisé (k€)',c.depense==null?'':c.depense,v);
+    c.depense=v; scheduleSave(); renderPass();
+  }));
   $$('[data-pinv]').forEach(el=>el.addEventListener('blur',()=>{
     if(KIT_EN_COURS || !el.isConnected) return;
     const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
@@ -9675,14 +9686,16 @@ function cerMiniPass(p){
   const cer=ensureCER(p.id);
   const alloue=(p.c2!=null?p.c2:p.c1)||0;                 // budget alloué du projet : C2 révisé sinon C1
   const base=(p.c2!=null?'C2 révisé':'C1 Alloué');
-  const manuel=(+cer.approuvee||0)+(+cer.avenants||0);    // enveloppe CER saisie manuellement (prioritaire si > 0)
+  const amorce=(+cer.avenants||0)===0 && (+cer.approuvee||0)===(+p.c1||0);
+  const manuel=amorce?0:(+cer.approuvee||0)+(+cer.avenants||0);   // enveloppe CER réellement saisie
   const env=manuel>0?manuel:alloue;                        // SPE = budget alloué (ou enveloppe CER si renseignée)
-  const src=manuel>0?'CER saisie':base;
+  const src=manuel>0?'enveloppe CER':base;
   const depense=(+cer.depense>0?+cer.depense:(p.act||0));  // réalisé : CER si renseigné, sinon ACT du projet
+  const reste=env-depense;                                 // ce qu'il reste à consommer sur l'enveloppe
   const conso=env?Math.round((depense/env)*100):0;
   const cls=conso>=95?'r':conso>=80?'a':'g';
   return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><tbody>
-    <tr><td>SPE alloué ${fmt(env)} k€ <span style="color:var(--muted)">(${src})</span> · réalisé ${fmt(depense)} k€${cer.da.length?(' · '+cer.da.length+' DA/PO'):''}</td>
+    <tr title="Enveloppe : ${esc(src)} · réalisé saisissable, à défaut l'Actuals du projet"><td>SPE alloué ${fmt(env)} k€ · réalisé <span class="ppedit" contenteditable data-cerdep="1" data-vide="0" title="Réalisé sur l'enveloppe SPE — cliquez pour saisir">${depense?fmtSaisie(depense):''}</span> k€${cer.da.length?(' · '+cer.da.length+' DA/PO'):''} · <span style="color:${reste<0?'var(--bad)':'var(--good)'};font-weight:600">reste à consommer ${fmt(reste)} k€</span></td>
     <td class="num">conso <span class="pill ${cls}">${fmt(conso,0)}%</span></td></tr></tbody></table></div>`;
 }
 
