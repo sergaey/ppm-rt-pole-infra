@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.7 -->
+<!-- PPM_BUILD:2026-11-02.8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1868,7 +1868,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.7';
+const APP_BUILD='2026-11-02.8';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3179,12 +3179,36 @@ function budCalcule(p,champ){
    la meme regle que partout ailleurs dans l'application. Il ne s'affiche que
    si l'un des deux termes existe : sans budget du tout, une case a zero ferait
    croire a un projet chiffre a zero. */
+const budN=v=>(v==null||v==='')?null:(+v||0);
+/* Le budget de l'exercice : le C2 revise quand il est renseigne et qu'il differe
+   du C1 — « C1 alloue et/ou C2 revise si different » —, le C1 sinon. */
+function budExercice(p){
+  const c1=budN(p&&p.c1), c2=budN(p&&p.c2);
+  return (c2!=null && c2!==c1) ? c2 : c1;
+}
+/* L'ecart porte par la ligne d'atterrissage : la difference entre
+   l'atterrissage saisi et le budget de sa colonne. Seules les valeurs
+   explicitement saisies comptent — une estimation calculee ferait bouger le
+   total du projet toute seule au fil des facturations. La colonne du total
+   est exclue : c'est un resultat, pas un terme. */
+function ecartAtterrissage(p){
+  if(!p) return 0;
+  let e=0;
+  const a26=budN(p.att26);
+  if(a26!=null) e += a26-(budN(p.capex26)||0);
+  const afy=budN(p.attC2)!=null?budN(p.attC2):budN(p.attC1);
+  if(afy!=null) e += afy-(budExercice(p)||0);
+  const ab=budN(p.attB27);
+  if(ab!=null) e += ab-(budN(p.b27)||0);
+  return e;
+}
+/* CAPEX Projet Total = CAPEX B26 ± l'ecart de l'atterrissage + le budget de
+   l'exercice. Exemple d'Upgrade des automates : 100 + 30 + 165 = 295 k€. */
 function capexTotal(p){
   if(!p) return null;
-  const n=v=>(v==null||v==='')?null:(+v||0);
-  const b26=n(p.capex26), fy=n(p.c2)!=null?n(p.c2):n(p.c1);
-  if(b26==null && fy==null) return null;
-  return (b26||0)+(fy||0);
+  const b26=budN(p.capex26), fy=budExercice(p), ec=ecartAtterrissage(p);
+  if(b26==null && fy==null && !ec) return null;
+  return (b26||0)+ec+(fy||0);
 }
 function projBudgetSaisie(p,champ,texte){
   if(!p||!PROJ_BUD[champ]) return false;
@@ -9175,7 +9199,10 @@ function budgetBlock(p,pp,atter){
   <tbody>
     <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>k==='capexTot'
       ? `<td class="num" style="color:var(--accent);font-weight:600"
-          title="CAPEX Projet Total — somme du CAPEX B26 et du budget de l'exercice (C2 révisé, ou C1 alloué à défaut). Calculé, pas saisi.">${ctot!=null?fmtSaisie(ctot):'—'}</td>`
+          title="CAPEX Projet Total — calculé, pas saisi : CAPEX B26 ${fmt(budN(p.capex26)||0)}${
+            ecartAtterrissage(p)?' '+(ecartAtterrissage(p)>0?'+':'−')+' '+fmt(Math.abs(ecartAtterrissage(p)))+' d’écart d’atterrissage':''
+            } + ${fmt(budExercice(p)||0)} de budget d’exercice (${p.c2!=null&&p.c2!==''&&(+p.c2)!==(+p.c1||0)?'C2 révisé':'C1 alloué'}) = ${
+            ctot!=null?fmt(ctot):'—'} k€">${ctot!=null?fmtSaisie(ctot):'—'}</td>`
       : `<td class="num" contenteditable data-pfn="${k}"
       data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
         k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${bval(k)}</td>`).join('')}${budComCell(p,'fy')}</tr>
