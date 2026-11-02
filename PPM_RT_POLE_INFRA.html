@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02 -->
+<!-- PPM_BUILD:2026-11-02.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -252,6 +252,7 @@
   /* Un montant saisissable : il se lit comme un chiffre, il s'ouvre comme un champ. */
   td.edn{cursor:text;font-variant-numeric:tabular-nums}
   td.edn:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic;font-weight:400}
+  .budget-mini td[data-pfn]:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic;font-weight:400}
   td.edn:hover{box-shadow:inset 0 0 0 1px var(--line-2);border-radius:5px}
   td.edn:focus{outline:none;background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent);border-radius:5px}
   td.edc:hover{background:var(--panel-2)}
@@ -1862,7 +1863,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02';
+const APP_BUILD='2026-11-02.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3120,7 +3121,8 @@ function ecartV(p){return ((p.c2!=null?p.c2:p.c1)||0)-(p.c1||0);}
    champ vidé. Ce qui en découle suit de soi, puisque tout part de ces
    champs : l'écart et la santé du portefeuille, la baseline des achats et le
    disponible, le seuil de 250 k€ de l'ID Card, les tuiles de synthèse. */
-const PROJ_BUD={c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',b27:'B27 (k€)',
+const PROJ_BUD={capex26:'CAPEX B26 (k€)',c1:'C1 alloué (k€)',c2:'C2 révisé (k€)',
+  capexTot:'CAPEX Projet Total (k€)',b27:'CAPEX B27 (k€)',
   act:'Actuals (k€)',commit:'Commitments (k€)'};
 function projBudgetSaisie(p,champ,texte){
   if(!p||!PROJ_BUD[champ]) return false;
@@ -9077,10 +9079,16 @@ function budgetBlock(p,pp,atter){
   const dispo1=c1-engage, dispo2=(c2||0)-engage;           // Available Amount, base C1 puis C2
   const pc=(v,base)=>base?fmt(v/base*100,1)+' %':'—';
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
-  return `<div class="tblwrap ppsec" style="--c:#D97706;--cs:rgba(217,119,6,.13);margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th><th class="num">C1 Alloué</th><th class="num">C2 révisé</th><th class="num">B27</th></tr></thead>
+  const BCOLS=[['capex26','CAPEX B26','—'],['c1','C1 Alloué','—'],['c2','C2 révisé','—'],
+               ['capexTot','CAPEX Projet Total','—'],['b27','CAPEX B27','—']];
+  const bval=k=>k==='c2'?(c2!=null?fmtSaisie(c2):''):(p[k]!=null&&p[k]!==''?fmtSaisie(p[k]):'');
+  return `<div class="tblwrap ppsec" style="--c:#D97706;--cs:rgba(217,119,6,.13);margin-top:12px"><table class="budget-mini"><thead><tr><th>Budget (k€)</th>${
+    BCOLS.map(([,l])=>`<th class="num">${l}</th>`).join('')}</tr></thead>
   <tbody>
-    <tr><td>CAPEX FY</td><td class="num" contenteditable data-pfn="c1">${p.c1!=null?fmtSaisie(p.c1):''}</td><td class="num" contenteditable data-pfn="c2">${c2!=null?fmtSaisie(c2):''}</td><td class="num" contenteditable data-pfn="b27">${p.b27!=null?fmtSaisie(p.b27):''}</td></tr>
-    <tr class="tot"><td>Atterrissage estimé</td><td class="num">—</td><td class="num" colspan="2" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
+    <tr><td>CAPEX FY</td>${BCOLS.map(([k,l,v])=>`<td class="num" contenteditable data-pfn="${k}"
+      data-vide="${esc(v)}" title="${esc(PROJ_BUD[k])} — cliquez pour modifier${
+        k==='c2'?' · laissé vide, c’est le C1 qui fait référence':''}">${bval(k)}</td>`).join('')}</tr>
+    <tr class="tot"><td>Atterrissage estimé</td><td class="num" colspan="${BCOLS.length}" style="color:var(--accent)">${fmt(atter)} k€ &nbsp; <span style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td></tr>
   </tbody></table></div>
   <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num">% de la base</th></tr></thead>
   <tbody>
