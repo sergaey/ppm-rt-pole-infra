@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.9 -->
+<!-- PPM_BUILD:2026-11-02.10 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -257,6 +257,9 @@
   .budget-mini td.bcom{color:var(--ink-2);font-size:12px;line-height:1.45}
   .budget-mini tr.tot td.bcom{font-weight:400}
   .budget-mini td.num,.budget-mini th.num{text-align:center}
+  .budget-mini td.forcee{position:relative}
+  .budget-mini td.forcee::after{content:'●';position:absolute;top:3px;right:4px;
+    font-size:6px;line-height:1;color:var(--accent);opacity:.75}
   .budget-mini td.bcom:empty::before{content:attr(data-vide);color:var(--faint);font-style:italic}
   td.edn:hover{box-shadow:inset 0 0 0 1px var(--line-2);border-radius:5px}
   td.edn:focus{outline:none;background:var(--accent-soft);box-shadow:inset 0 0 0 2px var(--accent);border-radius:5px}
@@ -1868,7 +1871,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.9';
+const APP_BUILD='2026-11-02.10';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -9209,10 +9212,11 @@ function budgetBlock(p,pp,atter){
     <tr class="tot"><td>Atterrissage estimé <span class="bmini" style="color:${ec>0?'var(--bad)':'var(--good)'};font-weight:600">écart C2 vs C1 ${ec>=0?'+':''}${fmt(ec)}</span></td>${
       BCOLS.map(([k])=>{ const ch=ATT[k], v=budSaisi(p[ch]), calc=budCalcule(p,ch);
         const eff=v!=null?v:calc;
-        return `<td class="num" contenteditable data-pfn="${ch}" data-vide="—"
+        const forcee=v!=null&&calc!==undefined&&v!==calc;
+        return `<td class="num${forcee?' forcee':''}" contenteditable data-pfn="${ch}" data-vide="—"
           style="${v==null&&calc!==undefined?'color:var(--accent)':''}"
-          title="${esc(PROJ_BUD[ch])} — cliquez pour saisir${calc!==undefined
-            ?' · vidée, c’est l’estimation calculée ('+fmt(calc)+') qui fait foi':''}"
+          title="${esc(PROJ_BUD[ch])}${forcee?' — valeur saisie ; le calcul donnerait '+fmt(calc)+' k€, videz la case pour y revenir'
+            :' — cliquez pour saisir'+(calc!==undefined?' · vidée, c’est l’estimation calculée ('+fmt(calc)+') qui fait foi':'')}"
           >${eff!=null?fmtSaisie(eff):''}</td>`; }).join('')}${budComCell(p,'att')}</tr>
   </tbody></table></div>
   <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num" title="Part du CAPEX 25 | 26 Projet Total — CAPEX B25 ± écart d'atterrissage + budget de l'exercice">% du total${baseT?' ('+fmt(baseT)+' k€)':''}</th><th class="bcom">Commentaire</th></tr></thead>
@@ -9221,11 +9225,13 @@ function budgetBlock(p,pp,atter){
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com)}</td>${budComCell(p,'commit')}</tr>
     <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage)}</td>${budComCell(p,'eng')}</tr>
     ${(()=>{ const calc=baseT-engage, v=budSaisi(p.dispo), eff=v!=null?v:calc;
-      return `<tr><td>Available Amount <span class="bmini">total − (actuals + commitments)${
+      const forcee=v!=null&&v!==calc;
+      return `<tr><td>Available Amount <span class="bmini">total − (actuals + commitments) = ${fmt(baseT)} − ${fmt(engage)}${
           c1||c2?' · pour mémoire, C1 '+fmt(c1)+(c2!=null&&c2!==c1?' / C2 '+fmt(c2):''):''}</span></td>
-        <td class="num" contenteditable data-pfn="dispo" data-vide="—"
+        <td class="num${forcee?' forcee':''}" contenteditable data-pfn="dispo" data-vide="—"
           style="color:${teinte(eff)};font-weight:600"
-          title="Available Amount — ${esc(fmt(baseT))} − ${esc(fmt(engage))} · cliquez pour saisir, vidée c’est le calcul (${esc(fmt(calc))}) qui fait foi"
+          title="${forcee?'Available Amount — valeur saisie ; le calcul donne '+esc(fmt(baseT))+' − '+esc(fmt(engage))+' = '+esc(fmt(calc))+' k€, videz la case pour y revenir'
+            :'Available Amount — '+esc(fmt(baseT))+' − '+esc(fmt(engage))+' = '+esc(fmt(calc))+' k€ · cliquez pour saisir une autre valeur'}"
           >${fmtSaisie(eff)}</td>
         <td class="num">${pc(eff)}</td>${budComCell(p,'dispo')}</tr>`; })()}
   </tbody></table></div>`;
