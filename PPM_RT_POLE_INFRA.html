@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.2 -->
+<!-- PPM_BUILD:2026-11-03.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1874,7 +1874,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.2';
+const APP_BUILD='2026-11-03.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3567,7 +3567,13 @@ function refRattacher(hors){
 /* Les amorces partageaient un seul try : la première qui échouait emportait
    les suivantes, sans que rien ne le dise. Chacune tourne désormais pour elle
    seule, et ce qui tombe est retenu — et montré. */
+/* Une amorce peut echouer sans lever : un releve mal forme est refuse, mais
+   les autres doivent passer. Ces ratés-la remontent par ici, et finissent au
+   meme endroit que les exceptions — sous les yeux, pas dans le journal. */
+let AMORCE_REFUS=[];
+function amorceRefus(msg){ AMORCE_REFUS.push(msg); }
 function amorcerTout(){
+  AMORCE_REFUS=[];
   const travaux=[['One Pages',()=>appliquerSeedOP()],
                  ['budget One Page',()=>migrerBudgetOP()],
                  ['corrections',()=>appliquerCorrSeed()],
@@ -3583,6 +3589,7 @@ function amorcerTout(){
     catch(e){ rates.push(nom+' : '+String((e&&e.message)||e));
       try{ console.warn('Amorce « '+nom+' » interrompue :',e); }catch(_){} }
   });
+  AMORCE_REFUS.forEach(m=>rates.push(m));
   if(S) S._seedErr = rates.length?rates:null;
   return n;
 }
@@ -7698,6 +7705,46 @@ const SEED_ACH = {};
    Ce litteral reste du JSON pur : le garde-fou de publication le relit avec
    json.loads, et un commentaire glisse a l'interieur le ferait echouer. */
 const SEED_BUD = [];
+/* La nature de chaque colonne budgetaire. Un releve ne choisit plus sa
+   colonne : il declare ce qu'EST son montant, et cette table decide ou il va.
+   « 130 k€ en 2025 » ne peut plus devenir une allocation par inadvertance —
+   il faut avoir ecrit « atterrissage », et le controle le verifie. */
+const BUD_NATURE={capex26:'alloué',c1:'alloué',b27:'alloué',c2:'révisé',
+  att26:'atterrissage',attC1:'atterrissage',attC2:'atterrissage',
+  attTot:'atterrissage',attB27:'atterrissage',
+  act:'consommé',commit:'consommé',capexTot:'calculé',dispo:'calculé'};
+/* La colonne d'atterrissage qui repond a chaque colonne de budget. */
+const BUD_ATT_DE={capex26:'att26',c1:'attC1',c2:'attC2',b27:'attB27'};
+/* Les clefs libres d'autrefois : un montant y choisissait sa colonne sans
+   dire ce qu'il etait. La forme est refusee, pas seulement decouragee. */
+const BUD_CLEFS_MORTES=['capex26','c1','c2','b27','c1Vide'];
+
+/* Ce qu'un releve doit declarer pour qu'un montant soit pose. */
+function budSeedControle(m){
+  if(!m||typeof m!=='object') return 'montant illisible';
+  if(!PROJ_BUD[m.champ]) return 'champ inconnu « '+String(m.champ)+' »';
+  if(!m.nature) return PROJ_BUD[m.champ]+' : nature du montant non déclarée';
+  if(m.nature!==BUD_NATURE[m.champ])
+    return PROJ_BUD[m.champ]+' attend un montant « '+BUD_NATURE[m.champ]
+         +' », le relevé déclare « '+m.nature+' »';
+  return null;
+}
+/* Un montant deja present dans la colonne d'atterrissage de la meme annee
+   n'est pas une allocation : c'est l'atterrissage, range dans la mauvaise
+   colonne. C'est l'erreur du releve du 2 novembre — 130, l'atterrissage 2025,
+   pose en CAPEX B25 d'un projet qui portait deja 130 en atterrissage. */
+function budSeedCollision(p,champ,valeur){
+  if(valeur==null) return null;
+  const v=+valeur;
+  const att=BUD_ATT_DE[champ];
+  if(att && budN(p[att])===v)
+    return PROJ_BUD[champ]+' : '+v+' est déjà l’atterrissage de cette colonne';
+  const bud=Object.keys(BUD_ATT_DE).find(k=>BUD_ATT_DE[k]===champ);
+  if(bud && budN(p[bud])===v)
+    return PROJ_BUD[champ]+' : '+v+' est déjà le budget de cette colonne';
+  return null;
+}
+
 function appliquerSeedBud(){
   if(!Array.isArray(SEED_BUD)||!SEED_BUD.length) return 0;
   S.budSeed=S.budSeed||{};
@@ -7708,84 +7755,110 @@ function appliquerSeedBud(){
     const p=(S.projects||[]).find(x=>!x.deleted &&
       [x.shine,x.ishift,x.id,x.code].some(v=>v&&norm(v)===c));
     if(!p) return;                                  // projet absent de ce portefeuille
-    S.budSeed[e.id]=p.id;
     const nom=p.shine||p.nom;
-    /* « set » : une remise en etat demandee, chiffre par chiffre, par celui a
-       qui la donnee appartient. Contrairement a une pose elle recouvre ce qui
-       s'y trouve — c'est tout son objet. Elle ne s'applique qu'une fois, et
-       chaque valeur remplacee passe au journal : rien ne change en silence. */
-    if(e.set){
-      Object.keys(e.set).forEach(c=>{
-        const av=(p[c]==null||p[c]==='')?null:+p[c];
-        const ap=e.set[c]==null?null:+e.set[c];
-        if(av===ap) return;
-        logChange('Projet '+nom,(PROJ_BUD[c]||c)+' — '+(e.quoi||'remise en état'),
-          av==null?'':av, ap==null?'':ap);
-        p[c]=ap; n++;
-      });
+    const refus=[];
+
+    /* Forme refusee : une clef libre au sommet de l'entree. */
+    BUD_CLEFS_MORTES.forEach(k=>{
+      if(Object.prototype.hasOwnProperty.call(e,k))
+        refus.push('clef « '+k+' » : un montant doit déclarer sa nature'
+                 +' (pose/maj/set), il ne choisit plus sa colonne');
+    });
+    /* Chaque montant est controle AVANT que rien ne soit ecrit : une entree
+       passe en entier ou pas du tout. Une entree a moitie posee laisserait
+       un projet dans un etat que personne n'a voulu. */
+    const lots=[['pose',e.pose],['maj',e.maj],['set',e.set]];
+    lots.forEach(([quoi,lot])=>{
+      if(lot==null) return;
+      if(!Array.isArray(lot)){ refus.push('« '+quoi+' » doit être une liste de montants'); return; }
+      lot.forEach(m=>{ const r=budSeedControle(m); if(r) refus.push(quoi+' · '+r); });
+    });
+    if(refus.length){
+      /* On ne marque pas l'entree comme appliquee : corrigee, elle repassera.
+         Et le raté se voit a l'ecran, il ne dort pas dans le journal. */
+      amorceRefus('budget « '+e.id+' » refusé — '+refus.join(' ; '));
+      logChange('Projet '+nom,'relevé budget refusé — '+(e.quoi||e.id),'',refus.join(' ; '));
+      return;
     }
-    /* Les notes, elles, ne recouvrent jamais : une note ecrite par quelqu'un
-       est une saisie comme une autre, et le releve ne comble que le vide. */
-    if(e.com){
-      const bc=budComOf(p);
-      Object.keys(e.com).forEach(c=>{
-        if(String(bc[c]||'').trim()) return;
-        logChange('Projet '+nom,'commentaire — '+(BUD_COM[c]||c),'',e.com[c]);
-        bc[c]=e.com[c]; n++;
-      });
-    }
-    /* Un releve corrige ne peut pas recouvrir une saisie : « maj » dit ce que
-       la pose precedente avait ecrit, et la valeur n'est reprise que si elle
-       est restee telle quelle. Sinon elle a ete retouchee — c'est une saisie,
-       elle est gardee et nommee, et l'ecart avec le releve est journalise
-       plutot qu'arbitre. */
-    Object.keys(e.maj||{}).forEach(c=>{
-      if(!PROJ_BUD[c]) return;
-      const av=(p[c]==null||p[c]==='')?null:+p[c];
-      const vise=Object.prototype.hasOwnProperty.call(e,c)?e[c]:null;
-      if(av!==+e.maj[c]){
-        if(av!=null) logChange('Projet '+nom, PROJ_BUD[c]+' — saisie conservée',
-          av, av+' · le relevé proposait '+(vise==null?'vide':vise));
+    S.budSeed[e.id]=p.id;
+
+    /* De quoi revenir en arriere si le resultat annonce n'est pas atteint. */
+    const avant={}; const noter=ch=>{ if(!(ch in avant)) avant[ch]=p[ch]; };
+    const ecrire=(ch,val,motif,ancienne)=>{
+      noter(ch);
+      logChange('Projet '+nom,PROJ_BUD[ch]+' — '+motif,
+        ancienne==null?'':ancienne, val==null?'':val);
+      p[ch]=val==null?null:+val; n++;
+    };
+
+    /* « pose » : le releve comble le vide, jamais une saisie. */
+    (e.pose||[]).forEach(m=>{
+      const av=budN(p[m.champ]);
+      if(av!=null){
+        if(av!==(m.valeur==null?null:+m.valeur))
+          logChange('Projet '+nom,PROJ_BUD[m.champ]+' — saisie conservée',
+            av, av+' · le relevé proposait '+(m.valeur==null?'vide':m.valeur));
         return;
       }
-      logChange('Projet '+nom, PROJ_BUD[c]+' — '+(e.quoi||'relevé corrigé'),
-        av, vise==null?'':vise);
-      p[c]=vise==null?null:+vise; n++;
+      const col=budSeedCollision(p,m.champ,m.valeur);
+      if(col){ amorceRefus('budget « '+e.id+' » — '+col+', montant non posé');
+        logChange('Projet '+nom,'relevé budget écarté',' ',col); return; }
+      ecrire(m.champ,m.valeur,(e.quoi||'relevé'),av);
     });
-    /* Les montants du releve comblent le vide, jamais une saisie. Le B27 garde
-       son propre traitement plus bas. */
-    ['capex26','c1'].forEach(c=>{
-      if(!Object.prototype.hasOwnProperty.call(e,c) || e[c]==null) return;
-      if(+p[c]||0) return;
-      logChange('Projet '+nom, PROJ_BUD[c]+' — '+(e.quoi||'relevé'), p[c], e[c]);
-      p[c]=+e[c]; n++;
+
+    /* « maj » : une version corrigee du releve ne reprend que ce que la pose
+       precedente avait ecrit. Retouche depuis, c'est une saisie : elle reste,
+       et l'ecart avec le releve est nomme plutot qu'arbitre. */
+    (e.maj||[]).forEach(m=>{
+      const av=budN(p[m.champ]);
+      const att=m.avant==null?null:+m.avant;
+      if(av!==att){
+        if(av!=null) logChange('Projet '+nom,PROJ_BUD[m.champ]+' — saisie conservée',
+          av, av+' · le relevé proposait '+(m.valeur==null?'vide':m.valeur));
+        return;
+      }
+      ecrire(m.champ,m.valeur,(e.quoi||'relevé corrigé'),av);
     });
-    /* Un budget arbitre comble le vide, il ne recouvre pas une saisie. La pose
-       etait inconditionnelle : un C2 tape a la main repassait a la valeur du
-       releve — « 310 → 295 » — en contradiction avec la regle tenue partout
-       ailleurs. Deux montants qui se contredisent ne s'arbitrent pas ici : le
-       releve est journalise, et c'est la saisie qui reste. */
-    if(e.c2!=null){
-      if(p.c2==null||p.c2===''){
-        logChange('Projet '+nom,PROJ_BUD.c2+' — '+(e.quoi||'budget arbitré'), p.c2, e.c2); p.c2=+e.c2; n++;
-      } else if((+p.c2||0)!==+e.c2){
-        logChange('Projet '+nom,PROJ_BUD.c2+' — saisie conservée', p.c2,
-          p.c2+' · le relevé proposait '+e.c2);
+
+    /* « set » : une remise en etat demandee, chiffre par chiffre, par celui a
+       qui la donnee appartient. Elle recouvre — c'est tout son objet — une
+       seule fois, et chaque remplacement passe au journal. */
+    (e.set||[]).forEach(m=>{
+      const av=budN(p[m.champ]);
+      const ap=m.valeur==null?null:+m.valeur;
+      if(av===ap) return;
+      ecrire(m.champ,ap,(e.quoi||'remise en état'),av);
+    });
+
+    /* Le resultat annonce par le releve. S'il n'est pas atteint, les montants
+       sont dans les mauvaises colonnes : l'entree est defaite en entier et le
+       rate se voit. Un total juste ne prouve pas des colonnes justes, mais un
+       total faux prouve qu'elles ne le sont pas. */
+    if(e.attendu && e.attendu.total!=null){
+      const obtenu=capexTotal(p);
+      if(obtenu!==+e.attendu.total){
+        Object.keys(avant).forEach(ch=>{ p[ch]=avant[ch]; });
+        delete S.budSeed[e.id];
+        amorceRefus('budget « '+e.id+' » défait — total attendu '+e.attendu.total
+          +' k€, obtenu '+(obtenu==null?'aucun':obtenu)+' k€');
+        logChange('Projet '+nom,'relevé budget défait — '+(e.quoi||e.id),
+          'total '+(obtenu==null?'aucun':obtenu), 'attendu '+e.attendu.total);
+        return;
       }
     }
-    /* Sans C1 | 26 enregistré, un montant en tient lieu : sinon le
-       portefeuille afficherait un écart de tout le budget contre une
-       allocation jamais saisie. Quand le budget d'avant révision est connu,
-       c'est lui — l'écart dit alors la hausse, et non le budget entier. Un C1
-       déjà renseigné est de l'histoire : on n'y touche pas. */
-    if(e.c2!=null && !(+p.c1||0)){
-      const v = e.c1Vide!=null ? +e.c1Vide : +e.c2;
-      logChange('Projet '+nom,PROJ_BUD.c1+' — '+(e.c1Vide!=null?'budget avant révision':'aucun montant alloué n’était enregistré'), p.c1, v);
-      p.c1=v; n++;
+
+    /* Les notes ne recouvrent jamais : une note ecrite par quelqu'un est une
+       saisie comme une autre, et le releve ne comble que le vide. */
+    if(e.com){
+      const bc=budComOf(p);
+      Object.keys(e.com).forEach(k=>{
+        if(String(bc[k]||'').trim()) return;
+        logChange('Projet '+nom,'commentaire — '+(BUD_COM[k]||k),'',e.com[k]);
+        bc[k]=e.com[k]; n++;
+      });
     }
-    /* La ventilation par année va là où une page la porte : la Finance du
-       pack Gate 0-1-2-3. On ne comble que le vide — une cellule déjà écrite
-       n'est jamais reprise. */
+    /* La ventilation par annee va la ou une page la porte : la Finance du
+       pack Gate 0-1-2-3. On ne comble que le vide. */
     if(e.gate && typeof gdOf==='function'){
       const g=gdOf(p.id).g0123; let m=0;
       Object.keys(e.gate).forEach(k=>{
@@ -7794,14 +7867,6 @@ function appliquerSeedBud(){
       });
       if(m){ logChange('Passage Gate — '+nom,'Finance · ventilation par année','',
         'Gate 0-1-2-3 : '+m+' cellule(s) posée(s)'); n+=m; }
-    }
-    if(e.b27!=null){
-      if(p.b27==null||p.b27===''){
-        logChange('Projet '+nom,PROJ_BUD.b27+' — '+(e.quoi||'budget arbitré'), p.b27, e.b27); p.b27=+e.b27; n++;
-      } else if((+p.b27||0)!==+e.b27){
-        logChange('Projet '+nom,PROJ_BUD.b27+' — saisie conservée', p.b27,
-          p.b27+' · le relevé proposait '+e.b27);
-      }
     }
   });
   if(n) logChange('Portefeuille','budgets arbitrés','',n+' champ(s) mis à jour');
