@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.6 -->
+<!-- PPM_BUILD:2026-11-03.7 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1914,7 +1914,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.6';
+const APP_BUILD='2026-11-03.7';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2250,15 +2250,34 @@ function financeHealth(p){
   if(conso>100) score -= Math.min(30,(conso-100));
   return {score:Math.max(0,Math.round(score)), dev:Math.round(dev), conso:Math.round(conso)};
 }
+/* Les six axes de la sante. Cinq reposaient sur des reperes fixes et le
+   sixieme sur le budget : aucun ne pouvait etre corrige a la main alors que
+   le chef de projet est seul a savoir ou en sont les ressources ou la
+   documentation. Chacun se saisit donc, selon la regle tenue partout
+   ailleurs — une saisie l'emporte, la case videe rend la main au calcul. */
+const AXES=[['fin','Finance'],['plan','Planning'],['risk','Risque'],
+            ['res','Ressources'],['qual','Qualité'],['doc','Documentaire']];
+function axesOf(p){ if(!p) return {}; p.axes=p.axes||{}; return p.axes; }
+function axeSaisi(p,k){ const v=axesOf(p)[k]; return (v==null||v==='')?null:(+v||0); }
+function axeCalcule(p,k,fin,pp){
+  if(k==='fin')  return fin.score;
+  if(k==='plan') return pp?78:75;
+  if(k==='risk') return pp&&pp.risks&&pp.risks.length?Math.max(40,90-pp.risks.length*12):80;
+  if(k==='res')  return 80;
+  if(k==='qual') return 85;
+  if(k==='doc')  return pp?85:70;
+  return null;
+}
+/* Le calcul d'un axe, relu pour lui seul — ce a quoi la case revient. */
+function axeCalc(p,k){ return axeCalcule(p,k,financeHealth(p),S.passports[p.id]); }
 function projHealth(p){
   const w=S.config.weights;
   const fin=financeHealth(p);
-  // neutral baselines where no operational data yet
   const pp=S.passports[p.id];
-  const planning = pp? 78 : 75;
-  const risk = pp&&pp.risks&&pp.risks.length? Math.max(40,90-pp.risks.length*12):80;
-  const res=80, qual=85, doc = pp?85:70;
-  let composite = (w.plan*planning + w.fin*fin.score + w.risk*risk + w.res*res + w.qual*qual + w.doc*doc)/(w.plan+w.fin+w.risk+w.res+w.qual+w.doc);
+  const val=k=>{ const v=axeSaisi(p,k); return v!=null?v:axeCalcule(p,k,fin,pp); };
+  const finSc=val('fin'), planning=val('plan'), risk=val('risk');
+  const res=val('res'), qual=val('qual'), doc=val('doc');
+  let composite = (w.plan*planning + w.fin*finSc + w.risk*risk + w.res*res + w.qual*qual + w.doc*doc)/(w.plan+w.fin+w.risk+w.res+w.qual+w.doc);
   composite=Math.round(composite);
   let band = composite>=75?'g':composite>=55?'a':'r';
   // statut override
@@ -2266,7 +2285,11 @@ function projHealth(p){
   if(st && st!=='ok' && st!=='' ) { if(band==='g') band='a'; }
   if(p.hoverride) band=p.hoverride;
   if(pp&&pp.health&&pp.health.override) band=pp.health.override;
-  return {composite,band,fin,planning,risk,res,qual,doc};
+  /* L'ecart budgetaire et la consommation restent ceux des donnees : ils
+     expliquent le chiffre d'origine, qu'une saisie remplace sans les rendre
+     faux. */
+  return {composite,band,fin:Object.assign({},fin,{score:finSc}),
+    planning,risk,res,qual,doc};
 }
 const bandLabel={g:'On Track',a:'Attention',r:'At Risk'};
 /* Les trois etats de sante, tels qu'ils sont nommes sur les supports du
@@ -9356,12 +9379,12 @@ function renderPass(){
                 title="Commentaire de santé — ce qui explique l’état retenu"
                 >${esc(p.santeCom||'')}</div>
             </div>`;})()}
-          ${subHealth('Finance',h.fin.score)}
-          ${subHealth('Planning',h.planning)}
-          ${subHealth('Risque',h.risk)}
-          ${subHealth('Ressources',h.res)}
-          ${subHealth('Qualité',h.qual)}
-          ${subHealth('Documentaire',h.doc)}
+          ${subHealth(p,'fin','Finance',h.fin.score)}
+          ${subHealth(p,'plan','Planning',h.planning)}
+          ${subHealth(p,'risk','Risque',h.risk)}
+          ${subHealth(p,'res','Ressources',h.res)}
+          ${subHealth(p,'qual','Qualité',h.qual)}
+          ${subHealth(p,'doc','Documentaire',h.doc)}
         </div>
         <div class="drivers" style="margin-top:10px">
           <b style="font-size:11.5px;color:var(--muted)">Pourquoi ?</b>
@@ -9402,7 +9425,16 @@ function renderPass(){
   armerPole();
   bindEditables();
 }
-function subHealth(lb,sc){const b=sc>=75?'g':sc>=55?'a':'r';return `<div class="ht ${b}"><span class="dot"></span><span class="lb">${lb}</span><span class="sc">${Math.round(sc)}</span></div>`;}
+function subHealth(p,k,lb,sc){
+  const b=sc>=75?'g':sc>=55?'a':'r';
+  const calc=Math.round(axeCalc(p,k)), saisi=axeSaisi(p,k);
+  const forcee=saisi!=null && saisi!==calc;
+  const bulle=forcee
+    ? lb+' — valeur saisie ; le calcul donne '+calc+', videz la case pour y revenir'
+    : lb+' — calculé ('+calc+') · cliquez pour saisir une note de 0 à 100';
+  return `<div class="ht ${b}"><span class="dot"></span><span class="lb">${esc(lb)}</span>`
+    +`<span class="sc ppedit${forcee?' forcee':''}" contenteditable data-axe="${esc(k)}"`
+    +` title="${esc(bulle)}">${Math.round(sc)}</span></div>`;}
 /* Atterrissage : ce que le projet aura coûté en fin de course. Au minimum son
    budget révisé — un projet consomme ce qui lui est alloué — et davantage dès
    que le facturé et l'engagé le dépassent. Avec des engagements nuls, c'est
@@ -9596,6 +9628,29 @@ function bindEditables(){
      est retire plutot que garde a blanc, et chaque changement est journalise.
      On lit innerText et non textContent : le commentaire tient sur plusieurs
      lignes, et textContent les perdrait. */
+  /* Une note de sante va de 0 a 100 : hors de ces bornes elle est ramenee
+     dedans plutot que refusee en silence, et le journal garde ce qui a ete
+     tape. Resaisir la valeur calculee rend la main au calcul. */
+  $$('[data-axe]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
+    const k=el.dataset.axe, lb=(AXES.find(a=>a[0]===k)||[,k])[1];
+    const t=String(el.textContent||'').replace(/\u00a0/g,' ')
+      .replace(/[^\d,.\-]/g,'').replace(/\s/g,'').replace(',','.');
+    const brut = t==='' ? null : parseFloat(t);
+    const neu = (brut==null||isNaN(brut)) ? null : Math.max(0,Math.min(100,Math.round(brut)));
+    const calc=Math.round(axeCalc(p,k));
+    const rendu = neu!=null && neu===calc;
+    const val = rendu ? null : neu;
+    const av = axeSaisi(p,k);
+    if(av===val){ renderPass(); return; }   // rien n'a change : on retablit l'affichage
+    const borne = neu!=null && brut!=null && Math.round(brut)!==neu;
+    logChange('Projet '+(p.shine||p.nom),'santé — '+lb
+      +(rendu?' — rendu au calcul':'')+(borne?' — ramené dans 0–100 (saisi '+brut+')':''),
+      av==null?'':av, val==null?(rendu?String(calc):''):val);
+    if(val==null) delete axesOf(p)[k]; else axesOf(p)[k]=val;
+    scheduleSave(); renderPass();
+  }));
   $$('[data-santecom]').forEach(el=>el.addEventListener('blur',()=>{
     if(KIT_EN_COURS || !el.isConnected) return;
     const p=S.projects.find(x=>x.id===S.currentProj); if(!p) return;
