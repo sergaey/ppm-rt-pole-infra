@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.7 -->
+<!-- PPM_BUILD:2026-11-03.8 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -624,7 +624,28 @@
   .op .ophead .pcode{font-weight:700;color:var(--copper)}
   .op .ophead .opdate{margin-left:auto;font-family:'IBM Plex Sans';font-size:11.5px;color:var(--muted)}
   .op .opgrid{display:grid;grid-template-columns:1fr 268px;gap:10px;align-items:start}
-  .op .oprow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  /* Les jalons portent quatre colonnes, le budget trois : a parts egales le
+     tableau des jalons debordait de son panneau et ses colonnes Initial /
+     New / Progress sortaient de l'ecran. Deux tiers / un tiers, comme sur le
+     support. */
+  .op .oprow{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:10px}
+  .op .oprow .oppan{min-width:0}
+  .op .oprow table{width:100%}
+  /* Les intitules de jalons sont longs et ne se repliaient pas : le tableau
+     mesurait 1073 px dans un panneau de 931 et ses trois dernieres colonnes
+     sortaient du cadre. Largeurs fixes pour les colonnes courtes, repli pour
+     l'intitule. Le panneau du budget, lui, garde sa mise en page. */
+  .op .oprow .oppan:first-child table{table-layout:fixed}
+  .op .oprow .oppan:first-child th:first-child,
+  .op .oprow .oppan:first-child td:first-child{white-space:normal;word-break:break-word}
+  .op .oprow .oppan:first-child th:nth-child(2),
+  .op .oprow .oppan:first-child td:nth-child(2),
+  .op .oprow .oppan:first-child th:nth-child(3),
+  .op .oprow .oppan:first-child td:nth-child(3){width:88px}
+  .op .oprow .oppan:first-child th:nth-child(4),
+  .op .oprow .oppan:first-child td:nth-child(4){width:116px}
+  .op .oprow .oppan:first-child th:nth-child(5),
+  .op .oprow .oppan:first-child td:nth-child(5){width:26px}
   .op .oprow3{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:10px;margin-top:10px}
   .op .oppan{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
   .op .oph{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 11px;
@@ -1914,7 +1935,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.7';
+const APP_BUILD='2026-11-03.8';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3501,25 +3522,20 @@ function migrerBudgetOP(){
   Object.keys(S.kits).forEach(id=>{
     const k=S.kits[id]; const o=k&&k.op; if(!o||!o.budget||!Array.isArray(o.budget.rows)) return;
     const av=JSON.stringify(o.budget.rows.map(r=>[r.role||'',r.label]));
-    o.budget.rows.forEach(rw=>{
-      const std=OP_BLABELS[String(rw.label||'').trim().toLowerCase()];
-      if(std) rw.label=std;
-      const r=opRole(rw); if(r) rw.role=r;
-    });
-    /* Aucune ligne ne se donne pour la dotation : c'est la première, par
-       convention de l'outil comme de la lecture. Sans ce repli, le disponible
-       se calculerait sur un budget nul dès qu'une ligne a été renommée. */
+    /* La One Page reproduit le support du site : ses lignes gardent leur
+       intitule et leur ordre. Cette migration les renommait — « YTD Commit. »
+       devenait « Open Commitments » —, en inserait une et les reclassait par
+       role. C'etait imposer le vocabulaire de l'outil a un document qui n'est
+       pas le sien. Seul le role est encore deduit, parce qu'il ne se voit
+       pas : il sert au calcul du disponible, la ou une ligne le demande. */
+    o.budget.rows.forEach(rw=>{ const r=opRole(rw); if(r) rw.role=r; });
+    /* Sans ligne de dotation declaree, le disponible se calculerait sur un
+       budget nul : la premiere ligne en tient lieu, par convention de
+       lecture. */
     if(!o.budget.rows.some(rw=>rw.role==='budget')){
-      const p=o.budget.rows.find(rw=>!rw.role);
-      if(p) p.role='budget';
+      const pr=o.budget.rows.find(rw=>!rw.role);
+      if(pr) pr.role='budget';
     }
-    if(!o.budget.rows.some(rw=>rw.role==='dispo'))
-      o.budget.rows.push({id:kuid(),role:'dispo',label:'Available Amount',values:o.budget.years.map(()=>0)});
-    /* Ordre de lecture : dotation, dépensé, engagé, disponible, atterrissage.
-       Les lignes ajoutées à la main gardent leur rang relatif, à la suite. */
-    const rang=r=>{ const i2=OP_BROLES.findIndex(x=>x[0]===r.role); return i2<0?99:i2; };
-    o.budget.rows=o.budget.rows.map((r,i2)=>({r,i2}))
-      .sort((a,b)=>(rang(a.r)-rang(b.r))||(a.i2-b.i2)).map(x=>x.r);
     if(JSON.stringify(o.budget.rows.map(r=>[r.role||'',r.label]))!==av) n++;
   });
   return n;
@@ -3832,9 +3848,15 @@ function appliquerSeedOP(){
        objectifs, lui, est retenté à chaque ouverture — il ne comble que le
        vide, donc il n'a rien à écraser, et une zone restée blanche finit par
        recevoir son texte. */
-    const neuf=!S.opSeeded[cle];
+    /* Une One Page ne se posait qu'une fois : une version corrigee du support
+       n'atteignait plus la page. « refonte » porte la date du releve — tant
+       qu'elle ne change pas, rien ne bouge ; quand elle change, la page est
+       refaite d'apres le support, une seule fois, et le journal le dit. */
+    const marque=p.id+(e.refonte?'|'+e.refonte:'');
+    const neuf=S.opSeeded[cle]!==marque;
+    const refonte=neuf && !!e.refonte && !!S.opSeeded[cle];
     const o=opOf(p.id), pp=ensurePP(p.id);
-    S.opSeeded[cle]=p.id;
+    S.opSeeded[cle]=marque;
     let pose=[];
     /* Une ID Card fournie — bucket ou projet. Le cahier des objectifs comble
        zone par zone ce qui est resté blanc ; un texte écrit depuis n'est
@@ -3880,7 +3902,7 @@ function appliquerSeedOP(){
         pose.push(e.chif.postes.reduce((n2,g)=>n2+(g.rows||[]).length,0)+' lignes de chiffrage');
       }
     }
-    if(neuf && e.op && opVierge(o)){
+    if(neuf && e.op && (refonte || opVierge(o))){
       const src=JSON.parse(JSON.stringify(e.op));
       o.wbs=src.wbs.map(w=>{ const r=Object.assign({id:kuid()},w);
         if(r.type==='milestones') r.milestones=(r.milestones||[]).map(m=>Object.assign({id:kuid()},m));
@@ -3889,22 +3911,35 @@ function appliquerSeedOP(){
         rows:src.budget.rows.map(r=>Object.assign({id:kuid()},r,{values:r.values.slice()}))};
       o.ach=(src.ach||[]).slice();
       o.ganttStart=src.ganttStart||''; o.ganttEnd=src.ganttEnd||''; o.endMarker=src.endMarker||'';
-      pose.push('frise, budget et réalisations');
+      if(src.auteur) o.auteur=src.auteur;
+      if(src.date) o.date=src.date;
+      pose.push(refonte?'frise, budget et réalisations — refondus d’après le relevé'
+                       :'frise, budget et réalisations');
     }
     /* Jalons, risques et prochaines étapes se fondent dans le passeport : on
        ne refond qu'une fois, sans quoi ce qu'on en a retiré reviendrait. */
     if(neuf){
       const q=JSON.parse(JSON.stringify(e.pp||{}));
-      const a=opFondre(pp.milestones,q.milestones,x=>x.name);
-      const b=opFondre(pp.risks,q.risks,x=>x.desc);
+      /* Une refonte remplace : le support fait foi, c'est tout son objet.
+         Hors refonte, on fond — ce qui a ete retire ne revient pas. */
+      if(refonte){
+        if(q.milestones) pp.milestones=q.milestones;
+        if(q.risks) pp.risks=q.risks;
+        if(q.nextSteps) pp.nextSteps=q.nextSteps.map(nsNorm);
+        pose.push('jalons, risques et prochaines étapes repris du relevé');
+      }
+      const a=refonte?0:opFondre(pp.milestones,q.milestones,x=>x.name);
+      const b=refonte?0:opFondre(pp.risks,q.risks,x=>x.desc);
       pp.nextSteps=(pp.nextSteps||[]).map(nsNorm);
-      const c=opFondre(pp.nextSteps,(q.nextSteps||[]).map(nsNorm),x=>x.t);
+      const c=refonte?0:opFondre(pp.nextSteps,(q.nextSteps||[]).map(nsNorm),x=>x.t);
       if(a) pose.push(a+' jalon'+(a>1?'s':''));
       if(b) pose.push(b+' risque'+(b>1?'s':''));
       if(c) pose.push(c+' étape'+(c>1?'s':''));
     }
-    if(!pp.statusTxt && e.statusTxt){ pp.statusTxt=e.statusTxt; pose.push('commentaire de statut'); }
-    if(!p.hoverride && e.sante){ p.hoverride=e.sante; pose.push('santé'); }
+    if(e.statusTxt && (refonte || !pp.statusTxt)){
+      if(pp.statusTxt!==e.statusTxt){ pp.statusTxt=e.statusTxt; pose.push('commentaire de statut'); } }
+    if(e.sante && (refonte || !p.hoverride)){
+      if(p.hoverride!==e.sante){ p.hoverride=e.sante; pose.push('santé'); } }
     if(!pose.length) return;                        // tout était déjà là
     logChange('One Page — '+(p.shine||p.nom),'reprise du One Page fourni','',pose.join(' · '));
     n++;
@@ -6320,10 +6355,20 @@ function opPage(){
       <td style="text-align:center">${opPill(w.status,'wbs',i)}</td></tr>`;
   }).join('');
   const bud=o.budget;
-  const tot=r2=>(opRole(r2)==='dispo') ? ksum(bud.years.map((_,j)=>opDispo(o,j))) : ksum(r2.values);
+  /* Le total d'une ligne est la somme de ses colonnes, sauf quand le relevé
+     en porte un autre : la One Page reproduit le support du site, et deux des
+     totaux qu'il imprime ne sont pas les sommes de leurs annees. On affiche
+     le sien et on met la somme dans l'infobulle — visible a qui regarde, sans
+     rien corriger de sa main. */
+  const somme=r2=>(opRole(r2)==='dispo') ? ksum(bud.years.map((_,j)=>opDispo(o,j))) : ksum(r2.values);
+  const tot=r2=>(r2.tot!=null&&r2.tot!=='')?(+r2.tot):somme(r2);
+  const totT=r2=>{ const t=tot(r2), sm=somme(r2);
+    return (r2.tot!=null&&r2.tot!=='' && Math.abs(t-sm)>1e-9)
+      ? ' title="Total du relevé — la somme des colonnes donne '+fmt(sm)+'"' : ''; };
   const ach=o.ach.map((t,i)=>`<div class="opitem"><span class="b">✓</span><span style="flex:1" contenteditable data-opb="ach.${i}">${esc(t)}</span><button class="kdel" data-opa="delAch|${i}">✕</button></div>`).join('')||'<div class="hint">Aucune réalisation.</div>';
   const ns=(pp.nextSteps||[]).map((x,i)=>{const s2=nsNorm(x);
-    return `<div class="opitem ns"><span class="b">→</span><span style="flex:1" contenteditable data-ns="${esc(id)}|${i}">${esc(s2.t)}</span><span class="pill p-ns">${esc(s2.st)}</span></div>`;}).join('')||'<div class="hint">Aucune étape.</div>';
+    return `<div class="opitem ns"><span class="b">→</span><span style="flex:1" contenteditable data-ns="${esc(id)}|${i}">${esc(s2.t)}</span>${
+      s2.st?`<span class="pill p-ns">${esc(s2.st)}</span>`:''}</div>`;}).join('')||'<div class="hint">Aucune étape.</div>';
   const km=(pp.milestones||[]).map((m,i)=>{
     const c=m.st==='Done'?'p-done':/progress/i.test(m.st||'')?'p-wip':m.st==='Late'?'p-late':'p-ns';
     return `<tr><td><span contenteditable data-km="${esc(id)}|${i}|name">${esc(m.name)}</span></td>
@@ -6340,9 +6385,11 @@ function opPage(){
   const cur=(p.hoverride==='g'?'ok':p.hoverride==='a'?'att':p.hoverride==='r'?'risk':
              (projHealth(p).band==='g'?'ok':projHealth(p).band==='a'?'att':'risk'));
   return `<div class="op">
-    <div class="ophead"><span class="pid">${esc(p.shine||p.id)}</span><span>—</span>
-      <span class="pname">${esc(p.nom)}</span>${p.ishift?`<span>-</span><span class="pcode">${esc(p.ishift)}</span>`:''}
-      <span class="opdate">Auteur : ${esc(S.user||'—')} &nbsp;|&nbsp; ${new Date().toLocaleDateString('fr-FR')}</span></div>
+    <div class="ophead"><span class="pid">${esc(p.ishift||p.shine||p.id)}</span> <span>—</span>
+      <span class="pname">${esc(p.nom)}</span>${p.shine?` <span>-</span> <span class="pcode">${esc(p.shine)}</span>`:''}
+      <span class="opdate">Auteur : <span contenteditable data-opd2="auteur"
+        data-vide="—">${esc(o.auteur||S.user||'')}</span> &nbsp;|&nbsp; Date : <span contenteditable
+        data-opd2="date" data-vide="—">${esc(o.date||new Date().toLocaleDateString('fr-FR'))}</span></span></div>
     <div class="opgrid">
       <div class="oppan">
         <div class="oph h-green"><span>WBS TASK</span><span><button class="add" data-opa="addBar" title="Ajouter une activité">+</button> <button class="add" data-opa="addMsRow" title="Ajouter une ligne de jalons">◇</button></span></div>
@@ -6376,7 +6423,7 @@ function opPage(){
             ? bud.years.map((_,j)=>{const v=opDispo(o,j);
                 return `<td class="num"><span class="opcalc ${v<0?'neg':''}" title="Budget Value − Actuals Amount − Open Commitments">${fmt(v)}</span></td>`;}).join('')
             : rw.values.map((v,j)=>`<td class="num"><input class="kin num" type="number" step="any" value="${esc(v)}" data-opd="budget.rows.${i}.values.${j}" data-opr="1"></td>`).join('')}
-          <td class="num">${fmt(tot(rw))}</td><td><button class="kdel" data-opa="delBudRow|${i}">✕</button></td></tr>`).join('')}
+          <td class="num"${totT(rw)}>${fmt(tot(rw))}</td><td><button class="kdel" data-opa="delBudRow|${i}">✕</button></td></tr>`).join('')}
         </tbody></table></div>
     </div>
     <div class="oprow3">
@@ -9565,9 +9612,13 @@ function stSelect(attr,cle,liste,val){
     + opts.map(o=>`<option ${o===(val||'')?'selected':''}>${esc(o)}</option>`).join('') + `</select>`;
 }
 /* Les étapes étaient de simples textes ; elles portent maintenant un statut. */
+/* « À faire » n'est un défaut que pour une étape qui n'a jamais eu de
+   statut. Un statut explicitement vide en reste un : le support du site en
+   porte sans, et lui en coller un serait inventer un état. */
 function nsNorm(x){
-  return (x && typeof x==='object') ? {t:String(x.t||''), st:x.st||'À faire'}
-                                    : {t:String(x==null?'':x), st:'À faire'};
+  return (x && typeof x==='object')
+    ? {t:String(x.t||''), st:(x.st==null?'À faire':String(x.st))}
+    : {t:String(x==null?'':x), st:'À faire'};
 }
 function pill(st){const s=norm(st); if(s==='done')return '<span class="pill g">Done</span>'; if(s.includes('progress'))return '<span class="pill a">In progress</span>'; if(s.includes('late')||s.includes('retard'))return '<span class="pill r">Late</span>'; return `<span class="pill n">${esc(st||'—')}</span>`;}
 function risksBlock(p,pp){
@@ -9650,6 +9701,18 @@ function bindEditables(){
       av==null?'':av, val==null?(rendu?String(calc):''):val);
     if(val==null) delete axesOf(p)[k]; else axesOf(p)[k]=val;
     scheduleSave(); renderPass();
+  }));
+  /* L'auteur et la date de la One Page : le support en porte, et ils ne se
+     deduisent pas — une revue datee du 21 mai ne se redate pas toute seule le
+     jour ou on la rouvre. */
+  $$('[data-opd2]').forEach(el=>el.addEventListener('blur',()=>{
+    if(KIT_EN_COURS || !el.isConnected) return;
+    const id=S.currentProj, o=opOf(id); if(!o) return;
+    const k=el.dataset.opd2, v=String(el.textContent||'').replace(/\u00a0/g,' ').trim();
+    if(String(o[k]||'')===v) return;
+    logChange('One Page — '+(k==='date'?'date':'auteur'), 'One Page', o[k]||'', v);
+    if(v) o[k]=v; else delete o[k];
+    scheduleSave();
   }));
   $$('[data-santecom]').forEach(el=>el.addEventListener('blur',()=>{
     if(KIT_EN_COURS || !el.isConnected) return;
@@ -9972,34 +10035,156 @@ function occColor(v){ if(!v)return 'var(--panel-3)'; if(v>100)return 'var(--bad)
 function chargeColor(v){ if(!v)return 'transparent'; const a=Math.min(.85,.12+v*0.5); return `color-mix(in srgb, var(--accent) ${Math.round(a*100)}%, transparent)`; }
 
 /* ======================= One-Page modal ======================= */
+/* ---- Mode One-Page : la vue de revue, telle quelle ----
+   Le bouton ouvrait une mise en page a lui, simplifiee : deux colonnes, pas
+   de frise, pas de budget par annee, pas de key achievement. Ce n'etait pas
+   la One Page que l'onglet montre ni celle que le site diffuse. Il ouvre
+   desormais la vraie, figee et prete a partir. */
+
+/* Les classes réellement employées par un fragment — on ne garde que les
+   regles qui les concernent, sinon la feuille entiere partirait avec. */
+function opClassesUtilisees(racine){
+  const vues=new Set();
+  const voir=n=>{ if(n.classList) n.classList.forEach(c=>vues.add(c));
+    [...(n.children||[])].forEach(voir); };
+  voir(racine);
+  return vues;
+}
+function opStyles(racine){
+  const cls=opClassesUtilisees(racine);
+  const out=['/* variables, en clair : la page vit hors de l’application */',
+    ':root{--line:#e0e7ee;--line-2:#ccd7e0;--panel:#fff;--panel-2:#eef3f7;--panel-3:#e4ebf1;',
+    '--ink:#11202e;--ink-2:#33485a;--muted:#5e7485;--faint:#8499a7;--radius:10px;',
+    '--accent:#115e75;--accent-soft:#e1edf1;--accent-ink:#0b4658;',
+    '--good:#1d7a52;--good-soft:#e0f0e8;--warn:#bd8413;--warn-soft:#fbf0dc;',
+    '--bad:#c0392b;--bad-soft:#fbe6e3;',
+    '--q1:#dbeafe;--q2:#dcfce7;--q3:#fef3c7;--q4:#fce7f3}',
+    'body{margin:0;padding:16px;background:#f4f7f9;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--ink)}',
+    '.op{background:#fff;margin:0 auto}'];
+  try{
+    [...document.styleSheets].forEach(ss=>{
+      let rs=null; try{ rs=ss.cssRules; }catch(_){ return; }
+      [...(rs||[])].forEach(r=>{
+        if(!r.selectorText) return;
+        const m=r.selectorText.match(/\.[A-Za-z][\w-]*/g)||[];
+        if(m.length && m.some(x=>cls.has(x.slice(1)))) out.push(r.cssText);
+      });
+    });
+  }catch(_){}
+  return out.join('\n');
+}
+/* Une page a diffuser ne se saisit pas : les listes, les champs de date et
+   les boutons d'ajout deviennent du texte. Sans cela l'image exportee
+   montrerait des controles vides et le destinataire croirait pouvoir y
+   ecrire. */
+function opFige(racine){
+  const c=racine.cloneNode(true);
+  c.querySelectorAll('select').forEach(sel=>{
+    const t=document.createElement('span');
+    t.className=sel.className+' opfige';
+    const o=sel.options[sel.selectedIndex];
+    t.textContent=o?o.textContent.trim():'';
+    sel.parentNode.replaceChild(t,sel);
+  });
+  c.querySelectorAll('input').forEach(inp=>{
+    const t=document.createElement('span');
+    t.className=(inp.className||'')+' opfige';
+    t.textContent=(inp.value||'').trim();
+    inp.parentNode.replaceChild(t,inp);
+  });
+  c.querySelectorAll('button,.add').forEach(b=>b.remove());
+  c.querySelectorAll('[contenteditable]').forEach(e=>e.removeAttribute('contenteditable'));
+  c.querySelectorAll('[draggable]').forEach(e=>e.removeAttribute('draggable'));
+  c.querySelectorAll('[title]').forEach(e=>e.removeAttribute('title'));
+  return c;
+}
 function openOnePage(p,pp,atter){
-  const h=projHealth(p);const c2=(p.c2!=null?p.c2:p.c1);const ec=(c2||0)-(p.c1||0);
-  const ms=(pp&&pp.milestones)||[];const ns=(pp&&pp.nextSteps)||[];const rs=(pp&&pp.risks)||[];
+  /* La vue riche n'existe dans la page que lorsque son onglet est ouvert :
+     on la rend pour l'occasion, hors ecran, puis on la fige. */
+  let source=document.querySelector('.op'), jetable=null;
+  if(!source){
+    jetable=document.createElement('div');
+    jetable.style.cssText='position:fixed;left:-10000px;top:0;width:1360px';
+    jetable.innerHTML=opPage();
+    document.body.appendChild(jetable);
+    source=jetable.querySelector('.op');
+  }
+  if(!source){ alert('La One Page de ce projet n’a pas pu être composée.'); return; }
+  const fige=opFige(source);
+  const css=opStyles(source);
+  if(jetable) jetable.remove();
+
   const w=window.open('','_blank');
   if(!w){alert('Veuillez autoriser les fenêtres pop-up pour le One-Page.');return;}
-  w.document.write(`<!DOCTYPE html><html lang=fr><head><meta charset=UTF-8><title>One-Page ${esc(p.shine||p.nom)}</title>
-  <style>body{font-family:Segoe UI,Arial,sans-serif;margin:0;padding:22px;color:#11202e;font-size:13px}
-  h1{font-size:20px;margin:0 0 2px}.sub{color:#5e7485;font-size:12px;margin-bottom:14px}
-  .g{display:grid;grid-template-columns:1fr 1fr;gap:12px}.p{border:1px solid #d7e0e5;border-radius:8px;overflow:hidden}
-  .ph{background:#115e75;color:#fff;padding:6px 11px;font-weight:700;font-size:12px}.pb{padding:9px 11px}
-  table{border-collapse:collapse;width:100%;font-size:11.5px}td,th{border-bottom:1px solid #eee;padding:4px 7px;text-align:left}
-  .hdr{display:flex;justify-content:space-between;align-items:center}.badge{padding:3px 11px;border-radius:6px;color:#fff;font-weight:700;font-size:12px}
-  .g1{background:#1d7a52}.a1{background:#bd8413}.r1{background:#c0392b}.num{text-align:right;font-variant-numeric:tabular-nums}
-  @media print{.noprint{display:none}}</style></head><body>
-  <div class=hdr><div><h1>${esc(p.nom)}</h1><div class=sub>${esc(p.ishift||'')} ${esc(p.shine||'')} · ${esc(p.group)} · PM ${esc(p.pm||'—')} · ${new Date().toLocaleDateString('fr-FR')}</div></div>
-  <span class="badge ${h.band==='g'?'g1':h.band==='a'?'a1':'r1'}">${bandLabel[h.band]} · ${h.composite}</span></div>
-  <div class=g>
-    <div class=p><div class=ph>BUDGET (k€)</div><div class=pb><table><tr><th>Mesure</th><th class=num>C1</th><th class=num>C2</th><th class=num>B27</th><th class=num>ACT</th></tr>
-    <tr><td>CAPEX FY</td><td class=num>${fmt(p.c1)}</td><td class=num>${fmt(c2)}</td><td class=num>${fmt(p.b27)}</td><td class=num>${fmt(p.act)}</td></tr>
-    <tr><td>Actuals / Commitments</td><td class=num colspan=4>${fmt(p.act||0)} + ${fmt(p.commit||0)} = <b>${fmt((p.act||0)+(p.commit||0))}</b> k€ — disponible ${fmt(((p.c2!=null?p.c2:p.c1)||0)-((p.act||0)+(p.commit||0)))} k€ vs C2</td></tr>
-    <tr><td><b>Atterrissage</b></td><td class=num colspan=4><b>${fmt(atter)}</b> — écart ${ec>=0?'+':''}${fmt(ec)} k€</td></tr></table></div></div>
-    <div class=p><div class=ph>STATUT</div><div class=pb>${esc(pp&&pp.statusTxt||p.comment||'—')}</div></div>
-    <div class=p><div class=ph>KEY MILESTONES</div><div class=pb><table>${ms.map(m=>`<tr><td>${m.st==='Done'?'✓ ':''}${esc(m.name)}</td><td class=num>${esc(m.neu||m.ini||'')}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</table></div></div>
-    <div class=p><div class=ph>NEXT STEPS</div><div class=pb><ul style="margin:0;padding-left:16px">${ns.map(nsNorm).map(s=>`<li>${esc(s.t)}${s.st?` <span style="color:#5e7485">(${esc(s.st)})</span>`:''}</li>`).join('')||'<li>—</li>'}</ul></div></div>
-    ${rs.length?`<div class=p style="grid-column:1/-1"><div class=ph>RISQUES</div><div class=pb><table><tr><th>Description</th><th>Mitigation</th><th>Owner</th><th>Date</th></tr>${rs.map(r=>`<tr><td style="white-space:pre-wrap;line-height:1.5">${esc(r.desc)}</td><td style="white-space:pre-wrap;line-height:1.5">${esc(r.mit)}</td><td>${esc(r.owner)}</td><td>${esc(r.date)}</td></tr>`).join('')}</table></div></div>`:''}
-  </div>
-  <p class=noprint style="margin-top:16px"><button onclick="print()">⎙ Imprimer / PDF</button></p></body></html>`);
+  const titre=(p.ishift||p.shine||p.nom||'One-Page');
+  w.document.write('<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">'
+    +'<title>One Page — '+esc(titre)+'</title>'
+    +'<style id="opcss">'+css+'</style>'
+    +'<style>.opbar{display:flex;gap:8px;align-items:center;margin:0 auto 12px;max-width:1360px;'
+    +'font:600 12px Inter,"Segoe UI",Arial,sans-serif}'
+    +'.opbar button{font:inherit;padding:6px 12px;border-radius:7px;border:1px solid var(--line-2);'
+    +'background:#fff;color:var(--ink);cursor:pointer}'
+    +'.opbar button:hover{border-color:var(--accent);color:var(--accent)}'
+    +'.opbar .ok{color:var(--good)}'
+    +'.opfige{display:inline-block}'
+    +'@media print{.opbar{display:none}body{padding:0;background:#fff}}</style></head><body>'
+    +'<div class="opbar"><button id="opImp">⎙ Imprimer / PDF</button>'
+    +'<button id="opHtml">⤓ Page HTML</button>'
+    +'<button id="opPng">🖼 Image PNG</button>'
+    +'<span id="opDit" class="ok"></span></div>'
+    +'<div id="opWrap">'+fige.outerHTML+'</div></body></html>');
   w.document.close();
+
+  const nom=String(titre).replace(/[^\w.-]+/g,'_');
+  const dire=t=>{ const d=w.document.getElementById('opDit'); if(d){ d.textContent=t;
+    setTimeout(()=>{ try{ d.textContent=''; }catch(_){} },4000); } };
+  const verser=(blob,ext)=>{
+    const u=URL.createObjectURL(blob), a=w.document.createElement('a');
+    a.href=u; a.download='One_Page_'+nom+'.'+ext; w.document.body.appendChild(a); a.click();
+    a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000);
+    dire('Fichier '+ext.toUpperCase()+' généré.');
+  };
+  const armer=()=>{
+    const d=w.document;
+    const bi=d.getElementById('opImp'); if(bi) bi.onclick=()=>w.print();
+    const bh=d.getElementById('opHtml');
+    if(bh) bh.onclick=()=>{
+      /* La page entiere, barre d'outils retiree : un seul fichier, lisible
+         sans l'application. */
+      const copie=d.documentElement.cloneNode(true);
+      copie.querySelectorAll('.opbar').forEach(x=>x.remove());
+      verser(new Blob(['<!DOCTYPE html>\n'+copie.outerHTML],
+        {type:'text/html;charset=utf-8'}),'html');
+    };
+    const bp=d.getElementById('opPng');
+    if(bp) bp.onclick=()=>{
+      const n=d.getElementById('opWrap').firstElementChild;
+      const L=Math.ceil(n.scrollWidth), H=Math.ceil(n.scrollHeight);
+      let corps='';
+      try{ corps=new XMLSerializer().serializeToString(n); }
+      catch(e){ dire(''); alert('La page n’a pas pu être sérialisée : '+e.message); return; }
+      const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+L+'" height="'+H+'">'
+        +'<foreignObject width="100%" height="100%">'
+        +'<div xmlns="http://www.w3.org/1999/xhtml" style="background:#fff;width:'+L+'px">'
+        +'<style>'+d.getElementById('opcss').textContent.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))
+        +'</style>'+corps+'</div></foreignObject></svg>';
+      const img=new w.Image();
+      img.onload=()=>{
+        const cv=d.createElement('canvas'); cv.width=L*2; cv.height=H*2;
+        const x=cv.getContext('2d'); x.scale(2,2);
+        x.fillStyle='#fff'; x.fillRect(0,0,L,H); x.drawImage(img,0,0);
+        try{ cv.toBlob(b=>{ if(b) verser(b,'png'); else dire('Image non générée.'); },'image/png'); }
+        catch(e){ alert('L’image n’a pas pu être produite : '+e.message); }
+      };
+      /* Un navigateur peut refuser de peindre un foreignObject. On le dit
+         plutot que de laisser un bouton sans effet : la page HTML, elle,
+         reste disponible. */
+      img.onerror=()=>alert('Ce navigateur n’a pas pu rendre la page en image.'
+        +' Utilisez « Page HTML », ou « Imprimer / PDF ».');
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    };
+  };
+  if(w.document.readyState==='complete') armer(); else w.addEventListener('load',armer);
 }
 
 /* ======================= Lot 2 — CER / Lots / DA-PO ======================= */
