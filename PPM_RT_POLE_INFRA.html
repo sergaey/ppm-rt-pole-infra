@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.1 -->
+<!-- PPM_BUILD:2026-11-03.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1874,7 +1874,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.1';
+const APP_BUILD='2026-11-03.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -7687,6 +7687,16 @@ const SEED_ACH = {};
    tient qu'un : le total révisé va en C2, le montant d'avant reste en C1
    alloué — l'écart dit alors la tranche ajoutée — et la ventilation par année
    est portée par la page Finance du pack Gate, qui est faite pour elle. */
+/* Budgets arbitres, par projet.
+
+   « 130 k€ en 2025 » a d'abord ete lu comme l'allocation de l'annee et ecrit
+   dans le CAPEX B25 : c'est l'atterrissage, l'allocation etant de 100. Sur un
+   CAPEX B25 vide, l'entree « 2025-2026 » y posait donc 130. Elle ne porte
+   plus de montant — l'entree « remise » les donne tous —, seulement le
+   retrait du total loge dans le C2 et la ventilation par annee.
+
+   Ce litteral reste du JSON pur : le garde-fou de publication le relit avec
+   json.loads, et un commentaire glisse a l'interieur le ferait echouer. */
 const SEED_BUD = [];
 function appliquerSeedBud(){
   if(!Array.isArray(SEED_BUD)||!SEED_BUD.length) return 0;
@@ -7700,6 +7710,30 @@ function appliquerSeedBud(){
     if(!p) return;                                  // projet absent de ce portefeuille
     S.budSeed[e.id]=p.id;
     const nom=p.shine||p.nom;
+    /* « set » : une remise en etat demandee, chiffre par chiffre, par celui a
+       qui la donnee appartient. Contrairement a une pose elle recouvre ce qui
+       s'y trouve — c'est tout son objet. Elle ne s'applique qu'une fois, et
+       chaque valeur remplacee passe au journal : rien ne change en silence. */
+    if(e.set){
+      Object.keys(e.set).forEach(c=>{
+        const av=(p[c]==null||p[c]==='')?null:+p[c];
+        const ap=e.set[c]==null?null:+e.set[c];
+        if(av===ap) return;
+        logChange('Projet '+nom,(PROJ_BUD[c]||c)+' — '+(e.quoi||'remise en état'),
+          av==null?'':av, ap==null?'':ap);
+        p[c]=ap; n++;
+      });
+    }
+    /* Les notes, elles, ne recouvrent jamais : une note ecrite par quelqu'un
+       est une saisie comme une autre, et le releve ne comble que le vide. */
+    if(e.com){
+      const bc=budComOf(p);
+      Object.keys(e.com).forEach(c=>{
+        if(String(bc[c]||'').trim()) return;
+        logChange('Projet '+nom,'commentaire — '+(BUD_COM[c]||c),'',e.com[c]);
+        bc[c]=e.com[c]; n++;
+      });
+    }
     /* Un releve corrige ne peut pas recouvrir une saisie : « maj » dit ce que
        la pose precedente avait ecrit, et la valeur n'est reprise que si elle
        est restee telle quelle. Sinon elle a ete retouchee — c'est une saisie,
