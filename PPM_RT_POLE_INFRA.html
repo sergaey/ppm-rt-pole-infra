@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.3 -->
+<!-- PPM_BUILD:2026-11-03.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -277,6 +277,27 @@
   .ht .lb{font-size:12px;color:var(--ink-2)} .ht .sc{margin-left:auto;font-family:"IBM Plex Mono";font-weight:600;font-size:13px}
   .ht.main{border-width:2px} .ht.g{border-color:var(--good)} .ht.a{border-color:var(--warn)} .ht.r{border-color:var(--bad)}
   .ht.g .dot{background:var(--good)} .ht.a .dot{background:var(--warn)} .ht.r .dot{background:var(--bad)}
+  /* Le choix de la santé : trois cartes plutôt qu'une liste déroulante — les
+     trois états sont lisibles d'un coup, avec leur consigne, et celui qui est
+     retenu se voit sans avoir à ouvrir quoi que ce soit. */
+  .sante-choix{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+  .sc-c{display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px;
+    border-radius:10px;border:1px solid var(--line);background:var(--panel);
+    color:var(--ink);font:inherit;font-size:12px;line-height:1.3;cursor:pointer;
+    text-align:center;width:100%}
+  .sc-c:hover{border-color:var(--ink-2)}
+  .sc-c .dot{width:18px;height:18px;border-radius:50%;flex:0 0 auto}
+  .sc-c.g .dot{background:var(--good)} .sc-c.a .dot{background:var(--warn)} .sc-c.r .dot{background:var(--bad)}
+  .sc-c .t1{font-weight:700} .sc-c .t2{font-weight:700}
+  .sc-c.on{border-width:2px;padding:9px}
+  .sc-c.on.g{border-color:var(--good);background:var(--good-soft)}
+  .sc-c.on.a{border-color:var(--warn);background:var(--warn-soft)}
+  .sc-c.on.r{border-color:var(--bad);background:var(--bad-soft)}
+  /* Sans choix retenu, l'etat calcule se signale sans se faire passer pour
+     une decision : un trait discontinu, pas un fond. */
+  .sc-c.calc{border-style:dashed;border-width:2px;padding:9px}
+  .sc-c.calc.g{border-color:var(--good)} .sc-c.calc.a{border-color:var(--warn)} .sc-c.calc.r{border-color:var(--bad)}
+  .sante-note{font-size:11px;color:var(--ink-2);margin-top:7px;line-height:1.4}
   /* Les blocs de la synthèse prennent la couleur de ce qu'ils mesurent :
      un liseré, un en-tête teinté, et le bloc se reconnaît avant d'être lu. */
   /* Planning : le récapitulatif se lit comme une accolade, le chemin critique
@@ -1874,7 +1895,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.3';
+const APP_BUILD='2026-11-03.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2229,6 +2250,11 @@ function projHealth(p){
   return {composite,band,fin,planning,risk,res,qual,doc};
 }
 const bandLabel={g:'On Track',a:'Attention',r:'At Risk'};
+/* Les trois etats de sante, tels qu'ils sont nommes sur les supports du
+   site : l'intitule, puis la consigne qui l'accompagne. */
+const SANTE_CHOIX=[['g','On Track',''],
+  ['a','Attention point','additional actions required'],
+  ['r','At Risk','strong action required']];
 function isLate(p){ const h=projHealth(p); return h.band==='r'; }
 
 /* ======================= Save ======================= */
@@ -9304,11 +9330,27 @@ function renderPass(){
             ${pp&&pp.risks&&pp.risks.length?`<li>${pp.risks.length} risque(s) ouvert(s)</li>`:''}
             ${(h.fin.dev==null||h.fin.dev<=S.config.seuilEcart)&&(!pp||!pp.risks||!pp.risks.length)?`<li>Situation maîtrisée sur les axes mesurés</li>`:''}
           </ul>
-          <div style="margin-top:9px"><label style="font-size:11.5px;color:var(--muted)">Forçage santé :
-            <select id="hov" style="padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:inherit">
-              <option value="">auto</option><option value="g" ${p.hoverride==='g'?'selected':''}>🟢</option>
-              <option value="a" ${p.hoverride==='a'?'selected':''}>🟠</option><option value="r" ${p.hoverride==='r'?'selected':''}>🔴</option>
-            </select></label></div>
+          ${(()=>{
+            /* La sante calculee, celle qu'on retrouve en relachant le choix :
+               on la relit sans le forcage, sinon elle se renverrait elle-meme. */
+            const auto=projHealth(Object.assign({},p,{hoverride:null})).band;
+            const retenu=p.hoverride||null;
+            return `<div style="margin-top:11px">
+              <b style="font-size:11.5px;color:var(--muted)">Santé retenue</b>
+              <div class="sante-choix">${SANTE_CHOIX.map(([b,t1,t2])=>{
+                const on=retenu===b, calc=!retenu&&auto===b;
+                const bulle = on
+                  ? 'État retenu — cliquez de nouveau pour revenir à la santé calculée ('+bandLabel[auto]+')'
+                  : 'Retenir « '+t1+' » pour ce projet';
+                return `<button type="button" class="sc-c ${b}${on?' on':''}${calc?' calc':''}"
+                  data-sante="${b}" title="${esc(bulle)}"><span class="dot"></span><span
+                  class="t1">${esc(t1)}</span>${t2?` <span class="t2">${esc(t2)}</span>`:''}</button>`;}).join('')}</div>
+              <div class="sante-note">${retenu
+                ? 'État retenu à la main. La santé calculée est <b>'+esc(bandLabel[auto])
+                  +'</b> — cliquez la carte retenue pour y revenir.'
+                : 'Aucun état retenu : la santé calculée fait foi (<b>'+esc(bandLabel[auto])
+                  +'</b>, trait discontinu). Cliquez une carte pour retenir un état.'}</div>
+            </div>`;})()}
         </div>
         </div>
       </div>
@@ -9324,7 +9366,20 @@ function renderPass(){
     if(i>=0 && i<lot.length){ S.currentProj=lot[i].id; scheduleSave(); renderPass(); } };
   lier('#ppPrev','click',()=>saut(-1));
   lier('#ppNext','click',()=>saut(1));
-  lier('#hov','change',e=>{p.hoverride=e.target.value||null; renderPass(); scheduleSave();});
+  /* Cliquer l'etat deja retenu le relache : la sante revient au calcul. C'est
+     la regle tenue partout ailleurs — une saisie l'emporte, et on la reprend
+     en la redonnant telle quelle. */
+  $$('[data-sante]').forEach(el=>el.addEventListener('click',()=>{
+    const b=el.dataset.sante;
+    const avant=p.hoverride||null;
+    const apres=avant===b?null:b;
+    if(avant===apres) return;
+    const auto=projHealth(Object.assign({},p,{hoverride:null})).band;
+    logChange('Projet '+(p.shine||p.nom),'santé retenue',
+      avant?bandLabel[avant]:'calculée ('+bandLabel[auto]+')',
+      apres?bandLabel[apres]:'calculée ('+bandLabel[auto]+')');
+    p.hoverride=apres; scheduleSave(); renderPass();
+  }));
   lier('#onePageBtn','click',()=>openOnePage(p,pp,atter));
   lier('#ppBack','click',()=>{ if(document.activeElement&&document.activeElement.blur)document.activeElement.blur(); S.tab='dash'; S.navKey='ppole'; render(); });
   armerPole();
