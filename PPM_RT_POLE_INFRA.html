@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-02.13 -->
+<!-- PPM_BUILD:2026-11-03.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1874,7 +1874,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-02.13';
+const APP_BUILD='2026-11-03.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -9251,7 +9251,7 @@ function atterrissage(p){
    notes, pas des donnees de pilotage. */
 function budComOf(p){ if(!p) return {}; p.budCom=p.budCom||{}; return p.budCom; }
 const BUD_COM={fy:'CAPEX FY',att:'Atterrissage estimé',act:'Actuals Amount',
-  commit:'Open Commitments',eng:'Engagé + facturé',dispo:'Available Amount',spe:'SPE alloué'};
+  commit:'Open Commitments',eng:'Engagé + facturé',dispo:'Available Amount',spe:'SPE allouée B26'};
 function budComCell(p,cle){
   const v=budComOf(p)[cle]||'';
   return `<td class="bcom" contenteditable data-budcom="${esc(cle)}" data-vide="—"
@@ -9435,7 +9435,7 @@ function bindEditables(){
     const av = (c.spe==null||c.spe==='') ? null : +c.spe;
     if(av===val) return;
     const neu2=val;
-    logChange('Projet '+(p.shine||p.nom),'enveloppe SPE allouée (k€)'+(neu2==null&&neu!=null?' — rendue au calcul':''),
+    logChange('Projet '+(p.shine||p.nom),'enveloppe SPE allouée B26 (k€)'+(neu2==null&&neu!=null?' — rendue au calcul':''),
       av==null?'':av, neu2==null?(neu!=null?fmt(calc):''):neu2);
     if(neu2==null) delete c.spe; else c.spe=neu2;
     scheduleSave(); renderPass();
@@ -9448,7 +9448,7 @@ function bindEditables(){
       .replace(/[^\d,.\-]/g,'').replace(/\s/g,'').replace(',','.');
     const v = t==='' ? 0 : (parseFloat(t)||0);
     if((+c.depense||0)===v) return;
-    logChange('Projet '+(p.shine||p.nom),'SPE réalisé (k€)',c.depense==null?'':c.depense,v);
+    logChange('Projet '+(p.shine||p.nom),'Activités réalisées — SPE allouée B26 (k€)',c.depense==null?'':c.depense,v);
     c.depense=v; scheduleSave(); renderPass();
   }));
   $$('[data-pinv]').forEach(el=>el.addEventListener('blur',()=>{
@@ -9875,13 +9875,24 @@ function cerMiniPass(p){
   const env=envSaisi!=null?envSaisi:envCalc;
   const envForcee=envSaisi!=null&&envSaisi!==envCalc;
   const src=envForcee?'saisie directe':(manuel>0?'enveloppe CER':base);
-  const depense=(+cer.depense>0?+cer.depense:(p.act||0));  // réalisé : CER si renseigné, sinon ACT du projet
+  const depense=(+cer.depense>0?+cer.depense:(p.act||0));  // activités réalisées : CER si renseigné, sinon ACT du projet
   const reste=env-depense;                                 // ce qu'il reste à consommer sur l'enveloppe
-  const conso=env?Math.round((depense/env)*100):0;
-  const cls=conso>=95?'r':conso>=80?'a':'g';
+  /* La pastille se lisait sur l'enveloppe SPE : elle annoncait 55 % la ou le
+     bloc Consommation affichait 83,1 %, deux bases pour un meme mot. Elle dit
+     desormais la consommation du budget du projet — engage + facture sur le
+     CAPEX 25 | 26 Projet Total —, a la decimale pres du bloc voisin, pour que
+     les deux chiffres se reconnaissent. L'enveloppe et son reste, eux,
+     restent la ligne : ce sont deux lectures differentes, pas un doublon. */
+  const engage=(+p.act||0)+(+p.commit||0);
+  const conso=alloue?engage/alloue*100:null;
+  const cls=conso==null?'g':(conso>=95?'r':conso>=80?'a':'g');
+  const consoT=alloue
+    ? 'Consommation du budget du projet — engagé + facturé '+fmt(engage)
+      +' k€ sur le CAPEX 25 | 26 Projet Total '+fmt(alloue)+' k€'
+    : 'Consommation du budget du projet — aucun budget renseigné';
   return `<div class="tblwrap" style="margin-top:12px"><table class="budget-mini"><tbody>
-    <tr title="Enveloppe : ${esc(src)} · le reste et la consommation se déduisent de l'enveloppe et du réalisé"><td>SPE alloué <span class="ppedit${envForcee?' forcee':''}" contenteditable data-cerspe="1" data-vide="—" title="Enveloppe SPE — ${envForcee?'valeur saisie ; le calcul donne '+esc(fmt(envCalc))+' k€ ('+esc(manuel>0?'enveloppe CER':base)+'), videz la case pour y revenir':esc(fmt(envCalc))+' k€ d’après '+esc(src)+' · cliquez pour saisir une autre valeur'}">${fmtSaisie(env)}</span> k€ · réalisé <span class="ppedit" contenteditable data-cerdep="1" data-vide="0" title="Réalisé sur l'enveloppe SPE — cliquez pour saisir">${depense?fmtSaisie(depense):''}</span> k€${cer.da.length?(' · '+cer.da.length+' DA/PO'):''} · <span style="color:${reste<0?'var(--bad)':'var(--good)'};font-weight:600">reste à consommer ${fmt(reste)} k€</span></td>
-    <td class="num">conso <span class="pill ${cls}">${fmt(conso,0)}%</span></td>${budComCell(p,'spe')}</tr></tbody></table></div>`;
+    <tr title="Enveloppe : ${esc(src)} · le reste se déduit de l'enveloppe et des activités réalisées ; la consommation, elle, se lit sur le budget du projet"><td>SPE allouée B26 <span class="ppedit${envForcee?' forcee':''}" contenteditable data-cerspe="1" data-vide="—" title="Enveloppe SPE allouée B26 — ${envForcee?'valeur saisie ; le calcul donne '+esc(fmt(envCalc))+' k€ ('+esc(manuel>0?'enveloppe CER':base)+'), videz la case pour y revenir':esc(fmt(envCalc))+' k€ d’après '+esc(src)+' · cliquez pour saisir une autre valeur'}">${fmtSaisie(env)}</span> k€ · Activités réalisées <span class="ppedit" contenteditable data-cerdep="1" data-vide="0" title="Activités réalisées sur l'enveloppe SPE allouée B26 — cliquez pour saisir">${depense?fmtSaisie(depense):''}</span> k€${cer.da.length?(' · '+cer.da.length+' DA/PO'):''} · <span style="color:${reste<0?'var(--bad)':'var(--good)'};font-weight:600">reste à consommer ${fmt(reste)} k€</span></td>
+    <td class="num" title="${esc(consoT)}">conso <span class="pill ${cls}">${conso==null?'—':fmt(conso,1)+' %'}</span></td>${budComCell(p,'spe')}</tr></tbody></table></div>`;
 }
 
 /* ======================= Phasing budgétaire ======================= */
