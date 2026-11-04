@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-03.8 -->
+<!-- PPM_BUILD:2026-11-04.1 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -967,10 +967,22 @@
      ligne saisis sont rendus (pre-wrap), le texte respire, et la colonne
      s'aligne en haut pour que deux cellules de hauteurs différentes se lisent
      ensemble. */
+  /* Les largeurs annoncees faisaient 42 % + 42 % + 96 + 96 + 24 px, soit plus
+     que la table : le navigateur les ramenait lui-meme a la raison, mais la
+     declaration etait fausse. Les deux colonnes de texte se partagent
+     desormais ce qui reste, et le min-width de 200 px est retire : sous une
+     table d'environ 616 px il forcait un debordement, et la table etant a
+     largeur fixe le contenu ne l'elargit de toute facon pas.
+
+     Mesure a l'appui d'un point que cela ne corrige PAS : la barre de
+     defilement horizontale du bloc. Elle vient d'un ecart d'un pixel entre la
+     table (943) et son cadre (942) — un arrondi de largeur fractionnaire, que
+     ni border-collapse:separate, ni width:auto, ni une colonne plus etroite
+     ne deplacent. Le bloc des jalons, dont le cadre tombe juste, ne l'a pas. */
   .rktbl{table-layout:fixed;width:100%}
   .rktbl td,.rktbl th{vertical-align:top}
   .rkcell{white-space:pre-wrap;word-break:break-word;line-height:1.55;font-size:12.5px;
-    padding:8px 10px;min-width:200px}
+    padding:8px 10px}
   .rkcell:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
   .rkmeta{padding-top:8px;font-size:12px;white-space:pre-wrap}
   .rkmeta:focus{background:var(--accent-soft);outline:2px solid var(--accent);outline-offset:-2px;border-radius:4px}
@@ -1935,7 +1947,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-03.8';
+const APP_BUILD='2026-11-04.1';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2236,6 +2248,50 @@ function migrate(saved){
       (x && typeof x==='object') ? {t:String(x.t||''), st:x.st||'À faire'} : {t:String(x==null?'':x), st:'À faire'});
     if(Array.isArray(pp.milestones)) pp.milestones.forEach(m=>{ if(m && !m.st) m.st='In progress'; });
   });
+  /* Un passeport se rangeait tantot sous l'identifiant du projet, tantot sous
+     son code Shine. L'ecran de synthese lisait les deux ; tout le reste —
+     l'ajout d'un jalon, d'un risque, d'une etape, et le calcul de la sante —
+     ne connaissait que l'identifiant. Trois consequences, mesurees : les
+     blocs d'un projet range sous son code se vidaient a l'ecran des qu'on y
+     ajoutait une ligne, sa sante etait calculee comme s'il n'avait pas de
+     passeport, et sa One Page n'en voyait rien.
+
+     Les deux clefs sont ramenees sur l'identifiant. Quand les deux existent,
+     on reunit plutot que de choisir : les listes sont concatenees sans
+     doublon, et un texte de statut deja ecrit n'est pas remplace. */
+  (function(){
+    const P=r.passports||(r.passports={});
+    const vide=o=>!o || (!(o.milestones||[]).length && !(o.risks||[]).length
+      && !(o.nextSteps||[]).length && !String(o.statusTxt||'').trim());
+    const fondre=(dst,src,clef)=>{
+      const a2=dst||[], b2=src||[];
+      if(!b2.length) return a2;
+      const vus=new Set(a2.map(x=>norm(clef(x))));
+      b2.forEach(x=>{ const k=norm(clef(x)); if(k && vus.has(k)) return; vus.add(k); a2.push(x); });
+      return a2;
+    };
+    (r.projects||[]).forEach(pr=>{
+      const code=pr.shine;
+      if(!code || code===pr.id || !P[code]) return;
+      const src=P[code];
+      if(!P[pr.id] || vide(P[pr.id])){
+        /* Rien du cote de l'identifiant : le passeport y demenage entier. */
+        const garde=P[pr.id];
+        P[pr.id]=src;
+        if(garde && garde.statusTxt && !P[pr.id].statusTxt) P[pr.id].statusTxt=garde.statusTxt;
+      } else {
+        const d=P[pr.id];
+        d.milestones=fondre(d.milestones,src.milestones,x=>x&&x.name);
+        d.risks=fondre(d.risks,src.risks,x=>x&&x.desc);
+        d.nextSteps=fondre(d.nextSteps,src.nextSteps,x=>x&&(x.t||x));
+        if(!String(d.statusTxt||'').trim() && src.statusTxt) d.statusTxt=src.statusTxt;
+        ['org','phase','gate','sponsor','health'].forEach(k=>{ if(d[k]==null && src[k]!=null) d[k]=src[k]; });
+      }
+      delete P[code];
+      try{ logChange('Projet '+(pr.shine||pr.nom),'passeport — rangé sous le code, ramené sur le projet',
+        code, pr.id); }catch(_){}
+    });
+  })();
   r.presence = r.presence || {};
   /* Le planning de presence est passe de la semaine au jour. Une saisie
      hebdomadaire ancienne est reportee sur les jours ouvres de sa semaine,
@@ -2291,10 +2347,21 @@ function axeCalcule(p,k,fin,pp){
 }
 /* Le calcul d'un axe, relu pour lui seul — ce a quoi la case revient. */
 function axeCalc(p,k){ return axeCalcule(p,k,financeHealth(p),S.passports[p.id]); }
+/* Un passeport ne compte que s'il porte quelque chose. */
+function ppGarni(pp){
+  if(!pp) return null;
+  const n=(pp.milestones||[]).length+(pp.risks||[]).length+(pp.nextSteps||[]).length;
+  return (n || String(pp.statusTxt||'').trim() || (pp.org&&pp.org.length)) ? pp : null;
+}
 function projHealth(p){
   const w=S.config.weights;
   const fin=financeHealth(p);
-  const pp=S.passports[p.id];
+  /* La seule existence d'un passeport relevait la note de planning et de
+     documentaire. Or il s'en cree un des qu'on ouvre la synthese d'un projet
+     et qu'on y touche : la sante montait sans que rien n'ait ete renseigne,
+     et deux projets identiques se notaient differemment selon qu'on les
+     avait ouverts. C'est son contenu qui compte. */
+  const pp=ppGarni(S.passports[p.id]);
   const val=k=>{ const v=axeSaisi(p,k); return v!=null?v:axeCalcule(p,k,fin,pp); };
   const finSc=val('fin'), planning=val('plan'), risk=val('risk');
   const res=val('res'), qual=val('qual'), doc=val('doc');
@@ -9348,7 +9415,9 @@ function renderPass(){
   const rang=lot.findIndex(x=>x.id===S.currentProj)+1;
   const p=S.projects.find(x=>x.id===S.currentProj)||S.projects[0];
   if(!p){ view.innerHTML=`<div class="sec-title"><h2>Aucun projet</h2><span class="hint">ajoutez des projets dans &laquo; Project Portfolio &raquo; pour activer cet onglet</span></div><div class="panel"><div class="panel-b"><div class="hint" style="padding:14px 4px">Cet onglet s'appuie sur un projet sélectionné. Commencez par créer un projet.</div></div></div>`; return; }
-  const pp=S.passports[p.id]||S.passports[p.shine];
+  /* Une seule clef depuis la migration : lire aussi sous le code ferait
+     revivre l'ecart entre ce qui s'affiche et ce qui s'ecrit. */
+  const pp=S.passports[p.id];
   const h=projHealth(p);
   const c2=(p.c2!=null?p.c2:p.c1);
   const atter=atterrissage(p);
@@ -9624,7 +9693,7 @@ function pill(st){const s=norm(st); if(s==='done')return '<span class="pill g">D
 function risksBlock(p,pp){
   const rs=(pp&&pp.risks)||[];
   return `<div class="panel ppsec" style="--c:#DC2626;--cs:rgba(220,38,38,.13);margin-top:14px"><div class="panel-h"><h3>Risques / Problèmes</h3><span class="meta">${rs.length}</span></div>
-  <div class="tblwrap"><table class="rktbl"><thead><tr><th style="width:42%">Description</th><th style="width:42%">Mitigation</th><th style="width:96px">Owner</th><th style="width:96px">Date</th><th style="width:24px"></th></tr></thead>
+  <div class="tblwrap"><table class="rktbl"><thead><tr><th>Description</th><th>Mitigation</th><th style="width:96px">Owner</th><th style="width:96px">Date</th><th style="width:24px"></th></tr></thead>
   <tbody>${rs.length?rs.map((r,i)=>`<tr>
     <td class="rkcell" contenteditable data-rk="${p.id}|${i}|desc" data-vide="Décrire le risque ou le problème…">${esc(r.desc||'')}</td>
     <td class="rkcell" contenteditable data-rk="${p.id}|${i}|mit" data-vide="Action de mitigation, décision, parade…">${esc(r.mit||'')}</td>
