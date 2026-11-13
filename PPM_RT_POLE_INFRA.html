@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-13.1 -->
+<!-- PPM_BUILD:2026-11-13.2 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1947,7 +1947,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-13.1';
+const APP_BUILD='2026-11-13.2';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -3334,7 +3334,7 @@ function budCalcule(p,champ){
        && budSaisi(p.act)==null && budSaisi(p.commit)==null) return undefined;
     return atterrissageCalc(p);
   }
-  if(champ==='dispo') return (budPeriode(p)||0)-eng;
+  if(champ==='dispo') return (budPeriode(p)||0)-eng-depassementB25(p);
   /* Pour la case du total, le calcul de reference est la somme seule : sans
      cela, « resaisir la valeur affichee » se comparerait a la saisie elle-meme
      et ne rendrait jamais la main. */
@@ -3363,6 +3363,17 @@ function budPeriode(p,d){
   const m=(d||new Date()).getMonth()+1;
   const c1=budN(p.c1), c2=budN(p.c2);
   return (m<=6) ? (c1!=null?c1:c2) : (c2!=null?c2:c1);
+}
+/* Ce qui a ete depense en 2025 au-dela du CAPEX B25. Un depassement ne
+   disparait pas avec l'annee : il se prend sur ce qui reste de l'exercice
+   suivant. 165 alloues, 110 engages, 30 depasses en 2025 — il reste 25.
+   Seul le depassement compte, pas la sous-consommation : celle-la ne rend
+   pas de l'argent a l'exercice en cours. */
+function depassementB25(p){
+  if(!p) return 0;
+  const a=budSaisi(p.att26);
+  if(a==null) return 0;
+  return Math.max(0, a-(budN(p.capex26)||0));
 }
 /* Le nom de cette colonne, pour que l'ecran dise sur quoi il compte. */
 function budPeriodeNom(p,d){
@@ -9659,14 +9670,19 @@ function budgetBlock(p,pp,atter){
     <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act)}</td>${budComCell(p,'act')}</tr>
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com)}</td>${budComCell(p,'commit')}</tr>
     <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage)}</td>${budComCell(p,'eng')}</tr>
-    ${(()=>{ const calc=baseT-engage, v=budSaisi(p.dispo), eff=v!=null?v:calc;
+    ${(()=>{ const dep=depassementB25(p);
+      const calc=baseT-engage-dep, v=budSaisi(p.dispo), eff=v!=null?v:calc;
+      const detail=fmt(baseT)+' − '+fmt(engage)+(dep?' − '+fmt(dep):'');
       const forcee=v!=null&&v!==calc;
-      return `<tr><td>Available Amount <span class="bmini">${esc(baseNom||'budget')} − (actuals + commitments) = ${fmt(baseT)} − ${fmt(engage)}${
+      return `<tr><td>Available Amount <span class="bmini">${esc(baseNom||'budget')} − (actuals + commitments)${
+          dep?' − dépassement CAPEX B25':''} = ${detail}${
           ctotMem!=null?' · pour mémoire, CAPEX 25 | 26 Projet Total '+fmt(ctotMem):''}</span></td>
         <td class="num${forcee?' forcee':''}" contenteditable data-pfn="dispo" data-vide="—"
           style="color:${teinte(eff)};font-weight:600"
-          title="${forcee?'Available Amount — valeur saisie ; le calcul donne '+esc(baseNom)+' '+esc(fmt(baseT))+' − '+esc(fmt(engage))+' = '+esc(fmt(calc))+' k€, videz la case pour y revenir'
-            :'Available Amount — '+esc(baseNom)+' '+esc(fmt(baseT))+' − '+esc(fmt(engage))+' = '+esc(fmt(calc))+' k€ · cliquez pour saisir une autre valeur'}"
+          title="${(forcee?'Available Amount — valeur saisie ; le calcul donne ':'Available Amount — ')
+            +esc(baseNom)+' '+esc(detail)+' = '+esc(fmt(calc))+' k€'
+            +(dep?' · le dépassement de '+esc(fmt(dep))+' k€ sur le CAPEX B25 se prend sur l’exercice en cours':'')
+            +(forcee?', videz la case pour y revenir':' · cliquez pour saisir une autre valeur')}"
           >${fmtSaisie(eff)}</td>
         <td class="num">${pc(eff)}</td>${budComCell(p,'dispo')}</tr>`; })()}
   </tbody></table></div>`;
