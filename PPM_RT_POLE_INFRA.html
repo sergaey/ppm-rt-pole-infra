@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-13.2 -->
+<!-- PPM_BUILD:2026-11-13.3 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1947,7 +1947,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-13.2';
+const APP_BUILD='2026-11-13.3';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2317,11 +2317,25 @@ function migrate(saved){
 
 /* ======================= Health engine ======================= */
 // Finance-driven (real data); planning/risk/res/qual/doc use passport signal or neutral.
+/* La consommation d'un projet, une seule definition pour toute
+   l'application : l'engage plus le facture, rapportes au budget de
+   l'exercice en cours — le C1 jusqu'en juin, le C2 revise ensuite. C'est la
+   ligne « Engagé + facturé » de la synthese, et desormais aussi la sante et
+   le cockpit financier.
+
+   Les trois ecrans comptaient autrement : la sante et le cockpit faisaient
+   « actuals / C1 », sans les engagements et sans la regle de periode. Un
+   meme projet se lisait 55 % en synthese et 52 % ailleurs. */
+function consoPct(p){
+  const base=budPeriode(p);
+  if(base==null || !base) return null;
+  return (((+p.act||0)+(+p.commit||0))/base)*100;
+}
 function financeHealth(p){
-  const c1=p.c1||0, c2=(p.c2!=null?p.c2:p.c1)||0, act=p.act||0;
+  const c1=p.c1||0, c2=(p.c2!=null?p.c2:p.c1)||0;
   if(!c1 && !c2) return {score:70,label:'n/a'};
   const dev = c1? Math.abs((c2-c1)/c1)*100 : 0;      // révision budgétaire vs C1
-  const conso = c1? (act/c1)*100 : 0;                 // consommation
+  const pc=consoPct(p), conso = pc==null?0:pc;        // consommation, définition commune
   let score=100;
   score -= Math.min(50, dev*2);                       // 5% écart => -10
   if(conso>100) score -= Math.min(30,(conso-100));
@@ -2861,8 +2875,12 @@ $('#tabs').addEventListener('click',e=>{
 
 /* ---------- helpers: aggregates ---------- */
 function totals(list){
-  const t={c1:0,c2:0,b27:0,act:0,spe:0,n:list.length,red:0,amber:0};
+  /* « base » et « eng » : les deux termes de la consommation, sommes projet
+     par projet avec la base propre a chacun — un portefeuille ou l'un est en
+     C1 et l'autre en C2 se compte sans melanger les colonnes. */
+  const t={c1:0,c2:0,b27:0,act:0,spe:0,base:0,eng:0,n:list.length,red:0,amber:0};
   list.forEach(p=>{t.c1+=p.c1||0;t.c2+=(p.c2!=null?p.c2:p.c1)||0;t.b27+=p.b27||0;t.act+=p.act||0;t.spe+=p.spe||0;
+    t.base+=budPeriode(p)||0; t.eng+=(+p.act||0)+(+p.commit||0);
     const h=projHealth(p).band; if(h==='r')t.red++; else if(h==='a')t.amber++;});
   return t;
 }
@@ -3009,7 +3027,7 @@ function renderDash(){
       <div class="tile a click" data-filterhealth=""><div class="lab">Projets</div><div class="big">${t.n}</div><div class="sub">${groups.length} pôles · voir tout →</div></div>
       <div class="tile"><div class="lab">CAPEX C1 (Alloué)</div><div class="big">${fmt(t.c1)}<span class="u">k€</span></div><div class="sub">budget initial FY</div></div>
       <div class="tile c"><div class="lab">CAPEX C2 (révisé)</div><div class="big">${fmt(t.c2)}<span class="u">k€</span></div><div class="sub">${ecartPct>=0?'+':''}${fmt(ecartPct,1)}% vs C1</div></div>
-      <div class="tile"><div class="lab">Réalisé (ACT YTD)</div><div class="big">${fmt(t.act)}<span class="u">k€</span></div><div class="sub">${t.c1?fmt(t.act/t.c1*100):0}% du C1</div></div>
+      <div class="tile" title="Engagé + facturé rapportés au budget de l'exercice de chaque projet — le C1 jusqu'en juin, le C2 révisé ensuite"><div class="lab">Engagé + facturé</div><div class="big">${fmt(t.eng)}<span class="u">k€</span></div><div class="sub">${t.base?fmt(t.eng/t.base*100,1):0}% du budget d’exercice</div></div>
       <div class="tile ${t.red?'bad':'good'} click" data-filterhealth="r"><div class="lab">Projets Focus</div><div class="big">${t.red}</div><div class="sub">arbitrage requis →</div></div>
       <div class="tile ${t.amber?'warn':'good'} click" data-filterhealth="a"><div class="lab">Sous surveillance</div><div class="big">${t.amber}</div><div class="sub">point d'attention →</div></div>
     </div>
@@ -9536,7 +9554,7 @@ function renderPass(){
           <b style="font-size:11.5px;color:var(--muted)">Pourquoi ?</b>
           <ul style="margin:4px 0 0;padding-left:16px">
             ${h.fin.dev!=null&&h.fin.dev>S.config.seuilEcart?`<li>Écart budgétaire C2 vs C1 : <b>${h.fin.dev}%</b> (seuil ${S.config.seuilEcart}%)</li>`:''}
-            ${h.fin.conso!=null&&h.fin.conso>100?`<li>Consommation &gt; 100% du C1 : <b>${h.fin.conso}%</b></li>`:''}
+            ${h.fin.conso!=null&&h.fin.conso>100?`<li>Consommation &gt; 100% du budget de l’exercice : <b>${h.fin.conso}%</b></li>`:''}
             ${pp&&pp.risks&&pp.risks.length?`<li>${pp.risks.length} risque(s) ouvert(s)</li>`:''}
             ${(h.fin.dev==null||h.fin.dev<=S.config.seuilEcart)&&(!pp||!pp.risks||!pp.risks.length)?`<li>Situation maîtrisée sur les axes mesurés</li>`:''}
           </ul>
@@ -9913,11 +9931,15 @@ function bindEditables(){
 
 /* ======================= TAB 3 — Finance ======================= */
 function renderFin(){
-  const list=PROJ().filter(p=>(p.c1||p.c2||p.act));
+  /* Le filtre ne regardait que le C1, le C2 et les actuals : un projet qui
+     porte un CAPEX B25 et son atterrissage, ou seulement des engagements,
+     disparaissait du tableau — invisible au cockpit alors qu'il consomme.
+     Toute ligne budgetaire ou de consommation suffit desormais. */
+  const list=PROJ().filter(p=>(p.c1||p.c2||p.act||p.commit||p.capex26||p.b27||p.att26));
   const t=totals(PROJ());
   // sort
   const s=S.finSort;
-  const val=(p,k)=>k==='ecart'?ecartV(p):k==='conso'?(p.c1?(p.act||0)/p.c1*100:0):(['c1','c2','b27','act'].includes(k)?(p[k]||0):norm(p[k]||''));
+  const val=(p,k)=>k==='ecart'?ecartV(p):k==='conso'?(consoPct(p)||0):(['c1','c2','b27','act'].includes(k)?(p[k]||0):norm(p[k]||''));
   list.sort((a,b)=>{const av=val(a,s.key),bv=val(b,s.key); if(av<bv)return s.dir; if(av>bv)return -s.dir; return 0;});
   const ecartPct=t.c1?((t.c2-t.c1)/t.c1*100):0;
   // top deltas C2 vs C1
@@ -9934,7 +9956,7 @@ function renderFin(){
     <div class="tile ${Math.abs(ecartPct)>S.config.seuilEcart?'bad':'good'}"><div class="lab">Écart atterrissage</div><div class="big">${fmt(ecartPct,1)}<span class="u">%</span></div><div class="sub">cible ≤ ${S.config.seuilEcart}%</div></div>
   </div>
   <div class="col3">
-    <div class="panel"><div class="panel-h"><h3>Suivi budgétaire par projet</h3><span class="meta">conso = ACT / C1 · alerte ≥ 80/95/100%</span></div>
+    <div class="panel"><div class="panel-h"><h3>Suivi budgétaire par projet</h3><span class="meta">conso = (engagé + facturé) / budget d'exercice · alerte ≥ 80/95/100%</span></div>
       <div class="panel-b"><div class="tblwrap" style="max-height:560px;overflow-y:auto"><table id="finTbl"><thead><tr>
         ${fth('Code','shine')}${fth('Projet','nom')}${fth('Pôle','group')}
         ${fthn('C1','c1')}${fthn('C2','c2')}${fthn('B27','b27')}${fthn('ACT','act')}${fthn('Écart','ecart')}${fthn('Conso%','conso')}<th>Alerte</th>
@@ -9957,8 +9979,17 @@ function renderFin(){
 function fth(l,k){return `<th data-k="${k}">${l}${S.finSort.key===k?(S.finSort.dir<0?' ▼':' ▲'):''}</th>`;}
 function fthn(l,k){return `<th class="num" data-k="${k}">${l}${S.finSort.key===k?(S.finSort.dir<0?' ▼':' ▲'):''}</th>`;}
 function finRows(list){
-  return list.map(p=>{const c2=(p.c2!=null?p.c2:p.c1);const ec=ecartV(p);const conso=p.c1?(p.act||0)/p.c1*100:0;
-    let al=''; if(conso>=100)al='<span class="pill r">≥100%</span>'; else if(conso>=95)al='<span class="pill a">≥95%</span>'; else if(conso>=80)al='<span class="pill a">≥80%</span>'; else al='<span class="pill g">OK</span>';
+  /* La consommation se lit sur le budget de l'exercice : un projet qui n'a
+     qu'un C2 revise en a un. La colonne montrait « — » des que le C1 etait
+     absent, reste de l'ancienne formule « ACT / C1 ». Et sans base du tout,
+     l'alerte annoncait « OK » sur un zero suppose : elle se tait. */
+  return list.map(p=>{const c2=(p.c2!=null?p.c2:p.c1);const ec=ecartV(p);
+    const pc=consoPct(p), conso=pc==null?0:pc;
+    let al='<span class="pill n">—</span>';
+    if(pc!=null){ al = conso>=100?'<span class="pill r">≥100%</span>'
+      : conso>=95?'<span class="pill a">≥95%</span>'
+      : conso>=80?'<span class="pill a">≥80%</span>'
+      : '<span class="pill g">OK</span>'; }
     return `<tr data-id="${esc(p.id)}">
       <td class="code">${esc(p.shine||'—')}</td><td class="wrap">${esc(p.nom)}</td><td>${esc(p.group)}</td>
       <td class="num" contenteditable data-fin="${esc(p.id)}|c1">${p.c1!=null?fmt(p.c1):''}</td>
@@ -9966,7 +9997,7 @@ function finRows(list){
       <td class="num" contenteditable data-fin="${esc(p.id)}|b27">${p.b27!=null?fmt(p.b27):''}</td>
       <td class="num" contenteditable data-fin="${esc(p.id)}|act">${p.act!=null?fmt(p.act):''}</td>
       <td class="num" style="color:${ec>0?'var(--bad)':ec<0?'var(--good)':'inherit'}">${ec>=0?'+':''}${fmt(ec)}</td>
-      <td class="num">${p.c1?fmt(conso,0)+'%':'—'}</td><td>${al}</td></tr>`;}).join('');
+      <td class="num">${pc!=null?fmt(conso,0)+'%':'—'}</td><td>${al}</td></tr>`;}).join('');
 }
 function bindFinEdit(){
   $$('[data-fin]').forEach(el=>{
