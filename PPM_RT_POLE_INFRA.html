@@ -2,7 +2,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PPM RT Pôle INFRA — Pilotage portefeuille</title>
-<!-- PPM_BUILD:2026-11-13.3 -->
+<!-- PPM_BUILD:2026-11-13.4 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
@@ -1947,7 +1947,7 @@ function renderGardeFocus(fn){
 }
 /* Version du fichier. A relever dans le pied de page : elle dit quelle copie
    du HTML est reellement ouverte, ce qu'aucune capture d'ecran ne trahit. */
-const APP_BUILD='2026-11-13.3';
+const APP_BUILD='2026-11-13.4';
 const APP_BUILD_FR=(()=>{ const [d,r]=APP_BUILD.split('.');
   return d.split('-').reverse().join('/')+(r?' #'+r:''); })();
 const norm = s => (s==null?"":String(s)).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
@@ -2326,14 +2326,29 @@ function migrate(saved){
    Les trois ecrans comptaient autrement : la sante et le cockpit faisaient
    « actuals / C1 », sans les engagements et sans la regle de periode. Un
    meme projet se lisait 55 % en synthese et 52 % ailleurs. */
+/* La base sur laquelle se mesure la consommation : le budget de l'exercice
+   diminue du depassement de 2025. Celui-ci est deja pris — il n'est plus a
+   consommer. 165 alloues, 30 depasses : il reste 135, dont 110 engages et 25
+   libres. Rapporter les montants a 165 les flattait, et consomme plus
+   disponible ne faisait pas 100 % ; sur 135, ils le font. */
+function budBase(p){
+  const b=budPeriode(p);
+  if(b==null) return null;
+  return b-depassementB25(p);
+}
+/* Un projet sans budget d'exercice mais qui a depasse son CAPEX B25 a une
+   base negative : il n'a rien a consommer. Une base nulle ou negative n'est
+   pas un denominateur — le pourcentage ne se calcule pas, et le cockpit
+   affichait « -0 % ». Le disponible, lui, garde son signe : il dit ce qui a
+   ete depasse. */
 function consoPct(p){
-  const base=budPeriode(p);
-  if(base==null || !base) return null;
+  const base=budBase(p);
+  if(base==null || base<=0) return null;
   return (((+p.act||0)+(+p.commit||0))/base)*100;
 }
 function financeHealth(p){
   const c1=p.c1||0, c2=(p.c2!=null?p.c2:p.c1)||0;
-  if(!c1 && !c2) return {score:70,label:'n/a'};
+  if(!c1 && !c2) return {score:70,label:'n/a',conso:null,dev:0};
   const dev = c1? Math.abs((c2-c1)/c1)*100 : 0;      // révision budgétaire vs C1
   const pc=consoPct(p), conso = pc==null?0:pc;        // consommation, définition commune
   let score=100;
@@ -3352,7 +3367,7 @@ function budCalcule(p,champ){
        && budSaisi(p.act)==null && budSaisi(p.commit)==null) return undefined;
     return atterrissageCalc(p);
   }
-  if(champ==='dispo') return (budPeriode(p)||0)-eng-depassementB25(p);
+  if(champ==='dispo') return (budBase(p)||0)-eng;
   /* Pour la case du total, le calcul de reference est la somme seule : sans
      cela, « resaisir la valeur affichee » se comparerait a la saisie elle-meme
      et ne rendrait jamais la main. */
@@ -8080,6 +8095,22 @@ function appliquerSeedBud(){
       }
     }
 
+    /* Les deux chiffres de la ligne SPE vivent dans la fiche CER, pas dans le
+       projet : ils ont leur propre pose, de meme discipline — elle recouvre
+       sur demande, une fois, et journalise ce qu'elle remplace. */
+    if(e.cer && typeof ensureCER==='function'){
+      const ETIQ={spe:'enveloppe SPE allouée B26 (k€)',
+                  depense:'Activités réalisées — SPE allouée B26 (k€)'};
+      const c=ensureCER(p.id);
+      Object.keys(e.cer).forEach(k=>{
+        const av=(c[k]==null||c[k]==='')?null:+c[k];
+        const ap=e.cer[k]==null?null:+e.cer[k];
+        if(av===ap) return;
+        logChange('Projet '+nom,(ETIQ[k]||('CER — '+k))+' — '+(e.quoi||'relevé'),
+          av==null?'':av, ap==null?'':ap);
+        c[k]=ap; n++;
+      });
+    }
     /* Les notes ne recouvrent jamais : une note ecrite par quelqu'un est une
        saisie comme une autre, et le releve ne comble que le vide. */
     if(e.com){
@@ -8088,6 +8119,28 @@ function appliquerSeedBud(){
         if(String(bc[k]||'').trim()) return;
         logChange('Projet '+nom,'commentaire — '+(BUD_COM[k]||k),'',e.com[k]);
         bc[k]=e.com[k]; n++;
+      });
+    }
+    /* « comSet » : une note qu'un releve precedent avait posee et qui ne dit
+       plus l'etat — « 220 k€ réceptionnés » sous des actuals de 86. Elle se
+       corrige, mais sous la meme garde que « maj » : chaque entree porte le
+       texte qu'elle s'attend a trouver, et la note n'est reprise que si elle
+       est restee telle quelle. Retouchee depuis, c'est une saisie — elle
+       reste, et l'ecart est nomme. */
+    if(e.comSet){
+      const bc=budComOf(p);
+      Object.keys(e.comSet).forEach(k=>{
+        const d2=e.comSet[k], av=String(bc[k]||'');
+        const attendu=String((d2&&d2.avant!=null)?d2.avant:''), vise=String((d2&&d2.valeur!=null)?d2.valeur:d2);
+        if(av===vise) return;
+        if(av && av!==attendu){
+          logChange('Projet '+nom,'commentaire — '+(BUD_COM[k]||k)+' — saisie conservée',
+            av, av+' · le relevé proposait : '+vise);
+          return;
+        }
+        logChange('Projet '+nom,'commentaire — '+(BUD_COM[k]||k)+' — '+(e.quoi||'relevé'),
+          av, vise);
+        bc[k]=vise; n++;
       });
     }
     /* La ventilation par annee va la ou une page la porte : la Finance du
@@ -9629,8 +9682,13 @@ function budgetBlock(p,pp,atter){
   const act=p.act||0, com=p.commit||0, engage=act+com;     // consommé : facturé + engagé
   /* Base de la consommation : le budget de l'exercice en cours. Le total du
      projet reste affiche par ailleurs, en memoire. */
-  const baseT=budPeriode(p)||0, baseNom=budPeriodeNom(p), ctotMem=capexTotal(p);
-  const pc=v=>baseT?fmt(v/baseT*100,1)+' %':'—';
+  const baseBrute=budPeriode(p)||0, depB25=depassementB25(p);
+  const baseT=budBase(p)||0, ctotMem=capexTotal(p);
+  /* Le nom dit d'ou vient la base : le C1 ou le C2 de la periode, net du
+     depassement quand il y en a un. */
+  const baseNom=budPeriodeNom(p)+(depB25?' net':'');
+  /* Meme regle que consoPct : sans base positive, pas de pourcentage. */
+  const pc=v=>baseT>0?fmt(v/baseT*100,1)+' %':'—';
   const teinte=v=>v<0?'var(--bad)':'var(--good)';
   const BCOLS=[['capex26','CAPEX B25','—'],['c1','C1 | 26','—'],['c2','C2 | 26 Révisé','—'],
                ['capexTot','CAPEX 25 | 26 Projet Total',''],['b27','CAPEX B27','—']];
@@ -9683,23 +9741,24 @@ function budgetBlock(p,pp,atter){
           >${eff!=null?fmtSaisie(eff):''}</td>`; }).join('')}${budComCell(p,'att')}</tr>
   </tbody></table></div>
   <div class="tblwrap ppsec" style="--c:#0E9F6E;--cs:rgba(14,159,110,.13);margin-top:10px"><table class="budget-mini"><thead><tr><th>Consommation (k€)</th><th class="num">Montant</th><th class="num" title="Part du budget de l'exercice — le C1 | 26 jusqu'en juin, le C2 | 26 Révisé à partir de juillet${
+      depB25?' — '+fmt(baseBrute)+' k€ diminués du dépassement de '+fmt(depB25)+' k€ sur le CAPEX B25, soit '+fmt(baseT)+' k€ à consommer':''}${
       ctotMem!=null?' · pour mémoire, CAPEX 25 | 26 Projet Total '+fmt(ctotMem)+' k€':''}">% du ${esc(baseNom||'budget')}${baseT?' ('+fmt(baseT)+' k€)':''}</th><th class="bcom">Commentaire</th></tr></thead>
   <tbody>
     <tr><td>Actuals Amount <span class="bmini">facturé</span></td><td class="num" contenteditable data-pfn="act" title="Cliquez pour saisir">${p.act!=null?fmtSaisie(p.act):''}</td><td class="num">${pc(act)}</td>${budComCell(p,'act')}</tr>
     <tr><td>Open Commitments <span class="bmini">engagé non facturé</span></td><td class="num" contenteditable data-pfn="commit" title="Cliquez pour saisir">${p.commit!=null?fmtSaisie(p.commit):''}</td><td class="num">${pc(com)}</td>${budComCell(p,'commit')}</tr>
     <tr class="tot"><td>Engagé + facturé</td><td class="num" style="color:var(--accent)">${fmt(engage)}</td><td class="num">${pc(engage)}</td>${budComCell(p,'eng')}</tr>
-    ${(()=>{ const dep=depassementB25(p);
-      const calc=baseT-engage-dep, v=budSaisi(p.dispo), eff=v!=null?v:calc;
-      const detail=fmt(baseT)+' − '+fmt(engage)+(dep?' − '+fmt(dep):'');
+    ${(()=>{ const dep=depB25;
+      const calc=baseT-engage, v=budSaisi(p.dispo), eff=v!=null?v:calc;
+      const detail=fmt(baseT)+' − '+fmt(engage);
       const forcee=v!=null&&v!==calc;
-      return `<tr><td>Available Amount <span class="bmini">${esc(baseNom||'budget')} − (actuals + commitments)${
-          dep?' − dépassement CAPEX B25':''} = ${detail}${
+      return `<tr><td>Available Amount <span class="bmini">${esc(baseNom||'budget')} − (actuals + commitments) = ${detail}${
+          dep?' · le '+esc(budPeriodeNom(p))+' de '+fmt(baseBrute)+' diminué du dépassement de '+fmt(dep)+' sur le CAPEX B25':''}${
           ctotMem!=null?' · pour mémoire, CAPEX 25 | 26 Projet Total '+fmt(ctotMem):''}</span></td>
         <td class="num${forcee?' forcee':''}" contenteditable data-pfn="dispo" data-vide="—"
           style="color:${teinte(eff)};font-weight:600"
           title="${(forcee?'Available Amount — valeur saisie ; le calcul donne ':'Available Amount — ')
             +esc(baseNom)+' '+esc(detail)+' = '+esc(fmt(calc))+' k€'
-            +(dep?' · le dépassement de '+esc(fmt(dep))+' k€ sur le CAPEX B25 se prend sur l’exercice en cours':'')
+            +(dep?' · les '+esc(fmt(dep))+' k€ dépassés sur le CAPEX B25 sont déjà pris : ils sortent de la base':'')
             +(forcee?', videz la case pour y revenir':' · cliquez pour saisir une autre valeur')}"
           >${fmtSaisie(eff)}</td>
         <td class="num">${pc(eff)}</td>${budComCell(p,'dispo')}</tr>`; })()}
@@ -10450,7 +10509,7 @@ function cerMiniPass(p){
      facturé » du bloc voisin : elle se lit donc sur la meme base que lui, le
      budget de l'exercice, et non plus sur le total du projet. */
   const engage=(+p.act||0)+(+p.commit||0);
-  const baseC=budPeriode(p)||0, baseCNom=budPeriodeNom(p);
+  const baseC=budBase(p)||0, baseCNom=budPeriodeNom(p)+(depassementB25(p)?' net':'');
   const conso=baseC?engage/baseC*100:null;
   const cls=conso==null?'g':(conso>=95?'r':conso>=80?'a':'g');
   const consoT=baseC
